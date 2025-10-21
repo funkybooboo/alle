@@ -5,9 +5,6 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    // Import the outer functions and items
-    use super::*;
-
     // A simple async test using Tokio runtime
     #[tokio::test]
     async fn simple_async_test() {
