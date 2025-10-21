@@ -1,193 +1,158 @@
 # Alle
 
-An open-source minimalist to-do list and planning app inspired by Teuxdeux, focused on simplicity and visual clarity.
-
-## Overview
-
-Alle is a clean, intuitive task management application designed for people who want to stay organized without complexity. Built with modern web technologies, it features drag-and-drop task organization, automatic task rollover, and offline functionality.
+Open-source minimalist to-do list app inspired by Teuxdeux. Clean, simple, and focused on getting things done.
 
 ## Features
 
-- Clean dashboard with drag-and-drop task organization
-- Automatic task rollover for incomplete tasks
+- Drag-and-drop task organization
+- Automatic task rollover
 - Recurring to-dos
 - Someday lists for long-term planning
 - Offline functionality
 - Markdown and emoji support
 
-For a complete feature list and design principles, see [`docs/high-level-idea.md`](docs/high-level-idea.md).
+See [`docs/high-level-idea.md`](docs/high-level-idea.md) for complete feature list.
 
 ## Tech Stack
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite** for build tooling and dev server
-- **Vitest** for testing
-- **Bun** as runtime and package manager
+**Frontend**: React 19 + TypeScript + Vite + Bun
+**Backend**: Rust + Tokio async runtime
 
-### Backend
-- **Rust** (2024 edition)
-- **Tokio** async runtime
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- **Bun** (latest version) - [Install Bun](https://bun.sh)
-- **Rust** (latest stable) - [Install Rust](https://rustup.rs)
-
-### Installation
-
-Clone the repository:
-
 ```bash
-git clone https://github.com/yourusername/alle.git
-cd alle
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-### Running the Client
+### Running the App
 
+**Client** (frontend):
 ```bash
 cd packages/client
-
-# Install dependencies
 bun install
-
-# Start development server
 bun run dev
+# → http://localhost:5173
 ```
 
-The client will be available at `http://localhost:5173` (default Vite port).
-
-### Running the Server
-
+**Server** (backend):
 ```bash
 cd packages/server
-
-# Build and run the server
 cargo run
-
-# Or run in release mode for better performance
-cargo run --release
 ```
 
 ## Development
 
-### Client Development
+### Client Commands
 
 ```bash
 cd packages/client
 
-# Run linter
-bun run lint
-
-# Run tests
-bun test
-
-# Build for production
-bun run build
-
-# Preview production build
-bun run preview
+bun run dev              # Start dev server
+bun run build            # Build for production
+bun run lint             # Run ESLint
+bun run format           # Format with Prettier
+bun test                 # Run tests
+bun test --coverage      # Run with coverage
 ```
 
-### Server Development
+See [`packages/client/README.md`](packages/client/README.md) for detailed documentation.
+
+### Server Commands
 
 ```bash
 cd packages/server
 
-# Build the server
-cargo build
-
-# Run tests
-cargo test
-
-# Run tests with verbose output
-cargo test --verbose
+cargo run                # Run server
+cargo build --release    # Build optimized
+cargo test               # Run tests
+cargo fmt                # Format code
+cargo clippy             # Run linter
+cargo audit              # Security scan
+cargo deny check         # Check licenses & policies
 ```
 
-## Testing
-
-### Client Tests
-- Framework: **Vitest** with React Testing Library
-- Test files: `*.test.tsx` or `*.test.ts`
-- Setup: `src/setupTests.ts` includes jest-dom matchers
-- Globals enabled (no need to import `test`, `describe`, `expect`)
-
-### Server Tests
-- Framework: Rust's built-in test framework
-- Async tests: Use `#[tokio::test]` attribute
-- Test modules: `#[cfg(test)] mod tests { ... }`
+See [`packages/server/README.md`](packages/server/README.md) for detailed documentation.
 
 ## Project Structure
 
 ```
 alle/
 ├── packages/
-│   ├── client/          # React frontend
-│   │   ├── src/
-│   │   ├── public/
-│   │   └── package.json
+│   ├── client/          # React + TypeScript frontend
 │   └── server/          # Rust backend
-│       ├── src/
-│       └── Cargo.toml
 ├── docs/                # Documentation
-├── .github/
-│   └── workflows/       # CI/CD workflows
-├── CLAUDE.md           # AI assistant guidance
+├── .github/workflows/   # CI/CD
+│   ├── client-ci.yml    # Client CI pipeline
+│   └── server-ci.yml    # Server CI pipeline
+├── LICENSE              # GPL-3.0
+├── CLAUDE.md           # AI development guidance
 └── README.md
 ```
 
-## Git Workflow
-
-The project uses a multi-branch workflow:
-
-- **stable/\<date\>**: Production-validated releases (e.g., `stable/2025-10-21`)
-- **main**: Production branch, currently the active development branch
-- **test**: Pre-production testing/QA branch
-- **dev**: Development integration branch
-- **feature/**, **fix/**, **refactor/**: Topic branches
-- **hotfix/**: Critical bug fixes
-
-During the early development phase, work is primarily done on `main`.
-
 ## CI/CD
 
-GitHub Actions workflows run on push and pull requests to `main`:
+GitHub Actions runs on push/PR to `main`, `dev`, `test`:
 
-- **Client CI**: Installs Bun, runs linting and tests
-- **Server CI**: Sets up Rust toolchain, builds and runs tests
+**Client CI** (5 jobs):
+1. Code Quality - Format, lint, type-check
+2. Test & Coverage - Run tests with coverage reports
+3. Build - Production bundle
+4. Security Scan - Dependency audit + Trivy
+5. Bundle Analysis - Size tracking (main only)
+
+**Server CI** (runs on push/PR to `main`):
+- Build with `cargo build --verbose`
+- Test with `cargo test --verbose`
+
+## Git Workflow
+
+- **main** - Production branch (active development)
+- **dev** - Development integration
+- **test** - Pre-production QA
+- **stable/\<date\>** - Production releases
+- **feature/**, **fix/**, **refactor/**, **hotfix/** - Topic branches
+
+Currently in early development phase working primarily on `main`.
+
+## Testing
+
+**Client**: Vitest + React Testing Library (jsdom environment)
+**Server**: Rust's built-in test framework + Tokio async tests
+
+```bash
+# Run all tests
+cd packages/client && bun test
+cd packages/server && cargo test
+```
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feature/name`)
+3. Make your changes
+4. Run tests and linters
+5. Commit changes (`git commit -m 'Add feature'`)
+6. Push to branch (`git push origin feature/name`)
+7. Open a Pull Request
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+**GPL-3.0-or-later** - See [LICENSE](LICENSE) file.
 
-### What does this mean?
+This is free and open-source software. You can use, modify, and distribute it freely. If you distribute modified versions, you must:
+- Share the source code
+- License under GPL-3.0
+- Document changes
+- Include copyright notices
 
-Alle is free and open-source software. You can:
-- Use it freely for any purpose
-- Study and modify the source code
-- Distribute copies of the software
-- Distribute modified versions
-
-**Important**: If you distribute Alle or modified versions of it, you must:
-- Make the source code available
-- License it under GPL-3.0
-- State any changes you made
-- Include copyright and license notices
-
-For more details, visit the [GNU GPL-3.0 page](https://www.gnu.org/licenses/gpl-3.0.en.html).
+Learn more: [GNU GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## Acknowledgments
 
-Inspired by [Teuxdeux](https://teuxdeux.com), the original minimalist to-do app. 
+Inspired by [Teuxdeux](https://teuxdeux.com).

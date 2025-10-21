@@ -43,6 +43,7 @@ coverage/
 dist/
 build/
 out/
+bin/
 
 # Dependency directories
 node_modules/
