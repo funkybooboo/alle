@@ -21,3 +21,37 @@
 
 # Ignore Mac system files
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignore Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore Linux system files
+*~
+.directory
+
+# Coverage reports
+coverage/
+*.coverage
+.nyc_output/
+.lcov
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Dependency directories
+node_modules/
+
+# Lock files (keep these in subprojects, not root)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+Cargo.lock
+
+CLAUDE.md

@@ -1,3 +1,26 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+dist-ssr
+build
+out
+.next
+.nuxt
+.cache
+
+# Vite specific
+.vite
+*.local
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
 # Logs
 logs
 *.log
@@ -6,19 +29,55 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+bun-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Bun specific
+.bun
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*~
+
+# OS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.tmp
+.temp
+
+# React specific
+.eslintcache
+*.storybook-out
+
+# Vercel
+.vercel
+
+# Turbopack
+.turbo
