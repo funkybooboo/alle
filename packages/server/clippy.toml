@@ -1,0 +1,10 @@
+# Clippy linting configuration
+# Warn on all clippy lints by default
+warn-on-all-wildcard-imports = true
+
+# Deny these specific lints
+disallowed-methods = []
+disallowed-types = []
+
+# Cognitive complexity threshold
+cognitive-complexity-threshold = 30
