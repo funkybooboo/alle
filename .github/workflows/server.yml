@@ -1,0 +1,27 @@
+name: Server CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions/setup-rust@v1
+      with:
+        rust-version: stable
+
+    - name: Build server
+      run: cargo build --verbose
+      working-directory: ./packages/server
+
+    - name: Test server
+      run: cargo test --verbose
+      working-directory: ./packages/server
