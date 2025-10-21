@@ -1,5 +1,6 @@
 # High Level Idea 
 > Yes I got this from perplexity, but I read it and it sounds right.
+> We will need to figure out what features we want we remove or add.
 
 Teuxdeux is a minimalist, highly intuitive to-do list and planning app built around simplicity and visual clarity. Below is a comprehensive idea-level feature list summarizing its core capabilities and experience design principles.
 
