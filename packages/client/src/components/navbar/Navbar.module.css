@@ -1,24 +1,14 @@
+.navbar{
+    background-color: var(--color-navbar-bg);
+    border-bottom: 1px solid var(--color-navbar-border);
+}
+
 .title{
     font-family: 'Courier New', Courier, monospace;
 }
 
 .title:hover {
     cursor: pointer;
-}
-
-.iconButton {
-    background-color: transparent;
-    transition: all 150ms ease-in-out;
-}
-
-.iconButton:hover {
-    background-color: rgb(243 244 246);
-    cursor: pointer;
-}
-
-.iconButton:focus-visible {
-    outline: 2px solid rgb(59 130 246);
-    outline-offset: 2px;
 }
 
 .title {

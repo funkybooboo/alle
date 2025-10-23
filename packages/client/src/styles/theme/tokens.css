@@ -1,0 +1,28 @@
+/* Semantic Color Tokens */
+:root {
+  /* Semantic Colors */
+  --color-success: var(--color-accent-mint);
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: var(--color-primary-500);
+  
+  /* Surface Colors */
+  --color-surface: var(--color-neutral-50);
+  --color-surface-hover: var(--color-neutral-100);
+  --color-surface-active: var(--color-neutral-200);
+  
+  /* Text Colors */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-400);
+  --color-text-on-primary: white;
+  
+  /* Border Colors */
+  --color-border: var(--color-neutral-200);
+  --color-border-hover: var(--color-neutral-300);
+  
+  /* Component-Specific Colors */
+  --color-navbar-bg: var(--color-surface);
+  --color-navbar-border: var(--color-border);
+  --color-button-focus: var(--color-primary-400);
+}

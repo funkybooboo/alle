@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './Navbar.module.css';
+import styles from './NavbarIcon.module.css';
 
 interface NavbarIconProps {
     iconName: string;

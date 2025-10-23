@@ -1,0 +1,15 @@
+.iconButton {
+    background-color: transparent;
+    transition: all 150ms ease-in-out;
+}
+
+.iconButton:hover {
+    color: white;
+    background-color: var(--color-primary-500);
+    cursor: pointer;
+}
+
+.iconButton:focus-visible {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: 2px;
+}

@@ -1,3 +1,4 @@
+name: alle
 volumes:  
   server_node_modules:
   client_node_modules:

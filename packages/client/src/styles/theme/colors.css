@@ -1,6 +1,4 @@
-@import "tailwindcss";
-@import "./styles/theme/theme.css";
-
+/* Base Colors */
 :root {
   /* Primary Colors - Baby Blue Theme */
   --color-primary-50: #f0f9ff;
@@ -28,25 +26,4 @@
   --color-accent-mint: #4ade80;    /* Success/Completion */
   --color-accent-coral: #fb7185;    /* Alerts/Important */
   --color-accent-lavender: #a78bfa; /* Special Items */
-  
-  /* Semantic Colors */
-  --color-success: var(--color-accent-mint);
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-info: var(--color-primary-500);
-  
-  /* Surface Colors */
-  --color-surface: var(--color-neutral-50);
-  --color-surface-hover: var(--color-neutral-100);
-  --color-surface-active: var(--color-neutral-200);
-  
-  /* Text Colors */
-  --color-text-primary: var(--color-neutral-900);
-  --color-text-secondary: var(--color-neutral-600);
-  --color-text-tertiary: var(--color-neutral-400);
-  --color-text-on-primary: white;
-  
-  /* Border Colors */
-  --color-border: var(--color-neutral-200);
-  --color-border-hover: var(--color-neutral-300);
 }
