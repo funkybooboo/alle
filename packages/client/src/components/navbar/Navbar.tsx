@@ -31,8 +31,8 @@ export const Navbar = () => {
       <div className="flex flex-row items-center gap-4">
         <NavbarIcon
           iconName="search"
-          isSearchOpen={isOpen}
-          handleSearchClick={handleClick}
+          isOpen={isOpen}
+          handleClick={handleClick}
           handleKeyDown={handleKeyDown}
         />
         <div className={`md:hidden ${styles.today}`}>Today</div>
@@ -44,8 +44,8 @@ export const Navbar = () => {
           <NavbarIcon
             key={iconName}
             iconName={iconName}
-            isSearchOpen={isOpen}
-            handleSearchClick={handleClick}
+            isOpen={isOpen}
+            handleClick={handleClick}
             handleKeyDown={handleKeyDown}
           />
         ))}
