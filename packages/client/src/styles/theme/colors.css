@@ -6,10 +6,10 @@
   --color-primary-200: #bae6fd;
   --color-primary-300: #7dd3fc;
   --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;  /* Main brand color */
+  --color-primary-500: #0ea5e9; /* Main brand color */
   --color-primary-600: #0284c7;
   --color-primary-700: #0369a1;
-  
+
   /* Neutrals */
   --color-neutral-50: #f8fafc;
   --color-neutral-100: #f1f5f9;
@@ -21,10 +21,10 @@
   --color-neutral-700: #334155;
   --color-neutral-800: #1e293b;
   --color-neutral-900: #0f172a;
-  
+
   /* Accent Colors */
-  --color-accent-mint: #4ade80;    /* Success/Completion */
-  --color-accent-coral: #fb7185;    /* Alerts/Important */
+  --color-accent-mint: #4ade80; /* Success/Completion */
+  --color-accent-coral: #fb7185; /* Alerts/Important */
   --color-accent-lavender: #a78bfa; /* Special Items */
-  --color-accent-pink: #f472b6;      /* Highlights/Notifications */
+  --color-accent-pink: #f472b6; /* Highlights/Notifications */
 }
