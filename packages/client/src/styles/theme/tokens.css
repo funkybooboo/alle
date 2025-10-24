@@ -1,0 +1,65 @@
+/* Semantic Color Tokens */
+:root {
+  /* Semantic Colors */
+  --color-success: var(--color-accent-mint);
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: var(--color-primary-500);
+
+  /* Translucent Colors */
+  --color-translucent-light: rgba(
+    56,
+    189,
+    248,
+    0.1
+  ); /* primary-400 with opacity */
+  --color-translucent-medium: rgba(
+    56,
+    189,
+    248,
+    0.3
+  ); /* primary-400 with opacity */
+  --color-translucent-heavy: rgba(
+    56,
+    189,
+    248,
+    0.5
+  ); /* primary-400 with opacity */
+
+  /* Alternative way using modern CSS color-mix */
+  --color-translucent-alt-light: color-mix(
+    in srgb,
+    var(--color-accent-pink) 10%,
+    transparent
+  );
+  --color-translucent-alt-medium: color-mix(
+    in srgb,
+    var(--color-accent-pink) 30%,
+    transparent
+  );
+  --color-translucent-alt-heavy: color-mix(
+    in srgb,
+    var(--color-accent-pink) 50%,
+    transparent
+  );
+
+  /* Surface Colors */
+  --color-surface: var(--color-neutral-50);
+  --color-surface-hover: var(--color-neutral-100);
+  --color-surface-active: var(--color-neutral-200);
+
+  /* Text Colors */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-400);
+  --color-text-on-primary: white;
+
+  /* Border Colors */
+  --color-border: var(--color-neutral-200);
+  --color-border-hover: var(--color-neutral-300);
+
+  /* Component-Specific Colors */
+  --color-navbar-bg: var(--color-surface);
+  --color-navbar-border: var(--color-border);
+  --color-button-focus: var(--color-primary-400);
+}
