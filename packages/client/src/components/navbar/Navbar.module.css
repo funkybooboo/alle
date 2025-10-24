@@ -3,16 +3,19 @@
     border-bottom: 1px solid var(--color-navbar-border);
 }
 
+.today{
+    font-weight: bold;
+    color: black;
+    border-radius: 5px;
+    padding: 8px;
+    background-color: var(--color-translucent-alt-heavy);
+    
+}
+
 .title{
     font-family: 'Courier New', Courier, monospace;
 }
 
 .title:hover {
     cursor: pointer;
-}
-
-.title {
-    font-weight: 600;
-    color: rgb(17 24 39); 
-    font-size: 1.25rem;
 }

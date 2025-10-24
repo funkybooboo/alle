@@ -26,15 +26,18 @@ export const Navbar = () => {
     };
 
     return (
-        <nav className={`w-full flex items-center gap-4 px-4 py-2 flex-row justify-between ${styles.navbar}`}>
-            <div className="flex flex-row items-center">
+        <nav className={`w-full flex sticky items-center gap-4 px-4 py-2 flex-row justify-between h-14 md:h-18 lg:h-22 ${styles.navbar}`}>
+            <div className="flex flex-row items-center gap-4">
                 <NavbarIcon 
                     iconName="Search" 
                     isSearchOpen={isSearchOpen} 
                     handleSearchClick={handleSearchClick} 
                     handleKeyDown={handleKeyDown}
                 />
-                <h1 className={`${styles.title}`}>Alle</h1>
+                <div className={`md:hidden ${styles.today}`}>
+                    Today
+                </div>
+                <h1 className={`hidden md:block ${styles.title}`}>Alle</h1>
             </div>
 
             <div className="flex flex-row">
