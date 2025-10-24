@@ -12,15 +12,15 @@ const navigationIcons: string[] = [
 ];
 
 export const Navbar = () => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleSearchClick = () => {
-    setIsSearchOpen(!isSearchOpen);
+  const handleClick = () => {
+    setIsOpen(!isOpen);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape' && isSearchOpen) {
-      setIsSearchOpen(false);
+    if (event.key === 'Escape' && isOpen) {
+      setIsOpen(false);
     }
   };
 
@@ -30,9 +30,9 @@ export const Navbar = () => {
     >
       <div className="flex flex-row items-center gap-4">
         <NavbarIcon
-          iconName="Search"
-          isSearchOpen={isSearchOpen}
-          handleSearchClick={handleSearchClick}
+          iconName="search"
+          isSearchOpen={isOpen}
+          handleSearchClick={handleClick}
           handleKeyDown={handleKeyDown}
         />
         <div className={`md:hidden ${styles.today}`}>Today</div>
@@ -44,8 +44,8 @@ export const Navbar = () => {
           <NavbarIcon
             key={iconName}
             iconName={iconName}
-            isSearchOpen={isSearchOpen}
-            handleSearchClick={handleSearchClick}
+            isSearchOpen={isOpen}
+            handleSearchClick={handleClick}
             handleKeyDown={handleKeyDown}
           />
         ))}

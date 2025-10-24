@@ -10,18 +10,17 @@ interface NavbarIconProps {
 
 export const NavbarIcon = ({
   iconName,
-  isSearchOpen,
-  handleSearchClick,
+  isOpen,
+  handleClick,
   handleKeyDown,
 }: NavbarIconProps) => {
   return (
-    <>
       <button
         type="button"
-        aria-label="Search"
-        aria-expanded={isSearchOpen}
+        aria-label={iconName}
+        aria-expanded={isOpen}
         aria-controls="search-panel"
-        onClick={handleSearchClick}
+        onClick={handleClick}
         onKeyDown={handleKeyDown}
         className={`p-2 rounded-full flex items-center justify-center ${styles.iconButton}`}
       >
@@ -29,6 +28,5 @@ export const NavbarIcon = ({
           {iconName}
         </span>
       </button>
-    </>
   );
 };
