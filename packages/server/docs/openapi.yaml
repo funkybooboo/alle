@@ -10,7 +10,7 @@ info:
   contact:
     name: Alle Project
   license:
-    name: MIT
+    name: GPL-3.0-or-later
 
 servers:
   - url: http://localhost:8000
