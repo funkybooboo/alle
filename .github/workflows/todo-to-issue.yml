@@ -22,7 +22,7 @@ jobs:
       - name: TODO to Issue
         uses: alstr/todo-to-issue-action@v4
         with:
-          # Auto-close issues when TODO is removed
+          # Auto-close issues when to-do is removed
           AUTO_ASSIGN: true
           CLOSE_ISSUES: true
           # Only create issues on main/dev branches, not PRs
