@@ -1,4 +1,11 @@
-FROM rust:1.83-slim AS builder
+FROM rustlang/rust:nightly-slim AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -29,8 +36,8 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/target/release/alle-server /app/alle-server
 
-# Set ownership
-RUN chown -R alle:alle /app
+# Create data directory for SQLite database
+RUN mkdir -p /app/data && chown -R alle:alle /app
 
 # Switch to non-root user
 USER alle

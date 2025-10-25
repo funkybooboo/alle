@@ -1,3 +1,9 @@
+//! Test database helpers
+//!
+//! Note: Not all functions are used in every test file, which is expected for shared test utilities.
+
+#![allow(dead_code)]
+
 use alle_server::migration::Migrator;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;

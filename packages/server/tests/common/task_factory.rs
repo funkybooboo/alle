@@ -1,3 +1,9 @@
+//! Test task factory helpers
+//!
+//! Note: Not all functions are used in every test file, which is expected for shared test utilities.
+
+#![allow(dead_code)]
+
 use alle_server::AppContext;
 use std::sync::Arc;
 
