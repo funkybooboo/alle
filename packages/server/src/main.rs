@@ -1,5 +1,5 @@
-use alle_server::{AppContext, db, graphql, handlers, migration};
-use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
+use alle_server::{db, graphql, handlers, migration, AppContext};
+use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use sea_orm_migration::prelude::*;

@@ -2,7 +2,7 @@ mod common;
 
 use alle_server::graphql::create_schema;
 use async_graphql::Request;
-use common::task_factory::{TaskFactory, test_app_context};
+use common::task_factory::{test_app_context, TaskFactory};
 
 #[tokio::test]
 async fn test_graphql_query_tasks() {

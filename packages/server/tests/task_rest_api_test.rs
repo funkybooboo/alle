@@ -1,7 +1,7 @@
 mod common;
 
 use alle_server::AppContext;
-use common::db::{TestDatabase, setup_test_db, teardown_test_db};
+use common::db::{setup_test_db, teardown_test_db, TestDatabase};
 
 // Integration test with PostgreSQL (requires Docker)
 #[tokio::test]
