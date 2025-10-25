@@ -81,7 +81,7 @@ jobs:
           timeout 60 bash -c 'until docker exec alle-mysql-test mysqladmin ping -h localhost -u alle_test -ptest_password --silent; do sleep 1; done'
 
       - name: Run integration tests
-        run: cargo test --test '*' --verbose
+        run: cargo test --test '*' --verbose -- --ignored --test-threads=1
 
       - name: Stop test databases
         if: always()
