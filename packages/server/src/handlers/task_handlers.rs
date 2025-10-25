@@ -67,7 +67,7 @@ pub async fn handle_tasks(
         (Method::POST, "/api/tasks") => create_task(req, ctx).await,
         (Method::PUT, path) if path.starts_with("/api/tasks/") => {
             let id = path.trim_start_matches("/api/tasks/").to_string();
-            update_task(req, ctx, &id).await
+            update_task(ctx, &id, req).await
         }
         (Method::DELETE, path) if path.starts_with("/api/tasks/") => {
             let id = path.trim_start_matches("/api/tasks/");
@@ -217,9 +217,9 @@ async fn create_task(
 }
 
 async fn update_task(
-    req: Request<Body>,
     ctx: Arc<AppContext>,
     id_str: &str,
+    req: Request<Body>,
 ) -> Result<Response<Body>, hyper::Error> {
     let id: i32 = match id_str.parse() {
         Ok(id) => id,
