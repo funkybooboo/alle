@@ -41,8 +41,8 @@ jobs:
       - name: Run Clippy
         run: cargo clippy -- -D warnings
 
-  test:
-    name: Test
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,8 +54,38 @@ jobs:
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Run tests
-        run: cargo test --verbose
+      - name: Run unit tests
+        run: cargo test --lib --bins --verbose
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Start test databases
+        run: docker compose -f docker-compose.test.yml up -d
+
+      - name: Wait for databases to be ready
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 60 bash -c 'until docker exec alle-postgres-test pg_isready -U alle_test; do sleep 1; done'
+          echo "Waiting for MySQL..."
+          timeout 60 bash -c 'until docker exec alle-mysql-test mysqladmin ping -h localhost -u alle_test -ptest_password --silent; do sleep 1; done'
+
+      - name: Run integration tests
+        run: cargo test --test '*' --verbose -- --ignored --test-threads=1
+
+      - name: Stop test databases
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
 
   build:
     name: Build
