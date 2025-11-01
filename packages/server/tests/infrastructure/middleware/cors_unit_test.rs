@@ -9,9 +9,7 @@ fn test_cors_config_default() {
     assert!(config.allowed_methods.contains(&"GET".to_string()));
     assert!(config.allowed_methods.contains(&"POST".to_string()));
     assert!(config.allowed_methods.contains(&"OPTIONS".to_string()));
-    assert!(config
-        .allowed_headers
-        .contains(&"Content-Type".to_string()));
+    assert!(config.allowed_headers.contains(&"Content-Type".to_string()));
     assert!(config
         .allowed_headers
         .contains(&"Authorization".to_string()));

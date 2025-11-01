@@ -12,12 +12,17 @@ impl TaskRepository {
         Self { db }
     }
 
-    pub async fn create(&self, title: String) -> Result<entity::Model, DbErr> {
+    pub async fn create(
+        &self,
+        title: String,
+        date: chrono::DateTime<chrono::Utc>,
+    ) -> Result<entity::Model, DbErr> {
         let now = chrono::Utc::now();
 
         let new_task = entity::ActiveModel {
             title: Set(title),
             completed: Set(false),
+            date: Set(date),
             created_at: Set(now),
             updated_at: Set(now),
             ..Default::default()
@@ -39,6 +44,7 @@ impl TaskRepository {
         id: i32,
         title: Option<String>,
         completed: Option<bool>,
+        date: Option<chrono::DateTime<chrono::Utc>>,
     ) -> Result<entity::Model, DbErr> {
         let task_to_update = entity::Entity::find_by_id(id)
             .one(&self.db)
@@ -53,6 +59,10 @@ impl TaskRepository {
 
         if let Some(new_completed) = completed {
             task_active.completed = Set(new_completed);
+        }
+
+        if let Some(new_date) = date {
+            task_active.date = Set(new_date);
         }
 
         task_active.updated_at = Set(chrono::Utc::now());

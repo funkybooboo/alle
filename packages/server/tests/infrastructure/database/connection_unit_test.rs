@@ -34,8 +34,5 @@ async fn test_sqlite_memory_connection_with_migrations() {
     use sea_orm::EntityTrait;
 
     let result = TaskEntity::find().all(&db).await;
-    assert!(
-        result.is_ok(),
-        "Tasks table should exist after migrations"
-    );
+    assert!(result.is_ok(), "Tasks table should exist after migrations");
 }

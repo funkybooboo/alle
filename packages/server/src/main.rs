@@ -52,6 +52,17 @@ async fn route_request(
 ) -> Result<Response<Body>, hyper::Error> {
     let path = req.uri().path();
 
+    // Handle CORS preflight requests
+    if req.method() == Method::OPTIONS {
+        return Ok(Response::builder()
+            .status(StatusCode::OK)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            .header("Access-Control-Allow-Headers", "Content-Type")
+            .body(Body::empty())
+            .unwrap());
+    }
+
     match (req.method(), path) {
         (&Method::POST, "/graphql") => handle_graphql(req, schema).await,
         (&Method::GET, "/graphql") => {
@@ -59,12 +70,14 @@ async fn route_request(
             let html = playground_source(GraphQLPlaygroundConfig::new("/graphql"));
             Ok(Response::builder()
                 .header("content-type", "text/html")
+                .header("Access-Control-Allow-Origin", "*")
                 .body(Body::from(html))
                 .unwrap())
         }
         _ => {
             let response = Response::builder()
                 .status(404)
+                .header("Access-Control-Allow-Origin", "*")
                 .body(Body::from("Not Found - Use /graphql endpoint"))
                 .unwrap();
             Ok(response)
@@ -93,6 +106,7 @@ async fn handle_graphql(
     Ok(Response::builder()
         .status(StatusCode::OK)
         .header("content-type", "application/json")
+        .header("Access-Control-Allow-Origin", "*")
         .body(Body::from(json))
         .unwrap())
 }

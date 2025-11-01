@@ -10,6 +10,7 @@ pub struct Model {
     pub id: i32,
     pub title: String,
     pub completed: bool,
+    pub date: DateTimeUtc,
     pub created_at: DateTimeUtc,
     pub updated_at: DateTimeUtc,
 }
