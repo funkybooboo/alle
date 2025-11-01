@@ -4,14 +4,30 @@
 
 ```
 tests/
-├── common/                  # Shared test utilities
-│   ├── mod.rs              # Re-exports
-│   ├── db.rs               # Database setup utilities
-│   ├── task_factory.rs     # Task creation helpers
-│   └── assertions.rs       # Custom assertions
-├── task_repository_test.rs # Repository layer tests
-├── task_graphql_test.rs    # GraphQL API tests
-└── task_rest_api_test.rs   # REST API integration tests
+├── lib.rs                          # Test crate root
+├── common/                         # Shared test utilities
+│   ├── mod.rs                      # Re-exports
+│   ├── db.rs                       # Database setup (testcontainers)
+│   ├── assertions.rs               # Custom assertions
+│   └── factories/
+│       ├── mod.rs
+│       └── task_factory.rs         # Task creation helpers
+├── domains/                        # Domain tests (feature-based)
+│   └── tasks/
+│       ├── unit/                   # Fast, isolated unit tests
+│       │   ├── mod.rs
+│       │   ├── repository_unit_test.rs
+│       │   └── queries_unit_test.rs
+│       ├── integration/            # Tests with real databases
+│       │   ├── mod.rs
+│       │   ├── database_integration_test.rs
+│       │   └── graphql_integration_test.rs
+│       └── system/                 # End-to-end HTTP tests
+│           ├── mod.rs
+│           └── graphql_system_test.rs
+└── infrastructure/                 # Infrastructure tests
+    └── database/
+        └── mod.rs
 ```
 
 ## Running Tests
@@ -21,264 +37,417 @@ tests/
 cargo test
 ```
 
-### Specific Test File
-```bash
-cargo test --test task_repository_test
-cargo test --test task_graphql_test
-```
+### Unit Tests Only
+Fast, isolated tests using in-memory database:
 
-### Single Test
 ```bash
+# All unit tests
+cargo test --lib domains::tasks::unit
+
+# Specific unit test
 cargo test test_create_task
 ```
 
-### With Output
+### Integration Tests Only
+Tests with real databases (PostgreSQL, MySQL, SQLite):
+
 ```bash
+# All integration tests
+cargo test --lib domains::tasks::integration
+
+# Specific database
+cargo test test_task_crud_postgres
+cargo test test_task_crud_mysql
+cargo test test_task_crud_sqlite
+```
+
+### System Tests
+End-to-end tests with full server (currently ignored):
+
+```bash
+# Run system tests
+cargo test --lib domains::tasks::system -- --ignored
+
+# Specific system test
+cargo test test_system_graphql_query_tasks -- --ignored
+```
+
+### Test Filtering
+```bash
+# Run all tests matching a pattern
+cargo test graphql
+
+# Run with output
 cargo test -- --nocapture
+
+# Run in verbose mode
+cargo test -- --verbose
 ```
 
-### Integration Tests (Docker)
-```bash
-# Start test databases
-docker-compose -f docker-compose.test.yml up -d
+## Architecture
 
-# Run ignored tests
-cargo test -- --ignored --test-threads=1
+### Domain-Driven Structure
 
-# Stop databases
-docker-compose -f docker-compose.test.yml down
+Tests are organized by domain (feature), not by technical layer:
+
+```
+domains/tasks/
+├── unit/          # Business logic tests
+├── integration/   # Database integration tests
+└── system/        # End-to-end API tests
 ```
 
-## Test Utilities
+**Benefits:**
+- All task-related tests in one place
+- Easy to find and understand feature scope
+- Scales as you add more domains (users, projects, etc.)
 
-### Database Setup
+### GraphQL-Only API
 
-#### Quick In-Memory Database
-```rust
-use common::*;
-
-#[tokio::test]
-async fn test_something() {
-    let ctx = test_app_context().await;
-    // Use ctx.task_repository
-}
-```
-
-#### Task Factory
-```rust
-use common::*;
-
-#[tokio::test]
-async fn test_with_factory() {
-    let factory = task_factory().await;
-
-    // Create tasks
-    let task = factory.create("Test task").await;
-    let completed = factory.create_completed("Done task").await;
-    let many = factory.create_many(&["Task 1", "Task 2"]).await;
-
-    // Access repository
-    factory.ctx.task_repository.find_all().await.unwrap();
-}
-```
-
-### Custom Assertions
-
-```rust
-use common::*;
-
-#[tokio::test]
-async fn test_with_assertions() {
-    let factory = task_factory().await;
-    let task = factory.create("Test").await;
-
-    // Assert task fields
-    assert_task_eq(&task, "Test", false);
-
-    // Assert task exists
-    let found = factory.ctx.task_repository.find_by_id(task.id).await.unwrap();
-    assert_task_exists(found, "Test");
-
-    // Assert task not found
-    let not_found = factory.ctx.task_repository.find_by_id(9999).await.unwrap();
-    assert_task_not_found(not_found);
-
-    // Assert collection count
-    let all_tasks = factory.ctx.task_repository.find_all().await.unwrap();
-    assert_count(&all_tasks, 1);
-}
-```
+The application uses GraphQL exclusively:
+- No REST endpoints
+- Single `/graphql` endpoint
+- Type-safe queries and mutations
+- GraphQL Playground for testing
 
 ## Writing Tests
 
-### Repository Tests
+### Unit Tests (Fast, Isolated)
 
-Test the repository layer directly:
+Test business logic with in-memory database:
 
 ```rust
-mod common;
-use common::*;
+// tests/domains/tasks/unit/repository_unit_test.rs
+use crate::common::*;
 
 #[tokio::test]
-async fn test_repository_method() {
+async fn test_create_task() {
     let ctx = test_app_context().await;
 
-    let task = ctx.task_repository.create("Test".to_string()).await.unwrap();
-    assert_task_eq(&task, "Test", false);
+    let task = ctx.task_repository
+        .create("Test task".to_string())
+        .await
+        .unwrap();
+
+    assert_eq!(task.title, "Test task");
+    assert_eq!(task.completed, false);
 }
 ```
 
-### GraphQL Tests
-
-Test GraphQL queries and mutations:
-
 ```rust
-mod common;
-use common::*;
+// tests/domains/tasks/unit/queries_unit_test.rs
+use crate::common::*;
 use alle_server::graphql::create_schema;
 use async_graphql::Request;
 
 #[tokio::test]
-async fn test_graphql_query() {
+async fn test_graphql_query_tasks() {
     let ctx = test_app_context().await;
     let schema = create_schema(ctx);
 
-    let query = r#"query { tasks { id title } }"#;
+    let query = r#"query { tasks { id title completed } }"#;
     let response = schema.execute(Request::new(query)).await;
 
     assert!(response.errors.is_empty());
 }
 ```
 
-## Adding Tests for New Entities
+### Integration Tests (Real Databases)
 
-1. Create `tests/common/your_entity_factory.rs`:
+Test with PostgreSQL, MySQL, or SQLite using testcontainers:
+
 ```rust
-pub struct YourEntityFactory {
+// tests/domains/tasks/integration/database_integration_test.rs
+use crate::common::db::{setup_postgres_container, teardown_test_db};
+use alle_server::AppContext;
+
+#[tokio::test]
+async fn test_task_crud_postgres() {
+    // Automatically starts PostgreSQL container
+    let (db, _container) = setup_postgres_container().await.unwrap();
+    let ctx = AppContext::new(db.clone());
+
+    // Test CRUD operations
+    let task = ctx.task_repository
+        .create("Test".to_string())
+        .await
+        .unwrap();
+
+    assert_eq!(task.title, "Test");
+
+    teardown_test_db(&db).await.unwrap();
+    // Container automatically stopped when _container is dropped
+}
+```
+
+### System Tests (End-to-End HTTP)
+
+Test full HTTP stack with GraphQL:
+
+```rust
+// tests/domains/tasks/system/graphql_system_test.rs
+use reqwest::Client;
+use serde_json::json;
+
+#[tokio::test]
+#[ignore] // Enable when server supports programmatic startup
+async fn test_system_graphql_query_tasks() {
+    let (base_url, _server) = start_test_server().await;
+    let client = Client::new();
+
+    let query = json!({
+        "query": "query { tasks { id title completed } }"
+    });
+
+    let response = client
+        .post(&format!("{}/graphql", base_url))
+        .json(&query)
+        .send()
+        .await
+        .expect("Failed to send request");
+
+    assert!(response.status().is_success());
+}
+```
+
+## Test Utilities
+
+### Database Setup
+
+#### In-Memory (Unit Tests)
+```rust
+use crate::common::*;
+
+let ctx = test_app_context().await;  // Fast, isolated
+```
+
+#### PostgreSQL (Integration Tests)
+```rust
+use crate::common::db::setup_postgres_container;
+
+let (db, _container) = setup_postgres_container().await.unwrap();
+// Container auto-starts and stops
+```
+
+#### MySQL (Integration Tests)
+```rust
+use crate::common::db::setup_mysql_container;
+
+let (db, _container) = setup_mysql_container().await.unwrap();
+```
+
+#### SQLite (Integration Tests)
+```rust
+use crate::common::db::setup_sqlite_container;
+
+let db = setup_sqlite_container().await.unwrap();
+```
+
+### Task Factory
+
+Create test data easily:
+
+```rust
+use crate::common::*;
+
+let factory = task_factory().await;
+
+// Create single task
+let task = factory.create("Test task").await;
+
+// Create completed task
+let completed = factory.create_completed("Done task").await;
+
+// Create multiple tasks
+let tasks = factory.create_many(&["Task 1", "Task 2"]).await;
+
+// Access repository
+let all = factory.ctx.task_repository.find_all().await.unwrap();
+```
+
+### Custom Assertions
+
+```rust
+use crate::common::*;
+
+// Assert task fields
+assert_task_eq(&task, "Expected title", false);
+
+// Assert task exists
+assert_task_exists(found_task, "Expected title");
+
+// Assert task not found
+assert_task_not_found(not_found_task);
+
+// Assert collection count
+assert_count(&tasks, 3);
+```
+
+## Adding Tests for New Domains
+
+When adding a new domain (e.g., `users`):
+
+### 1. Create Test Structure
+```bash
+tests/domains/users/
+├── unit/
+│   ├── mod.rs
+│   ├── repository_unit_test.rs
+│   └── queries_unit_test.rs
+├── integration/
+│   ├── mod.rs
+│   └── database_integration_test.rs
+└── system/
+    ├── mod.rs
+    └── graphql_system_test.rs
+```
+
+### 2. Create Factory (Optional)
+```rust
+// tests/common/factories/user_factory.rs
+pub struct UserFactory {
     pub ctx: Arc<AppContext>,
 }
 
-impl YourEntityFactory {
-    pub fn new(ctx: Arc<AppContext>) -> Self {
-        Self { ctx }
-    }
-
-    pub async fn create(&self, name: &str) -> YourEntityModel {
-        self.ctx.your_entity_repository
+impl UserFactory {
+    pub async fn create(&self, name: &str) -> entity::Model {
+        self.ctx.user_repository
             .create(name.to_string())
             .await
-            .expect("Failed to create entity")
+            .expect("Failed to create user")
     }
 }
 ```
 
-2. Create `tests/your_entity_repository_test.rs`:
-```rust
-mod common;
-use common::*;
-
-#[tokio::test]
-async fn test_create_your_entity() {
-    let ctx = test_app_context().await;
-    let entity = ctx.your_entity_repository.create("Test".to_string()).await.unwrap();
-    assert_eq!(entity.name, "Test");
-}
-```
-
-3. Create `tests/your_entity_graphql_test.rs` for GraphQL tests
-
-## Test Database Options
-
-### In-Memory SQLite (Default)
-Fast, isolated tests without external dependencies:
-```rust
-let db = fresh_in_memory_db().await;
-```
-
-### PostgreSQL (Docker Required)
-```rust
-#[tokio::test]
-#[ignore]
-async fn test_with_postgres() {
-    let db = setup_test_db(TestDatabase::Postgres).await.unwrap();
-    // Test code
-    teardown_test_db(&db).await.unwrap();
-}
-```
-
-### MySQL (Docker Required)
-```rust
-#[tokio::test]
-#[ignore]
-async fn test_with_mysql() {
-    let db = setup_test_db(TestDatabase::MySQL).await.unwrap();
-    // Test code
-    teardown_test_db(&db).await.unwrap();
-}
-```
-
-## Docker Test Databases
-
-### Configuration
-
-**PostgreSQL**
-- Port: 5433
-- Database: alle_test
-- User: alle_test
-- Password: test_password
-- URL: `postgres://alle_test:test_password@localhost:5433/alle_test`
-
-**MySQL**
-- Port: 3307
-- Database: alle_test
-- User: alle_test
-- Password: test_password
-- URL: `mysql://alle_test:test_password@localhost:3307/alle_test`
-
-### Environment Variables
-
-Override defaults:
-```bash
-export TEST_DATABASE_URL_POSTGRES="postgres://user:pass@localhost:5433/testdb"
-export TEST_DATABASE_URL_MYSQL="mysql://user:pass@localhost:3307/testdb"
-```
+### 3. Write Tests
+Follow the same pattern as tasks tests.
 
 ## Test Coverage
 
 ### Current Coverage
 
-- Repository layer: 16 tests
-- GraphQL API: 10 tests
-- REST API: 2 integration tests (ignored by default)
+**Unit Tests:**
+- Repository: 16 tests
+- GraphQL Queries/Mutations: 10 tests
 
-Total: 28 tests covering CRUD operations, edge cases, and error handling
+**Integration Tests:**
+- Database (SQLite, PostgreSQL, MySQL): 3 tests
+- GraphQL with databases: 6 tests
+
+**System Tests (Ignored):**
+- GraphQL end-to-end: 4 tests
+
+**Total:** 47 tests (43 running, 4 ignored)
 
 ## Best Practices
 
+### General
 1. Use factories for test data creation
 2. Use custom assertions for readable tests
 3. Test one thing per test function
-4. Use descriptive test names
-5. Mark Docker tests with `#[ignore]`
-6. Use `--test-threads=1` for integration tests
-7. Clean up with `teardown_test_db()` for Docker tests
-8. Don't clean up in-memory tests (automatic)
+4. Use descriptive names: `test_create_task_with_empty_title_fails`
+5. Keep tests independent
+
+### Unit vs Integration vs System
+6. **Unit tests**: Fast, in-memory, test business logic
+   - Run on every commit
+   - Should complete in milliseconds
+   - Use `test_app_context()` or `fresh_in_memory_db()`
+
+7. **Integration tests**: Real databases, test data persistence
+   - Use testcontainers (auto-start Docker)
+   - Test database-specific behavior
+   - Takes seconds (container startup)
+
+8. **System tests**: Full HTTP stack, end-to-end
+   - Test complete request/response cycle
+   - Currently ignored (requires server startup support)
+   - Use for smoke testing deployments
+
+### Testcontainers
+9. Containers auto-start and stop (no manual docker-compose)
+10. Keep `_container` variable in scope to prevent early cleanup
+11. Use `teardown_test_db()` for proper cleanup
+12. Random ports (no conflicts)
+
+## Testcontainers vs Manual Docker
+
+### Testcontainers (Current)
+- Automatic container management
+- No port conflicts
+- Isolated per test
+- Works in CI
+- Cleanup guaranteed
+
+### Manual Docker Compose (Legacy)
+- Requires `docker-compose.test.yml`
+- Manual start/stop
+- Fixed ports (conflicts possible)
+- Still available if needed
+
+## CI Integration
+
+Tests run automatically in GitHub Actions (`.github/workflows/server-ci.yml`):
+
+```yaml
+unit-tests:
+  - cargo test --lib domains::tasks::unit
+
+integration-tests:
+  - cargo test --lib domains::tasks::integration
+  # Testcontainers auto-manages Docker
+```
+
+## Quick Reference
+
+```bash
+# All tests
+cargo test
+
+# Unit tests only (fast)
+cargo test --lib domains::tasks::unit
+
+# Integration tests (with Docker)
+cargo test --lib domains::tasks::integration
+
+# System tests (ignored)
+cargo test --lib domains::tasks::system -- --ignored
+
+# Specific test
+cargo test test_create_task
+
+# With output
+cargo test -- --nocapture
+
+# Verbose
+cargo test -- --verbose
+```
 
 ## Troubleshooting
 
-### Port Conflicts
+### Docker Not Available
 ```bash
-docker-compose -f docker-compose.test.yml down
-# Or change ports in docker-compose.test.yml
+# Check Docker
+docker ps
+
+# Start Docker (varies by OS)
+sudo systemctl start docker  # Linux
+open -a Docker              # macOS
 ```
 
-### Database Not Ready
-```bash
-docker-compose -f docker-compose.test.yml ps
-# Wait for "(healthy)" status
-```
+### Slow Integration Tests
+- First run downloads container images (one-time)
+- Subsequent runs are faster (cached)
+- Use unit tests for fast feedback
 
-### Connection Errors
+### Tests Hanging
+- Check Docker: `docker ps`
+- Try: `cargo test -- --nocapture`
+- Check for connection leaks
+
+### Container Cleanup
+Testcontainers auto-cleans, but if needed:
 ```bash
-docker-compose -f docker-compose.test.yml logs
+docker ps -a | grep testcontainers | awk '{print $1}' | xargs docker rm
+docker image prune
 ```

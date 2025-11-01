@@ -1,9 +1,6 @@
-pub mod app_context;
-pub mod db;
-pub mod entities;
-pub mod graphql;
-pub mod handlers;
-pub mod migration;
-pub mod repositories;
+pub mod api;
+pub mod domains;
+pub mod infrastructure;
 
-pub use app_context::AppContext;
+pub use api::graphql;
+pub use infrastructure::AppContext;

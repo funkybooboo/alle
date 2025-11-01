@@ -4,9 +4,11 @@
 
 #![allow(dead_code)]
 
-use alle_server::migration::Migrator;
+use alle_server::infrastructure::Migrator;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
+use testcontainers::{runners::AsyncRunner, ContainerAsync};
+use testcontainers_modules::{mysql::Mysql, postgres::Postgres};
 
 pub enum TestDatabase {
     InMemory,
@@ -33,6 +35,68 @@ pub async fn setup_test_db(db_type: TestDatabase) -> Result<DatabaseConnection, 
     };
 
     Migrator::up(&db, None).await?;
+    Ok(db)
+}
+
+/// Set up a PostgreSQL test database using testcontainers
+/// Returns both the database connection and the container (which must be kept alive)
+pub async fn setup_postgres_container(
+) -> Result<(DatabaseConnection, ContainerAsync<Postgres>), DbErr> {
+    let container = Postgres::default()
+        .start()
+        .await
+        .expect("Failed to start Postgres container");
+
+    let host = container.get_host().await.expect("Failed to get host");
+    let port = container
+        .get_host_port_ipv4(5432)
+        .await
+        .expect("Failed to get port");
+
+    let connection_string = format!("postgres://postgres:postgres@{}:{}/postgres", host, port);
+
+    let db = Database::connect(&connection_string).await?;
+    Migrator::up(&db, None).await?;
+
+    Ok((db, container))
+}
+
+/// Set up a MySQL test database using testcontainers
+/// Returns both the database connection and the container (which must be kept alive)
+pub async fn setup_mysql_container() -> Result<(DatabaseConnection, ContainerAsync<Mysql>), DbErr> {
+    let container = Mysql::default()
+        .start()
+        .await
+        .expect("Failed to start MySQL container");
+
+    let host = container.get_host().await.expect("Failed to get host");
+    let port = container
+        .get_host_port_ipv4(3306)
+        .await
+        .expect("Failed to get port");
+
+    // Testcontainers MySQL default credentials
+    let connection_string = format!("mysql://root@{}:{}/test", host, port);
+
+    // Wait a bit for MySQL to be fully ready
+    tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
+
+    let db = Database::connect(&connection_string).await?;
+    Migrator::up(&db, None).await?;
+
+    Ok((db, container))
+}
+
+/// Set up a SQLite test database using testcontainers (file-based for integration tests)
+/// Returns both the database connection and a temp file path
+pub async fn setup_sqlite_container() -> Result<DatabaseConnection, DbErr> {
+    // For SQLite, we'll use a temporary file instead of in-memory for integration testing
+    let temp_file = format!("/tmp/alle_test_{}.db", std::process::id());
+    let connection_string = format!("sqlite://{}?mode=rwc", temp_file);
+
+    let db = Database::connect(&connection_string).await?;
+    Migrator::up(&db, None).await?;
+
     Ok(db)
 }
 

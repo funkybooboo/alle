@@ -2,12 +2,17 @@
 
 ## Setup
 
+1. Copy environment configuration:
 ```bash
 cp .env.example .env
-cargo watch -x run
 ```
 
-Server starts at `http://localhost:8000`.
+2. Start development server:
+```bash
+cargo run
+```
+
+Server starts at `http://localhost:8000/graphql`.
 
 ## Running Tests
 
@@ -16,9 +21,19 @@ All tests:
 cargo test
 ```
 
-Specific test file:
+Unit tests only (fast, in-memory):
 ```bash
-cargo test --test task_repository_test
+cargo test unit
+```
+
+Integration tests (with real databases via testcontainers):
+```bash
+cargo test integration
+```
+
+Specific test:
+```bash
+cargo test test_create_task
 ```
 
 With output:
@@ -26,17 +41,11 @@ With output:
 cargo test -- --nocapture
 ```
 
-## Docker Integration Tests
-
-```bash
-docker-compose -f docker-compose.test.yml up -d
-cargo test -- --ignored --test-threads=1
-docker-compose -f docker-compose.test.yml down
-```
+Note: Integration tests automatically start Docker containers using testcontainers. No manual Docker setup required.
 
 ## Code Quality
 
-Format:
+Format code:
 ```bash
 cargo fmt
 ```
@@ -53,7 +62,12 @@ cargo audit
 
 ## Hot Reload
 
+Install cargo-watch:
 ```bash
 cargo install cargo-watch
+```
+
+Run with auto-reload:
+```bash
 cargo watch -x run
 ```

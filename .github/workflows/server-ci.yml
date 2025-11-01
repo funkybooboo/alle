@@ -54,8 +54,8 @@ jobs:
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Run unit tests
-        run: cargo test --lib --bins --verbose
+      - name: Run unit tests (fast, in-memory)
+        run: cargo test unit --verbose
 
   integration-tests:
     name: Integration Tests
@@ -70,22 +70,11 @@ jobs:
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Start test databases
-        run: docker compose -f docker-compose.test.yml up -d
-
-      - name: Wait for databases to be ready
-        run: |
-          echo "Waiting for PostgreSQL..."
-          timeout 60 bash -c 'until docker exec alle-postgres-test pg_isready -U alle_test; do sleep 1; done'
-          echo "Waiting for MySQL..."
-          timeout 60 bash -c 'until docker exec alle-mysql-test mysqladmin ping -h localhost -u alle_test -ptest_password --silent; do sleep 1; done'
-
-      - name: Run integration tests
-        run: cargo test --test '*' --verbose -- --ignored --test-threads=1
-
-      - name: Stop test databases
-        if: always()
-        run: docker compose -f docker-compose.test.yml down -v
+      - name: Run integration tests (with testcontainers)
+        run: cargo test integration --verbose
+        env:
+          # Testcontainers automatically manages Docker containers
+          DOCKER_HOST: unix:///var/run/docker.sock
 
   build:
     name: Build

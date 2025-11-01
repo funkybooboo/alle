@@ -1,45 +1,108 @@
 # Configuration
 
-All environment variables are prefixed with `ALLE_SERVER_`.
+The server uses environment variables for configuration, loaded from a `.env` file.
 
 ## Setup
 
+1. Copy the example configuration:
 ```bash
 cp .env.example .env
 ```
 
-## Variables
+2. Edit `.env` with your values
 
-**ALLE_SERVER_DATABASE_URL**
-- Database connection string
-- Default: `sqlite:./alle.db?mode=rwc`
-- Examples: `sqlite:./alle.db`, `postgres://user:pass@host/db`
+## Environment Variables
 
-**ALLE_SERVER_HOST**
-- Server bind address
-- Default: `0.0.0.0`
+### Database
 
-**ALLE_SERVER_PORT**
-- Server port
-- Default: `8000`
+- `ALLE_SERVER_DATABASE_URL` - Database connection string
+  - SQLite: `sqlite:./alle.db?mode=rwc`
+  - PostgreSQL: `postgres://user:password@localhost:5432/alle`
+  - MySQL: `mysql://user:password@localhost:3306/alle`
 
-**ALLE_SERVER_ENV**
-- Environment name
-- Default: `development`
-- Options: `development`, `staging`, `production`
+### Server
 
-**ALLE_SERVER_LOG_LEVEL**
-- Logging level (future use)
-- Default: `info`
+- `ALLE_SERVER_HOST` - Server host (default: `0.0.0.0`)
+- `ALLE_SERVER_PORT` - Server port (default: `8000`)
+- `ALLE_SERVER_ENV` - Environment (`development` or `production`)
+- `ALLE_SERVER_LOG_LEVEL` - Log level (default: `info`)
 
-**ALLE_SERVER_CORS_ORIGINS**
-- Allowed origins (comma-separated, future use)
-- Default: `http://localhost:3000,http://localhost:5173`
+### CORS
 
-**ALLE_SERVER_JWT_SECRET**
-- JWT signing secret (future use)
-- Default: `change-this-secret-in-production`
+- `ALLE_SERVER_CORS_ORIGINS` - Comma-separated allowed origins
+  - Example: `http://localhost:3000,http://localhost:5173`
 
-**ALLE_SERVER_JWT_EXPIRATION**
-- Token expiration seconds (future use)
-- Default: `86400` (24 hours)
+### Security
+
+- `ALLE_SERVER_JWT_SECRET` - JWT signing secret (change in production)
+- `ALLE_SERVER_JWT_EXPIRATION` - JWT expiration in seconds (default: `86400`)
+
+## Configuration Classes
+
+The configuration is structured into modules:
+
+### AppConfig
+
+Main configuration class that loads all settings:
+
+```rust
+use alle_server::infrastructure::AppConfig;
+
+let config = AppConfig::load()?;
+println!("Database: {}", config.database.url());
+println!("Server: {}", config.server.address());
+```
+
+### DatabaseConfig
+
+Database connection settings:
+
+```rust
+let db_url = config.database.url();
+```
+
+### ServerConfig
+
+Server and environment settings:
+
+```rust
+let address = config.server.address();
+let is_prod = config.server.is_production();
+```
+
+### CorsConfig
+
+CORS origin configuration:
+
+```rust
+let is_allowed = config.cors.is_allowed("http://localhost:3000");
+```
+
+### SecurityConfig
+
+Security and authentication settings:
+
+```rust
+let secret = &config.security.jwt_secret;
+let expiration = config.security.jwt_expiration;
+```
+
+## Usage in Code
+
+Configuration is loaded once at startup:
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = AppConfig::load()?;
+
+    // Use config throughout the application
+    let db = establish_connection(config.database.url()).await?;
+
+    Ok(())
+}
+```
+
+## Testing
+
+Each configuration module includes unit tests with default values, so tests run without a `.env` file.

@@ -1,15 +1,13 @@
 # API Documentation
 
-Server runs on `http://localhost:8000` with both REST and GraphQL APIs.
+GraphQL-only API server running on `http://localhost:8000/graphql`.
 
 ## Quick Links
 
 | Interface | URL | Purpose |
 |-----------|-----|---------|
-| **Swagger UI** | http://localhost:8000/swagger-ui/ | Interactive REST API docs + testing |
 | **GraphQL Playground** | http://localhost:8000/graphql | Interactive GraphQL IDE |
-| **OpenAPI JSON** | http://localhost:8000/api-docs/openapi.json | Auto-generated spec |
-| **OpenAPI YAML** | `docs/openapi.yaml` | Static spec file |
+| **GraphQL Endpoint** | POST http://localhost:8000/graphql | API endpoint |
 
 ## GraphQL API
 
@@ -47,86 +45,113 @@ input UpdateTaskInput {
 }
 ```
 
-### Quick Examples
+### Examples
 
+Create a task:
 ```graphql
-# Create
-mutation { createTask(input: { title: "New Task" }) { id title } }
-
-# Get all
-query { tasks { id title completed } }
-
-# Update
-mutation { updateTask(id: 1, input: { completed: true }) { id title } }
-
-# Delete
-mutation { deleteTask(id: 1) }
+mutation {
+  createTask(input: { title: "Buy groceries" }) {
+    id
+    title
+    completed
+  }
+}
 ```
 
-**Tip:** Use the GraphQL Playground at `/graphql` for autocomplete and docs.
+Query all tasks:
+```graphql
+query {
+  tasks {
+    id
+    title
+    completed
+    createdAt
+  }
+}
+```
 
-## REST API
+Query specific task:
+```graphql
+query {
+  task(id: 1) {
+    id
+    title
+    completed
+  }
+}
+```
 
-**Use Swagger UI at `/swagger-ui/` for full interactive documentation.**
+Update a task:
+```graphql
+mutation {
+  updateTask(id: 1, input: { completed: true }) {
+    id
+    title
+    completed
+  }
+}
+```
 
-### Endpoints
+Delete a task:
+```graphql
+mutation {
+  deleteTask(id: 1)
+}
+```
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/tasks` | List all tasks |
-| `GET` | `/api/tasks/incomplete` | List incomplete tasks |
-| `GET` | `/api/tasks/:id` | Get task by ID |
-| `POST` | `/api/tasks` | Create task |
-| `PUT` | `/api/tasks/:id` | Update task |
-| `DELETE` | `/api/tasks/:id` | Delete task |
+### Using curl
 
-### Quick Examples
-
+Query:
 ```bash
-# Create
-curl -X POST http://localhost:8000/api/tasks \
+curl -X POST http://localhost:8000/graphql \
   -H "Content-Type: application/json" \
-  -d '{"title":"New Task"}'
+  -d '{"query": "{ tasks { id title completed } }"}'
+```
 
-# Get all
-curl http://localhost:8000/api/tasks
-
-# Update
-curl -X PUT http://localhost:8000/api/tasks/1 \
+Mutation:
+```bash
+curl -X POST http://localhost:8000/graphql \
   -H "Content-Type: application/json" \
-  -d '{"completed":true}'
-
-# Delete
-curl -X DELETE http://localhost:8000/api/tasks/1
+  -d '{"query": "mutation { createTask(input: { title: \"New Task\" }) { id title } }"}'
 ```
 
 ### Response Format
 
-**Success:**
+Success:
 ```json
 {
-  "id": 1,
-  "title": "Task title",
-  "completed": false,
-  "created_at": "2025-10-24 00:00:00.000000000 UTC",
-  "updated_at": "2025-10-24 00:00:00.000000000 UTC"
+  "data": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Buy groceries",
+        "completed": false
+      }
+    ]
+  }
 }
 ```
 
-**Error:**
+Error:
 ```json
 {
-  "error": "Error message"
+  "errors": [
+    {
+      "message": "Database error: ...",
+      "locations": [{"line": 2, "column": 3}],
+      "path": ["tasks"]
+    }
+  ]
 }
 ```
 
-### Status Codes
+## GraphQL Playground
 
-| Code | Meaning |
-|------|---------|
-| `200` | Success (GET/PUT) |
-| `201` | Created (POST) |
-| `204` | No Content (DELETE) |
-| `400` | Bad Request |
-| `404` | Not Found |
-| `500` | Server Error |
+Visit `http://localhost:8000/graphql` in your browser for:
+- Interactive query builder
+- Auto-completion
+- Built-in documentation
+- Schema exploration
+- Query validation
+
+The playground provides the best development experience with full schema introspection.
