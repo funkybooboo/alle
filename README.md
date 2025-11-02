@@ -29,13 +29,13 @@ No dependencies needed - just install [Docker Desktop](https://www.docker.com/pr
 
 ```bash
 # Start the entire stack
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 **Access the app:** http://localhost:5173
@@ -135,7 +135,7 @@ bunx vitest run --coverage  # Coverage report
 **Running system/E2E tests:**
 ```bash
 # With Docker (recommended)
-docker-compose up -d
+docker compose up -d
 bun run test:system
 
 # Without Docker

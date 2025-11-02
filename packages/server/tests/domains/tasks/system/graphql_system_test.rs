@@ -2,11 +2,11 @@ use reqwest::Client;
 use serde_json::json;
 
 /// STUB IMPLEMENTATION: This function is a placeholder for future programmatic server startup.
-/// 
+///
 /// Currently returns a dummy server handle and URL. This does NOT start an actual server.
 /// The tests using this function are marked as `#[ignore]` until main.rs is refactored
 /// to support programmatic startup for testing purposes.
-/// 
+///
 /// DO NOT enable these tests - they will fail as no server is actually running.
 async fn start_test_server() -> (String, tokio::task::JoinHandle<()>) {
     let port = 8080;

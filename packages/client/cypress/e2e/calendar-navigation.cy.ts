@@ -12,14 +12,15 @@ describe('Calendar Navigation E2E Tests', () => {
     });
 
     it('should display correct day labels', () => {
-      // Should show the correct labels
-      cy.contains('Today').should('be.visible');
-      cy.contains('Tomorrow').should('be.visible');
+      // Should show the correct labels within day columns
+      cy.get('[data-testid="day-column"]').contains('Today').should('be.visible');
+      cy.get('[data-testid="day-column"]').contains('Tomorrow').should('be.visible');
     });
 
     it('should highlight today column', () => {
-      cy.contains('Today')
-        .parent('[data-testid="day-column"]')
+      cy.get('[data-testid="day-column"]')
+        .contains('Today')
+        .parents('[data-testid="day-column"]')
         .should('have.class', 'bg-blue-50');
     });
   });
@@ -34,13 +35,13 @@ describe('Calendar Navigation E2E Tests', () => {
       cy.get('[data-testid="today-button"]').click();
 
       // Verify today column is visible and in view
-      cy.contains('Today').should('be.visible');
+      cy.get('[data-testid="day-column"]').contains('Today').should('be.visible');
     });
   });
 
   describe('Keyboard Navigation', () => {
     it('should support Escape key to clear input', () => {
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
 
         // Type some text
@@ -55,7 +56,7 @@ describe('Calendar Navigation E2E Tests', () => {
     });
 
     it('should support Enter key to submit task', () => {
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('New task{enter}');
       });
 
@@ -84,7 +85,7 @@ describe('Calendar Navigation E2E Tests', () => {
   describe('Empty State', () => {
     it('should show empty state when no tasks exist', () => {
       // Verify empty state message
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('[data-testid="task-item"]').should('not.exist');
       });
     });
@@ -96,12 +97,12 @@ describe('Calendar Navigation E2E Tests', () => {
 
   describe('Date Formatting', () => {
     it('should display dates in correct format', () => {
-      // Today and Tomorrow should be labeled
-      cy.contains('Today').should('be.visible');
-      cy.contains('Tomorrow').should('be.visible');
+      // Today and Tomorrow should be labeled within day columns
+      cy.get('[data-testid="day-column"]').contains('Today').should('be.visible');
+      cy.get('[data-testid="day-column"]').contains('Tomorrow').should('be.visible');
 
       // Other days should show date format (e.g., "Nov 3" or similar)
-      cy.get('[data-testid="day-column"]').should('contain.text', /\w{3}\s\d{1,2}/);
+      cy.get('[data-testid="day-column"]').invoke('text').should('match', /\w{3}\s\d{1,2}/);
     });
   });
 });

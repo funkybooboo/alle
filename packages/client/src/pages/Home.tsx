@@ -5,6 +5,7 @@ import type { Task } from '../components/calendar/task-item/TaskItem.types';
 import { taskAPI } from '../api/task-api';
 
 export const Home = () => {
+  // Initialize with today's date at midnight for the center of the 5-day view
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,8 +158,14 @@ export const Home = () => {
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
             onEditTask={handleEditTask}
-            startDate={currentDate}
-            numDays={7}
+            startDate={(() => {
+              // Calculate start date as 2 days before currentDate
+              // This creates a view showing: 2 past days, today, 2 future days
+              const start = new Date(currentDate);
+              start.setDate(start.getDate() - 2);
+              return start;
+            })()}
+            numDays={5}
           />
         )}
       </div>

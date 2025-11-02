@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn test_default_security_config_in_development() {
         let _guard = TEST_MUTEX.lock().unwrap();
-        
+
         // Clear any existing JWT secret for this test
         env::remove_var("ALLE_SERVER_JWT_SECRET");
         env::remove_var("ALLE_SERVER_ENV");
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn test_production_requires_jwt_secret() {
         let _guard = TEST_MUTEX.lock().unwrap();
-        
+
         // Clear JWT secret and set production environment
         env::remove_var("ALLE_SERVER_JWT_SECRET");
         env::set_var("ALLE_SERVER_ENV", "production");
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_custom_jwt_secret() {
         let _guard = TEST_MUTEX.lock().unwrap();
-        
+
         env::set_var("ALLE_SERVER_JWT_SECRET", "custom-secret-key");
         env::remove_var("ALLE_SERVER_ENV");
 

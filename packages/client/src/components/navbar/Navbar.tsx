@@ -58,7 +58,9 @@ export const Navbar = ({
           handleClick={handleSearchToggle}
           handleKeyDown={handleKeyDown}
         />
-        <div className={`md:hidden ${styles.today}`}>{formatCurrentDate()}</div>
+        <div className={`block md:hidden ${styles.today}`}>
+          {formatCurrentDate()}
+        </div>
         <h1 className={`hidden md:block ${styles.title}`}>Alle</h1>
       </div>
 

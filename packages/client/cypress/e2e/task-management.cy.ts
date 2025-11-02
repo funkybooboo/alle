@@ -13,7 +13,7 @@ describe('Task Management E2E Tests', () => {
   describe('Task Creation', () => {
     it('should create a new task for today', () => {
       // Find today's column
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         // Type a new task
         cy.get('input[placeholder="Add a task..."]').type('Buy groceries{enter}');
       });
@@ -23,7 +23,7 @@ describe('Task Management E2E Tests', () => {
     });
 
     it('should create multiple tasks in the same day', () => {
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]')
           .type('Task 1{enter}')
           .type('Task 2{enter}')
@@ -37,7 +37,7 @@ describe('Task Management E2E Tests', () => {
 
     it('should create tasks for different days', () => {
       // Create task for today
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Today task{enter}');
       });
 
@@ -51,7 +51,7 @@ describe('Task Management E2E Tests', () => {
     });
 
     it('should not create empty tasks', () => {
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('{enter}');
       });
 
@@ -60,7 +60,7 @@ describe('Task Management E2E Tests', () => {
     });
 
     it('should clear input after creating a task', () => {
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
         input.type('New task{enter}');
         input.should('have.value', '');
@@ -168,7 +168,7 @@ describe('Task Management E2E Tests', () => {
   describe('Task Persistence', () => {
     it('should persist tasks after page reload', () => {
       // Create a task
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Persistent task{enter}');
       });
 
@@ -181,7 +181,7 @@ describe('Task Management E2E Tests', () => {
 
     it('should persist task completion status after reload', () => {
       // Create and complete a task
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Complete me{enter}');
       });
 
@@ -205,7 +205,7 @@ describe('Task Management E2E Tests', () => {
     it('should handle special characters in task text', () => {
       const specialText = 'Task with @#$%^&*() "quotes" <html>';
 
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type(`${specialText}{enter}`);
       });
 
@@ -215,7 +215,7 @@ describe('Task Management E2E Tests', () => {
     it('should handle very long task text', () => {
       const longText = 'A'.repeat(200);
 
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type(`${longText}{enter}`);
       });
 
@@ -225,7 +225,7 @@ describe('Task Management E2E Tests', () => {
     it('should handle emoji in task text', () => {
       const emojiText = 'Task with emoji 🎉 🚀 ✨';
 
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type(`${emojiText}{enter}`);
       });
 

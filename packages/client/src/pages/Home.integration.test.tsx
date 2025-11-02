@@ -285,7 +285,7 @@ describe('Home Integration Tests', () => {
 
       // Should have multiple "Add a task..." inputs (one per day)
       const inputs = screen.getAllByPlaceholderText('Add a task...');
-      expect(inputs.length).toBeGreaterThanOrEqual(7); // Default is 7 days
+      expect(inputs.length).toBeGreaterThanOrEqual(5); // Default is 5 days
     });
 
     it('groups tasks by date correctly', async () => {

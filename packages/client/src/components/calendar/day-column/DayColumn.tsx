@@ -46,7 +46,10 @@ export const DayColumn = ({
     >
       {/* Day Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2
+          className="text-lg font-semibold text-gray-800"
+          data-testid="day-header"
+        >
           {formatDate(date)}
         </h2>
       </div>

@@ -8,7 +8,7 @@ describe('User Workflow E2E Tests', () => {
   describe('Daily Planning Workflow', () => {
     it('should complete a full daily planning session', () => {
       // 1. User adds tasks for today
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]')
           .type('Morning standup{enter}')
           .type('Review pull requests{enter}')
@@ -87,7 +87,7 @@ describe('User Workflow E2E Tests', () => {
   describe('Task Management Workflow', () => {
     it('should handle a typical task lifecycle', () => {
       // Create a task
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Important task{enter}');
       });
 
@@ -128,7 +128,7 @@ describe('User Workflow E2E Tests', () => {
 
     it('should handle bulk task operations', () => {
       // Create 5 tasks
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
         for (let i = 1; i <= 5; i++) {
           input.type(`Task ${i}{enter}`);
@@ -177,7 +177,7 @@ describe('User Workflow E2E Tests', () => {
         'Review design mockups',
       ];
 
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
         inbox.forEach((task) => input.type(`${task}{enter}`));
       });
@@ -211,7 +211,7 @@ describe('User Workflow E2E Tests', () => {
 
     it('should support time-blocking workflow', () => {
       // Morning block
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]')
           .type('9am: Deep work session{enter}')
           .type('10:30am: Team sync{enter}')
@@ -219,7 +219,7 @@ describe('User Workflow E2E Tests', () => {
       });
 
       // Afternoon block
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]')
           .type('2pm: Client meeting{enter}')
           .type('3pm: Code review{enter}')
@@ -243,7 +243,7 @@ describe('User Workflow E2E Tests', () => {
     it('should handle network errors gracefully', () => {
       // This test would require mocking network failures
       // For now, just verify the app doesn't crash on errors
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Test task{enter}');
       });
 
@@ -252,7 +252,7 @@ describe('User Workflow E2E Tests', () => {
 
     it('should recover from page refresh during task creation', () => {
       // Start typing a task
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('Partially typed');
       });
 
@@ -263,7 +263,7 @@ describe('User Workflow E2E Tests', () => {
       cy.get('[data-testid="calendar-view"]').should('be.visible');
 
       // Create a new task to verify functionality
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         cy.get('input[placeholder="Add a task..."]').type('New task{enter}');
       });
 
@@ -274,7 +274,7 @@ describe('User Workflow E2E Tests', () => {
   describe('Concurrent User Actions', () => {
     it('should handle rapid task creation', () => {
       // Rapidly create tasks
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
         for (let i = 1; i <= 10; i++) {
           input.type(`Rapid task ${i}{enter}`);
@@ -289,7 +289,7 @@ describe('User Workflow E2E Tests', () => {
 
     it('should handle simultaneous completion and deletion', () => {
       // Create multiple tasks
-      cy.contains('Today').parent().within(() => {
+      cy.get('[data-testid="day-column"]').contains('Today').parents('[data-testid="day-column"]').within(() => {
         const input = cy.get('input[placeholder="Add a task..."]');
         input.type('Task A{enter}').type('Task B{enter}').type('Task C{enter}');
       });
