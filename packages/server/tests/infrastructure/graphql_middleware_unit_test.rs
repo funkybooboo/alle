@@ -19,7 +19,7 @@ async fn test_auth_guard_check_auth() {
     let query = "{ hello }";
     let result = schema.execute(query).await;
 
-    // Create a test context
+    // Verify the query executed successfully without errors
     assert!(result.errors.is_empty());
 }
 
