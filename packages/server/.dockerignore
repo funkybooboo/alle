@@ -1,0 +1,41 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Documentation
+docs/
+README.md
+*.md
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Tests
+tests/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

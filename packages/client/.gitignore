@@ -81,3 +81,8 @@ Desktop.ini
 
 # Turbopack
 .turbo
+
+*storybook.log
+storybook-static
+
+*.png

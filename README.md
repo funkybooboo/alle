@@ -1,27 +1,53 @@
 # Alle
 
-Open-source minimalist to-do list app inspired by Teuxdeux. Clean, simple, and focused on getting things done.
+> A minimalist to-do list app inspired by [Teuxdeux](https://teuxdeux.com)
+
+**Task management that stays out of your way.** Clean, distraction-free interface with powerful automation under the hood. Tasks automatically roll over when you don't finish them, recurring tasks handle themselves, and everything works offline. No complexity, no clutter—just you and your to-dos.
 
 ## Features
 
-- Drag-and-drop task organization
-- Automatic task rollover
-- Recurring to-dos
-- Someday lists for long-term planning
-- Offline functionality
-- Markdown and emoji support
-
-See [`docs/high-level-idea.md`](docs/high-level-idea.md) for complete feature list.
+- **Drag-and-drop** task organization
+- **Automatic rollover** for incomplete tasks
+- **Recurring tasks** with flexible patterns
+- **Offline mode** for uninterrupted productivity
+- **Markdown support** for rich text formatting
 
 ## Tech Stack
 
-**Frontend**: React 19 + TypeScript + Vite + Bun
-**Backend**: Rust + Tokio async runtime
+| Frontend | Backend |
+|----------|---------|
+| React 19 + TypeScript | Rust + Tokio |
+| Vite build tool | async-graphql |
+| Tailwind CSS | SeaORM + SQLite |
+| Bun runtime | Tower HTTP |
 
 ## Quick Start
 
-### Prerequisites
+### With Docker (Recommended)
 
+No dependencies needed - just install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+```bash
+# Start the entire stack
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+**Access the app:** http://localhost:5173
+**GraphQL API:** http://localhost:8000/graphql
+
+### Without Docker
+
+**Prerequisites:**
+- [Bun](https://bun.sh) - JavaScript runtime
+- [Rust](https://rustup.rs) - Backend toolchain
+
+**Installation:**
 ```bash
 # Install Bun
 curl -fsSL https://bun.sh/install | bash
@@ -30,133 +56,160 @@ curl -fsSL https://bun.sh/install | bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-### Running the App
-
-**Client** (frontend):
+**Running the app:**
 ```bash
+# Terminal 1: Start backend
+cd packages/server
+cargo run
+# Runs on http://localhost:8000
+
+# Terminal 2: Start frontend
 cd packages/client
 bun install
 bun run dev
-# → http://localhost:5173
-```
-
-**Server** (backend):
-```bash
-cd packages/server
-cargo run
+# Runs on http://localhost:5173
 ```
 
 ## Development
 
-### Client Commands
-
-```bash
-cd packages/client
-
-bun run dev              # Start dev server
-bun run build            # Build for production
-bun run lint             # Run ESLint
-bun run format           # Format with Prettier
-bun test                 # Run tests
-bun test --coverage      # Run with coverage
-```
-
-See [`packages/client/README.md`](packages/client/README.md) for detailed documentation.
-
-### Server Commands
-
-```bash
-cd packages/server
-
-cargo run                # Run server
-cargo build --release    # Build optimized
-cargo test               # Run tests
-cargo fmt                # Format code
-cargo clippy             # Run linter
-cargo audit              # Security scan
-cargo deny check         # Check licenses & policies
-```
-
-See [`packages/server/README.md`](packages/server/README.md) for detailed documentation.
-
-## Project Structure
+### Project Structure
 
 ```
 alle/
 ├── packages/
-│   ├── client/          # React + TypeScript frontend
+│   ├── client/          # React frontend
+│   │   ├── src/
+│   │   ├── docs/        # Client documentation
+│   │   └── cypress/     # E2E tests
 │   └── server/          # Rust backend
-├── docs/                # Documentation
-├── .github/workflows/   # CI/CD
-│   ├── client-ci.yml    # Client CI pipeline
-│   └── server-ci.yml    # Server CI pipeline
-├── LICENSE              # GPL-3.0
-├── CLAUDE.md           # AI development guidance
-└── README.md
+│       ├── src/
+│       ├── docs/        # Server documentation
+│       └── tests/
+├── docs/                # Project-wide docs
+└── .github/workflows/   # CI/CD pipelines
 ```
 
-## CI/CD
+### Common Commands
 
-GitHub Actions runs on push/PR to `main`, `dev`, `test`:
+**Client (Frontend):**
+```bash
+cd packages/client
+bun run dev              # Start dev server
+bun run build            # Production build
+bun run lint             # Run ESLint
+bun run storybook        # Component explorer
+```
 
-**Client CI** (5 jobs):
-1. Code Quality - Format, lint, type-check
-2. Test & Coverage - Run tests with coverage reports
-3. Build - Production bundle
-4. Security Scan - Dependency audit + Trivy
-5. Bundle Analysis - Size tracking (main only)
-
-**Server CI** (runs on push/PR to `main`):
-- Build with `cargo build --verbose`
-- Test with `cargo test --verbose`
-
-## Git Workflow
-
-- **main** - Production branch (active development)
-- **dev** - Development integration
-- **test** - Pre-production QA
-- **stable/\<date\>** - Production releases
-- **feature/**, **fix/**, **refactor/**, **hotfix/** - Topic branches
-
-Currently in early development phase working primarily on `main`.
+**Server (Backend):**
+```bash
+cd packages/server
+cargo run                # Start server
+cargo build --release    # Production build
+cargo fmt                # Format code
+cargo clippy             # Lint code
+```
 
 ## Testing
 
-**Client**: Vitest + React Testing Library (jsdom environment)
-**Server**: Rust's built-in test framework + Tokio async tests
+### Client Tests
+
+Three-tier testing strategy: **Unit** → **Integration** → **System/E2E**
 
 ```bash
-# Run all tests
-cd packages/client && bun test
-cd packages/server && cargo test
+cd packages/client
+
+# Fast tests (no backend required)
+bun run test:unit           # 30 unit tests (~3s)
+bun run test:integration    # 13 integration tests (~4s)
+
+# Full stack tests (requires backend)
+bun run test:system         # 17 system tests (~3s)
+bun run test:e2e            # Cypress E2E tests (~30s)
+bun run test:e2e:open       # Cypress interactive mode
+
+# Development
+bunx vitest                 # Watch mode
+bunx vitest run --coverage  # Coverage report
 ```
+
+**Running system/E2E tests:**
+```bash
+# With Docker (recommended)
+docker compose up -d
+bun run test:system
+
+# Without Docker
+# Terminal 1: Start backend
+cd packages/server && cargo run
+
+# Terminal 2: Run tests
+cd packages/client && bun run test:system
+```
+
+### Server Tests
+
+```bash
+cd packages/server
+
+# Run all tests
+cargo test
+
+# Run specific test suites
+cargo test unit              # Unit tests
+cargo test integration       # Integration tests
+cargo test --verbose         # Detailed output
+```
+
+**Note:** Server integration tests use Docker/testcontainers for database setup.
+
+## Documentation
+
+### Getting Started
+- [Project Vision](docs/high-level-idea.md) - Complete feature roadmap
+- [Contributing Guide](docs/contributing.md) - How to contribute
+
+### Frontend Development
+- [Adding Features](packages/client/docs/adding-features.md) - Component structure guide
+- [Testing Guide](packages/client/docs/testing.md) - Comprehensive testing docs
+- [Code Standards](packages/client/docs/standards.md) - Style and patterns
+
+### Backend Development
+- [Adding Entities](packages/server/docs/adding-entities.md) - Domain-driven architecture
+- [Database Schema](packages/server/docs/schema.md) - Database models
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/name`)
-3. Make your changes
-4. Run tests and linters
-5. Commit changes (`git commit -m 'Add feature'`)
-6. Push to branch (`git push origin feature/name`)
-7. Open a Pull Request
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Make** your changes
+4. **Test** your changes (`bun run test:unit && bun run test:integration`)
+5. **Lint** your code (`bun run lint` or `cargo clippy`)
+6. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+7. **Push** to your branch (`git push origin feature/amazing-feature`)
+8. **Open** a Pull Request
+
+See [CONTRIBUTING.md](docs/contributing.md) for detailed guidelines.
+
+## Git Workflow
+
+```
+stable/<date> (releases) ← main (production) ← test (QA) ← dev (integration)
+                                                                ↑
+                                            feature/*, fix/*, refactor/*
+```
+
+**Branch from `dev`** for new features. See [contributing guide](docs/contributing.md) for details.
 
 ## License
 
-**GPL-3.0-or-later** - See [LICENSE](LICENSE) file.
+**GPL-3.0-or-later**
 
-This is free and open-source software. You can use, modify, and distribute it freely. If you distribute modified versions, you must:
-- Share the source code
-- License under GPL-3.0
-- Document changes
-- Include copyright notices
+Free to use, modify, and distribute. Modified versions must share source code under GPL-3.0.
 
-Learn more: [GNU GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
+See [LICENSE](LICENSE) for full details.
 
-## Acknowledgments
+---
 
-Inspired by [Teuxdeux](https://teuxdeux.com).
-
-## Disclaimer
-
-Use at your own risk and accept and all consequences
+**Inspired by [Teuxdeux](https://teuxdeux.com)** - Built with ❤️ by the open source community
