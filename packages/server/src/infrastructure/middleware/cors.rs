@@ -1,4 +1,4 @@
-use hyper::{Body, Request, Response, StatusCode};
+use hyper::{header::HeaderValue, Body, Request, Response, StatusCode};
 
 /// CORS middleware configuration
 pub struct CorsConfig {
@@ -24,25 +24,22 @@ impl CorsConfig {
     pub fn apply_headers(&self, mut response: Response<Body>) -> Response<Body> {
         let headers = response.headers_mut();
 
-        headers.insert(
-            "Access-Control-Allow-Origin",
-            self.allowed_origins.join(", ").parse().unwrap(),
-        );
+        // Only insert headers if they can be parsed successfully
+        if let Ok(value) = self.allowed_origins.join(", ").parse::<HeaderValue>() {
+            headers.insert("Access-Control-Allow-Origin", value);
+        }
 
-        headers.insert(
-            "Access-Control-Allow-Methods",
-            self.allowed_methods.join(", ").parse().unwrap(),
-        );
+        if let Ok(value) = self.allowed_methods.join(", ").parse::<HeaderValue>() {
+            headers.insert("Access-Control-Allow-Methods", value);
+        }
 
-        headers.insert(
-            "Access-Control-Allow-Headers",
-            self.allowed_headers.join(", ").parse().unwrap(),
-        );
+        if let Ok(value) = self.allowed_headers.join(", ").parse::<HeaderValue>() {
+            headers.insert("Access-Control-Allow-Headers", value);
+        }
 
-        headers.insert(
-            "Access-Control-Max-Age",
-            self.max_age.to_string().parse().unwrap(),
-        );
+        if let Ok(value) = self.max_age.to_string().parse::<HeaderValue>() {
+            headers.insert("Access-Control-Max-Age", value);
+        }
 
         response
     }

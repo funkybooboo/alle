@@ -71,3 +71,44 @@ fn test_cors_custom_config() {
     assert_eq!(config.allowed_origins.len(), 1);
     assert_eq!(config.max_age, 3600);
 }
+
+#[test]
+fn test_cors_handles_invalid_header_values() {
+    // Test with origins containing invalid characters for HTTP headers
+    let config = CorsConfig {
+        allowed_origins: vec![
+            "http://example.com".to_string(),
+            "http://invalid\nheader.com".to_string(), // Contains newline
+        ],
+        allowed_methods: vec!["GET".to_string()],
+        allowed_headers: vec!["Content-Type".to_string()],
+        max_age: 3600,
+    };
+
+    let response = Response::new(Body::empty());
+
+    // Should not panic even with invalid header values
+    let response_with_cors = config.apply_headers(response);
+
+    // Response should still be valid
+    assert_eq!(response_with_cors.status(), StatusCode::OK);
+}
+
+#[test]
+fn test_cors_handles_all_invalid_header_values() {
+    // Test with all invalid values to ensure no panic
+    let config = CorsConfig {
+        allowed_origins: vec!["invalid\norigin".to_string()],
+        allowed_methods: vec!["invalid\nmethod".to_string()],
+        allowed_headers: vec!["invalid\nheader".to_string()],
+        max_age: 3600,
+    };
+
+    let response = Response::new(Body::empty());
+
+    // Should not panic even when all header values are invalid
+    let response_with_cors = config.apply_headers(response);
+
+    // Response should still be valid, but headers may not be set
+    assert_eq!(response_with_cors.status(), StatusCode::OK);
+}
