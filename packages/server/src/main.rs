@@ -84,7 +84,9 @@ async fn route_request(
                 Err(e) => {
                     eprintln!("Failed to build GraphQL playground response: {}", e);
                     // Fallback to a basic response
-                    Ok(Response::new(Body::from("Error loading GraphQL playground")))
+                    Ok(Response::new(Body::from(
+                        "Error loading GraphQL playground",
+                    )))
                 }
             }
         }
