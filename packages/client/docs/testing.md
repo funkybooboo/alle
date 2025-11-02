@@ -142,6 +142,20 @@ cd packages/server && cargo run
 cd packages/client && bun run test:system
 ```
 
+**Environment Variable:**
+
+System tests are excluded by default when running `bunx vitest` to avoid failures when the backend isn't running. To include them:
+
+```bash
+# Include system tests in vitest runs
+INCLUDE_SYSTEM_TESTS=true bunx vitest
+
+# Or run them explicitly (recommended)
+bunx vitest run src/tests/system/
+```
+
+This exclusion is configured in `vite.config.ts` and only applies to the default `bunx vitest` command. The `bun run test:system` script explicitly includes system tests regardless of this setting.
+
 ```typescript
 // src/tests/system/frontend-backend.system.test.ts
 test('creates a task in the database', async () => {
@@ -350,8 +364,9 @@ System and E2E tests require running servers. While the server uses Docker/testc
 
 **To run system tests in CI** (optional):
 1. Add backend service to workflow
-2. Set `INCLUDE_SYSTEM_TESTS=true` environment variable
-3. Run tests after backend is ready
+2. Set `INCLUDE_SYSTEM_TESTS=true` environment variable to include system tests in vitest runs, or
+3. Run tests explicitly with `bunx vitest run src/tests/system/` (recommended)
+4. Ensure backend is ready before running tests
 
 ## Additional Resources
 
