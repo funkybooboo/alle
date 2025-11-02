@@ -32,7 +32,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let graphql_schema = graphql::create_schema(Arc::clone(&app_context));
 
     // Start HTTP server
-    let addr: SocketAddr = config.server.address().parse()?;
+    let addr: SocketAddr = config.server.address().parse().map_err(|e| {
+        format!(
+            "Invalid server address format '{}': {}",
+            config.server.address(),
+            e
+        )
+    })?;
     let make_svc = make_service_fn(move |_conn| {
         let schema = graphql_schema.clone();
         async move { Ok::<_, hyper::Error>(service_fn(move |req| route_request(req, schema.clone()))) }
