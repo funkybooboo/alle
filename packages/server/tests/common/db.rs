@@ -78,13 +78,39 @@ pub async fn setup_mysql_container() -> Result<(DatabaseConnection, ContainerAsy
     // Testcontainers MySQL default credentials
     let connection_string = format!("mysql://root@{}:{}/test", host, port);
 
-    // Wait a bit for MySQL to be fully ready
-    tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-
-    let db = Database::connect(&connection_string).await?;
+    // Retry connection with timeout instead of fixed sleep
+    let db = retry_connect(&connection_string, 30, 500).await?;
     Migrator::up(&db, None).await?;
 
     Ok((db, container))
+}
+
+/// Retry database connection with configurable timeout and interval
+///
+/// # Arguments
+/// * `connection_string` - Database connection string
+/// * `max_retries` - Maximum number of connection attempts
+/// * `retry_interval_ms` - Milliseconds to wait between retries
+async fn retry_connect(
+    connection_string: &str,
+    max_retries: u32,
+    retry_interval_ms: u64,
+) -> Result<DatabaseConnection, DbErr> {
+    let mut last_error = None;
+
+    for attempt in 1..=max_retries {
+        match Database::connect(connection_string).await {
+            Ok(db) => return Ok(db),
+            Err(e) => {
+                last_error = Some(e);
+                if attempt < max_retries {
+                    tokio::time::sleep(tokio::time::Duration::from_millis(retry_interval_ms)).await;
+                }
+            }
+        }
+    }
+
+    Err(last_error.unwrap_or_else(|| DbErr::Custom("Failed to connect after retries".to_string())))
 }
 
 /// Set up a SQLite test database using testcontainers (file-based for integration tests)
