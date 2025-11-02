@@ -91,8 +91,9 @@ pub async fn setup_mysql_container() -> Result<(DatabaseConnection, ContainerAsy
 /// Returns both the database connection and a temp file path
 pub async fn setup_sqlite_container() -> Result<DatabaseConnection, DbErr> {
     // For SQLite, we'll use a temporary file instead of in-memory for integration testing
-    let temp_file = format!("/tmp/alle_test_{}.db", std::process::id());
-    let connection_string = format!("sqlite://{}?mode=rwc", temp_file);
+    let temp_dir = std::env::temp_dir();
+    let temp_file = temp_dir.join(format!("alle_test_{}.db", std::process::id()));
+    let connection_string = format!("sqlite://{}?mode=rwc", temp_file.display());
 
     let db = Database::connect(&connection_string).await?;
     Migrator::up(&db, None).await?;
