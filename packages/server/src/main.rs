@@ -54,13 +54,20 @@ async fn route_request(
 
     // Handle CORS preflight requests
     if req.method() == Method::OPTIONS {
-        return Ok(Response::builder()
+        return match Response::builder()
             .status(StatusCode::OK)
             .header("Access-Control-Allow-Origin", "*")
             .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             .header("Access-Control-Allow-Headers", "Content-Type")
             .body(Body::empty())
-            .unwrap());
+        {
+            Ok(response) => Ok(response),
+            Err(e) => {
+                eprintln!("Failed to build CORS response: {}", e);
+                // This should never fail as we're using minimal headers
+                Ok(Response::new(Body::empty()))
+            }
+        };
     }
 
     match (req.method(), path) {
@@ -68,19 +75,32 @@ async fn route_request(
         (&Method::GET, "/graphql") => {
             // GraphQL Playground
             let html = playground_source(GraphQLPlaygroundConfig::new("/graphql"));
-            Ok(Response::builder()
+            match Response::builder()
                 .header("content-type", "text/html")
                 .header("Access-Control-Allow-Origin", "*")
                 .body(Body::from(html))
-                .unwrap())
+            {
+                Ok(response) => Ok(response),
+                Err(e) => {
+                    eprintln!("Failed to build GraphQL playground response: {}", e);
+                    // Fallback to a basic response
+                    Ok(Response::new(Body::from("Error loading GraphQL playground")))
+                }
+            }
         }
         _ => {
-            let response = Response::builder()
+            match Response::builder()
                 .status(404)
                 .header("Access-Control-Allow-Origin", "*")
                 .body(Body::from("Not Found - Use /graphql endpoint"))
-                .unwrap();
-            Ok(response)
+            {
+                Ok(response) => Ok(response),
+                Err(e) => {
+                    eprintln!("Failed to build 404 response: {}", e);
+                    // Fallback to a basic 404 response
+                    Ok(Response::new(Body::from("Not Found")))
+                }
+            }
         }
     }
 }
@@ -93,30 +113,52 @@ async fn handle_graphql(
     let graphql_request: async_graphql::Request = match serde_json::from_slice(&body_bytes) {
         Ok(req) => req,
         Err(e) => {
-            return Ok(Response::builder()
+            return match Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from(format!("Invalid GraphQL request: {}", e)))
-                .expect("Failed to build error response"));
+            {
+                Ok(response) => Ok(response),
+                Err(err) => {
+                    eprintln!("Failed to build error response: {}", err);
+                    // Fallback to a basic error response
+                    Ok(Response::new(Body::from("Bad Request")))
+                }
+            };
         }
     };
 
     let graphql_response = schema.execute(graphql_request).await;
     let json = match serde_json::to_string(&graphql_response) {
-        Ok(s) => s,
+        Ok(json) => json,
         Err(e) => {
-            return Ok(Response::builder()
+            eprintln!("Failed to serialize GraphQL response: {}", e);
+            return match Response::builder()
                 .status(StatusCode::INTERNAL_SERVER_ERROR)
                 .body(Body::from(format!("Failed to serialize response: {}", e)))
-                .expect("Failed to build error response"));
+            {
+                Ok(response) => Ok(response),
+                Err(err) => {
+                    eprintln!("Failed to build error response: {}", err);
+                    // Fallback to a basic error response
+                    Ok(Response::new(Body::from("Internal Server Error")))
+                }
+            };
         }
     };
 
-    Ok(Response::builder()
+    match Response::builder()
         .status(StatusCode::OK)
         .header("content-type", "application/json")
         .header("Access-Control-Allow-Origin", "*")
-        .body(Body::from(json))
-        .expect("Failed to build response"))
+        .body(Body::from(json.clone()))
+    {
+        Ok(response) => Ok(response),
+        Err(e) => {
+            eprintln!("Failed to build GraphQL response: {}", e);
+            // Fallback to a basic response without headers
+            Ok(Response::new(Body::from(json)))
+        }
+    }
 }
 
 #[cfg(test)]
