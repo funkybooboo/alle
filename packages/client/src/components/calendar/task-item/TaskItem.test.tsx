@@ -22,7 +22,9 @@ describe('TaskItem', () => {
     const onToggle = vi.fn();
     render(<TaskItem task={mockTask} onToggle={onToggle} />);
 
-    const checkbox = screen.getByRole('checkbox', { name: /mark as complete/i });
+    const checkbox = screen.getByRole('checkbox', {
+      name: /mark as complete/i,
+    });
     await user.click(checkbox);
 
     expect(onToggle).toHaveBeenCalledWith('1');
