@@ -1,8 +1,8 @@
 # Alle Server
 
-Rust backend with dual REST/GraphQL APIs, built on Tokio async runtime.
+Rust backend with GraphQL API, built on Tokio async runtime.
 
-**Features:** Interactive docs (Swagger/GraphQL Playground), SeaORM, migrations, comprehensive tests, Docker support
+**Features:** GraphQL Playground, SeaORM, migrations, comprehensive tests, Docker support
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  # Install Rust
 cp .env.example .env && cargo run  # → http://localhost:8000
 ```
 
-**APIs:** [Swagger UI](http://localhost:8000/swagger-ui/) • [GraphQL](http://localhost:8000/graphql) • [REST](http://localhost:8000/api/tasks)
+**API:** [GraphQL Playground](http://localhost:8000/graphql)
 
 ## Development
 
@@ -29,7 +29,7 @@ cargo fmt && cargo clippy -- -D warnings  # Quality
 ```
 src/
 ├── domains/        # Business logic & repositories
-├── api/            # GraphQL/REST endpoints
+├── api/            # GraphQL endpoints
 ├── infrastructure/ # Database, config, middleware
 └── main.rs         # Entry point
 ```
