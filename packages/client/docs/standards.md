@@ -147,56 +147,67 @@ export const Disabled: Story = {
 };
 ```
 
-## Architecture: Recursive File System
+## Architecture: Recursive Component Structure
 
-Feature-based structure where each feature contains all related code.
+**Each component folder contains all related files:**
+
+```
+src/components/calendar/task-item/
+├── TaskItem.tsx             # Component implementation
+├── TaskItem.types.ts        # TypeScript interfaces
+├── TaskItem.test.tsx        # Unit tests
+└── TaskItem.stories.tsx     # Storybook stories (optional)
+```
+
+**Components nest recursively:**
 
 ```
 src/
-├── app/                    # App-level (App.tsx, routes, providers)
-├── features/               # Feature modules
-│   ├── todos/
-│   │   ├── index.ts        # Public API (exports)
-│   │   ├── components/     # TodoList, TodoItem
-│   │   ├── hooks/          # useTodos
-│   │   ├── utils/          # Business logic
-│   │   ├── services/       # API calls
-│   │   ├── types/          # Types
-│   │   └── pages/          # TodosPage
-│   ├── auth/               # Same structure
-│   └── someday/
-├── shared/                 # Shared code
-│   ├── components/         # Button, Input
-│   ├── hooks/              # useLocalStorage
-│   ├── utils/              # dateUtils
-│   ├── services/           # api, storage
-│   ├── types/              # Common types
-│   └── constants/
+├── components/
+│   └── calendar/            # Feature area
+│       ├── calendar-view/   # Parent component
+│       │   ├── CalendarView.tsx
+│       │   ├── CalendarView.types.ts
+│       │   └── CalendarView.test.tsx
+│       ├── day-column/      # Child component
+│       │   ├── DayColumn.tsx
+│       │   ├── DayColumn.types.ts
+│       │   └── DayColumn.test.tsx
+│       └── task-item/       # Nested child
+│           ├── TaskItem.tsx
+│           ├── TaskItem.types.ts
+│           ├── TaskItem.test.tsx
+│           └── TaskItem.stories.tsx
+├── api/                     # API clients (task-api.ts, etc.)
+├── pages/                   # Page components (Home.tsx, etc.)
+├── tests/
+│   ├── fixtures/            # Mock data
+│   ├── mocks/               # MSW handlers
+│   └── system/              # System tests
 └── main.tsx
-```
-
-### Import Rules
-
-```typescript
-// Good: Feature imports from shared
-import { Button } from '@/shared/components';
-
-// Good: Use feature's public API
-import { TodoList, useTodos } from '@/features/todos';
-
-// Bad: No feature internals
-import { TodoList } from '@/features/todos/components/TodoList';
-
-// Bad: No cross-feature imports
-import { useAuth } from '@/features/auth';
 ```
 
 ### Benefits
 
-- Feature isolation and scalability
-- Easy navigation, testing, refactoring
-- Easy to delete or extract features
-- Clear boundaries prevent coupling
+- **Co-location**: All component files together
+- **Clear hierarchy**: Parent/child relationships visible in folder structure
+- **Easy refactoring**: Move/delete entire component folders
+- **Self-documenting**: Structure shows component relationships
+- **Testability**: Tests co-located with components
+
+### Import Rules
+
+```typescript
+// ✅ Good: Import from component folder
+import { TaskItem } from '../components/calendar/task-item/TaskItem';
+import type { TaskItemProps } from '../components/calendar/task-item/TaskItem.types';
+
+// ✅ Good: Relative imports within same feature
+import { DayColumn } from '../day-column/DayColumn';
+
+// ❌ Bad: Deep imports (use full paths)
+import { TaskItem } from '../../../task-item/TaskItem';
+```
 
 ## Performance
 

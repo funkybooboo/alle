@@ -1,11 +1,6 @@
 name: Server CI
 
 on:
-  push:
-    branches: [main, dev, test]
-    paths:
-      - 'packages/server/**'
-      - '.github/workflows/server-ci.yml'
   pull_request:
     branches: [main, dev, test]
     paths:
@@ -41,8 +36,8 @@ jobs:
       - name: Run Clippy
         run: cargo clippy -- -D warnings
 
-  test:
-    name: Test
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,8 +49,27 @@ jobs:
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Run tests
-        run: cargo test --verbose
+      - name: Run unit tests (fast, in-memory)
+        run: cargo test unit --verbose
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run integration tests (with testcontainers)
+        run: cargo test integration --verbose
+        env:
+          # Testcontainers automatically manages Docker containers
+          DOCKER_HOST: unix:///var/run/docker.sock
 
   build:
     name: Build

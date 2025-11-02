@@ -43,3 +43,5 @@ lcov.info
 
 # Documentation builds
 /target/doc
+
+*.db
