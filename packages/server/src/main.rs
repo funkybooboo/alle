@@ -96,7 +96,7 @@ async fn handle_graphql(
             return Ok(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from(format!("Invalid GraphQL request: {}", e)))
-                .unwrap());
+                .expect("Failed to build error response"));
         }
     };
 
@@ -107,7 +107,7 @@ async fn handle_graphql(
             return Ok(Response::builder()
                 .status(StatusCode::INTERNAL_SERVER_ERROR)
                 .body(Body::from(format!("Failed to serialize response: {}", e)))
-                .unwrap());
+                .expect("Failed to build error response"));
         }
     };
 
@@ -116,7 +116,7 @@ async fn handle_graphql(
         .header("content-type", "application/json")
         .header("Access-Control-Allow-Origin", "*")
         .body(Body::from(json))
-        .unwrap())
+        .expect("Failed to build response"))
 }
 
 #[cfg(test)]
