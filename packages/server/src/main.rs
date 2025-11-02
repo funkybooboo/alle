@@ -161,13 +161,13 @@ async fn handle_graphql(
         .status(StatusCode::OK)
         .header("content-type", "application/json")
         .header("Access-Control-Allow-Origin", "*")
-        .body(Body::from(json.clone()))
+        .body(Body::from(json))
     {
         Ok(response) => Ok(response),
         Err(e) => {
             eprintln!("Failed to build GraphQL response: {}", e);
-            // Fallback to a basic response without headers
-            Ok(Response::new(Body::from(json)))
+            // Fallback to a basic error response without body
+            Ok(Response::new(Body::from("Internal Server Error")))
         }
     }
 }
