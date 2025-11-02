@@ -35,9 +35,14 @@ export const DayColumn = ({
     return `${dayOfWeek}, ${monthDay}`;
   };
 
+  const isToday = date.toDateString() === new Date().toDateString();
+
   return (
     <div
-      className={`flex flex-col min-w-[300px] border-r border-gray-200 bg-white ${className}`}
+      data-testid="day-column"
+      className={`flex flex-col min-w-[300px] border-r border-gray-200 ${
+        isToday ? 'bg-blue-50' : 'bg-white'
+      } ${className}`}
     >
       {/* Day Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">

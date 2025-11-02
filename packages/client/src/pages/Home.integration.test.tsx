@@ -108,7 +108,7 @@ describe('Home Integration Tests', () => {
       });
 
       // Find the checkbox for "Team standup" (uncompleted task)
-      const checkboxes = screen.getAllByRole('button', { name: /mark as/i });
+      const checkboxes = screen.getAllByRole('checkbox', { name: /mark as/i });
       const teamStandupCheckbox = checkboxes.find((cb) => {
         const parent = cb.closest('.group');
         return parent?.textContent?.includes('Team standup');

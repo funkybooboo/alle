@@ -80,6 +80,7 @@ export const Navbar = ({
           isOpen={false}
           handleClick={() => onNavigateToday?.()}
           handleKeyDown={() => {}}
+          data-testid="today-button"
         />
         <NavbarIcon
           iconName="keyboard_arrow_right"

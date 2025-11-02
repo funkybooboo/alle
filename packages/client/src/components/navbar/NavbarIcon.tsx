@@ -6,6 +6,7 @@ interface NavbarIconProps {
   isOpen: boolean;
   handleClick: () => void;
   handleKeyDown: (event: React.KeyboardEvent) => void;
+  'data-testid'?: string;
 }
 
 export const NavbarIcon = ({
@@ -13,10 +14,12 @@ export const NavbarIcon = ({
   isOpen,
   handleClick,
   handleKeyDown,
+  'data-testid': dataTestId,
 }: NavbarIconProps) => {
   return (
     <button
       type="button"
+      data-testid={dataTestId}
       aria-label={iconName}
       aria-expanded={isOpen}
       aria-controls="search-panel"

@@ -2,90 +2,75 @@
 
 ## Overview
 
-The client uses **Vitest** with React Testing Library for testing. Tests run in a jsdom environment to simulate browser behavior without requiring a real browser.
+**Three-tier test strategy:** Unit → Integration → System/E2E
 
-## Test Structure
+- **Unit**: Fast, isolated component/function tests (30 tests)
+- **Integration**: Component interactions with mocked APIs (13 tests)
+- **System**: Full-stack API tests with real backend (17 tests)
+- **E2E**: End-to-end user workflows with Cypress
 
-```
-src/
-├── components/
-│   ├── Button.tsx
-│   └── Button.test.tsx       # Component tests
-├── hooks/
-│   ├── useTask.ts
-│   └── useTask.test.ts        # Hook tests
-├── utils/
-│   ├── formatDate.ts
-│   └── formatDate.test.ts     # Utility tests
-└── setupTests.ts              # Global test setup (jest-dom matchers)
-```
+**Stack:** Vitest + React Testing Library + jsdom + MSW + Cypress
 
-Test files should be co-located with the code they test, using the naming convention:
-- `ComponentName.test.tsx` for component tests
-- `hookName.test.ts` for hook tests
-- `utilityName.test.ts` for utility tests
+## Quick Reference
 
-## Running Tests
+### Docker Testing (Recommended)
 
-### All Tests
 ```bash
-cd packages/client
+# Start the stack
+docker-compose up -d
 
-# Run all tests in watch mode (default)
-bun test
+# Run tests (from packages/client directory)
+bun install              # One-time setup
+bun run test:unit        # 30 unit tests (~3s)
+bun run test:integration # 13 integration tests (~4s)
+bun run test:system      # 17 system tests (~3s) - uses Docker backend
+bun run test:e2e         # Cypress E2E tests (~30s) - uses Docker stack
+bun run test:e2e:open    # Cypress interactive mode
 
-# Run all tests once (CI mode)
-bun test run
+# Coverage
+bunx vitest run --coverage
 
-# Run with coverage
-bun test:ci
+# Stop the stack
+docker-compose down
 ```
 
-### Specific Tests
+### Manual Testing (Advanced)
+
 ```bash
-# Run tests matching a pattern
-bun test Button
+# Development (watch mode, no backend needed)
+bunx vitest
 
-# Run a specific test file
-bun test src/components/Button.test.tsx
+# CI-safe tests (no backend needed)
+bun run test:unit
+bun run test:integration
 
-# Run tests in a directory
-bun test src/components/
+# Full-stack tests (requires manual backend startup)
+# Terminal 1: cd ../../packages/server && cargo run
+# Terminal 2:
+bun run test:system       # Backend required
+bun run test:e2e          # Backend + frontend required
 ```
 
-### Watch Mode Options
-In watch mode, press:
-- `a` to run all tests
-- `f` to run only failed tests
-- `p` to filter by filename
-- `t` to filter by test name
-- `q` to quit
+## When to Run Which Tests
 
-### With Coverage
-```bash
-bun test:ci
-# Opens coverage report in coverage/ directory
-```
+| Scenario | Command | Time | Docker |
+|----------|---------|------|--------|
+| During development | `docker-compose up -d && bunx vitest` | ~3s | Recommended |
+| Before commit | `bun run test:unit && bun run test:integration` | ~7s | Not needed |
+| Pre-push validation | `docker-compose up -d && bun run test:system` | ~3s | Required |
+| Full E2E validation | `docker-compose up -d && bun run test:e2e` | ~30s | Required |
 
-## Test Configuration
+## Test Types
 
-Tests are configured in `vite.config.ts`:
+### Unit Tests (`*.test.tsx`, `*.test.ts`)
 
-```typescript
-export default defineConfig({
-  test: {
-    globals: true,           // No need to import test(), describe(), expect()
-    environment: 'jsdom',     // Simulates browser DOM
-    setupFiles: './src/setupTests.ts',  // Setup jest-dom matchers
-  },
-});
-```
+**Purpose:** Test individual components/functions in isolation
 
-## Writing Tests
+**Examples:**
+- `src/api/task-api.test.ts` - API client functions
+- `src/components/calendar/task-item/TaskItem.test.tsx` - Component behavior
 
-### Component Tests
-
-Test React components using React Testing Library:
+**When:** Always. These run in CI/CD.
 
 ```typescript
 // src/components/Button.test.tsx
@@ -93,321 +78,284 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from './Button';
 
-describe('Button', () => {
-  test('renders with text', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Click me');
-  });
-
-  test('calls onClick when clicked', async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(<Button onClick={handleClick}>Click me</Button>);
-    await user.click(screen.getByRole('button'));
-
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  test('is disabled when disabled prop is true', () => {
-    render(<Button disabled>Click me</Button>);
-    expect(screen.getByRole('button')).toBeDisabled();
-  });
-});
-```
-
-### Hook Tests
-
-Test custom React hooks:
-
-```typescript
-// src/hooks/useTask.test.ts
-import { renderHook, waitFor } from '@testing-library/react';
-import { useTask } from './useTask';
-
-describe('useTask', () => {
-  test('fetches task data', async () => {
-    const { result } = renderHook(() => useTask('123'));
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    expect(result.current.task).toBeDefined();
-    expect(result.current.error).toBeNull();
-  });
-
-  test('handles errors', async () => {
-    const { result } = renderHook(() => useTask('invalid-id'));
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    expect(result.current.task).toBeNull();
-    expect(result.current.error).toBeDefined();
-  });
-});
-```
-
-### Utility/Function Tests
-
-Test pure functions and utilities:
-
-```typescript
-// src/utils/formatDate.test.ts
-import { formatDate } from './formatDate';
-
-describe('formatDate', () => {
-  test('formats date correctly', () => {
-    const date = new Date('2025-10-21');
-    expect(formatDate(date)).toBe('October 21, 2025');
-  });
-
-  test('handles invalid dates', () => {
-    expect(formatDate(null)).toBe('Invalid date');
-  });
-});
-```
-
-## Testing Library Utilities
-
-### Queries (in order of preference)
-
-1. **getByRole**: Most preferred (accessibility-friendly)
-   ```typescript
-   screen.getByRole('button', { name: /submit/i })
-   ```
-
-2. **getByLabelText**: For form fields
-   ```typescript
-   screen.getByLabelText(/email/i)
-   ```
-
-3. **getByPlaceholderText**: For inputs
-   ```typescript
-   screen.getByPlaceholderText(/enter email/i)
-   ```
-
-4. **getByText**: For non-interactive elements
-   ```typescript
-   screen.getByText(/welcome/i)
-   ```
-
-5. **getByTestId**: Last resort (use sparingly)
-   ```typescript
-   screen.getByTestId('custom-element')
-   ```
-
-### Query Variants
-
-- `getBy*`: Throws if not found
-- `queryBy*`: Returns null if not found (for testing non-existence)
-- `findBy*`: Returns promise (for async elements)
-
-### User Interactions
-
-Always use `userEvent` over `fireEvent`:
-
-```typescript
-import userEvent from '@testing-library/user-event';
-
-test('user interaction', async () => {
+test('calls onClick when clicked', async () => {
+  const handleClick = vi.fn();
   const user = userEvent.setup();
 
+  render(<Button onClick={handleClick}>Click me</Button>);
   await user.click(screen.getByRole('button'));
-  await user.type(screen.getByRole('textbox'), 'Hello');
+
+  expect(handleClick).toHaveBeenCalledTimes(1);
+});
+```
+
+### Integration Tests (`*.integration.test.tsx`)
+
+**Purpose:** Test component interactions with mocked APIs
+
+**Examples:**
+- `src/pages/Home.integration.test.tsx` - Full page interactions
+
+**When:** Before commits. These run in CI/CD.
+
+```typescript
+// src/pages/Home.integration.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Home } from './Home';
+
+test('creates a new task', async () => {
+  const user = userEvent.setup();
+  render(<Home />);
+
+  await user.type(screen.getByPlaceholderText(/add a task/i), 'New task');
   await user.keyboard('{Enter}');
+
+  expect(await screen.findByText('New task')).toBeInTheDocument();
 });
 ```
 
-## Mocking
+### System Tests (`*.system.test.ts`)
 
-### Mocking Functions
+**Purpose:** Test full-stack with real backend
+
+**Examples:**
+- `src/tests/system/frontend-backend.system.test.ts` - API integration
+
+**When:** Pre-push, manual validation. **Excluded from CI/CD.**
+
+**Setup:**
+
+Docker (Recommended):
+```bash
+docker-compose up -d
+cd packages/client && bun run test:system
+docker-compose down
+```
+
+Manual (Advanced):
+```bash
+# Terminal 1: Backend
+cd packages/server && cargo run
+
+# Terminal 2: System tests
+cd packages/client && bun run test:system
+```
 
 ```typescript
-import { vi } from 'vitest';
+// src/tests/system/frontend-backend.system.test.ts
+test('creates a task in the database', async () => {
+  const task = await taskAPI.createTask('System test task', new Date());
 
-test('mocks a function', () => {
-  const mockFn = vi.fn();
-  mockFn('hello');
+  expect(task.id).toBeDefined();
+  expect(task.text).toBe('System test task');
 
-  expect(mockFn).toHaveBeenCalledWith('hello');
-  expect(mockFn).toHaveBeenCalledTimes(1);
+  // Cleanup
+  await taskAPI.deleteTask(task.id);
 });
 ```
 
-### Mocking Modules
+### E2E Tests (Cypress: `cypress/e2e/*.cy.ts`)
+
+**Purpose:** End-to-end user workflows in real browser
+
+**Examples:**
+- `cypress/e2e/task-management.cy.ts` - Task CRUD operations
+- `cypress/e2e/calendar-navigation.cy.ts` - UI navigation
+- `cypress/e2e/user-workflows.cy.ts` - Real-world scenarios
+
+**When:** Before releases, manual validation. **Excluded from CI/CD.**
+
+**Setup:**
+
+Docker (Recommended):
+```bash
+docker-compose up -d
+cd packages/client
+bun run test:e2e        # Headless
+bun run test:e2e:open   # Interactive
+docker-compose down
+```
+
+Manual (Advanced):
+```bash
+# Terminal 1: Backend
+cd packages/server && cargo run
+
+# Terminal 2: Frontend
+cd packages/client && bun run dev
+
+# Terminal 3: Cypress
+cd packages/client
+bun run test:e2e        # Headless
+bun run test:e2e:open   # Interactive
+```
 
 ```typescript
-import { vi } from 'vitest';
+// cypress/e2e/task-management.cy.ts
+describe('Task Management', () => {
+  beforeEach(() => {
+    cy.clearTasks();
+    cy.visit('/');
+  });
 
-vi.mock('./api', () => ({
-  fetchTasks: vi.fn(() => Promise.resolve([{ id: 1, title: 'Test' }])),
-}));
+  it('creates a new task', () => {
+    cy.contains('Today').parent().within(() => {
+      cy.get('input[placeholder="Add a task..."]')
+        .type('Buy groceries{enter}');
+    });
 
-test('uses mocked API', async () => {
-  // Test code that uses fetchTasks
+    cy.contains('Buy groceries').should('be.visible');
+  });
 });
 ```
 
-### Mocking Timers
+## Test Configuration
 
+### File Locations
+```
+packages/client/
+├── vite.config.ts              # Vitest config (auto-excludes system tests)
+├── cypress.config.ts           # Cypress config
+├── src/
+│   ├── setupTests.ts          # Vitest setup (jest-dom matchers)
+│   ├── tests/
+│   │   ├── mocks/setup.ts     # MSW for GraphQL mocking
+│   │   ├── fixtures/          # Mock data
+│   │   └── system/            # System test files
+│   └── components/            # Component tests co-located
+└── cypress/
+    ├── e2e/                   # E2E test specs
+    ├── support/
+    │   ├── e2e.ts            # Cypress setup
+    │   └── commands.ts        # Custom commands (clearTasks, createTask)
+    └── fixtures/              # Test data
+```
+
+### Key Config
+
+**vite.config.ts:**
 ```typescript
-test('uses fake timers', () => {
-  vi.useFakeTimers();
-
-  const callback = vi.fn();
-  setTimeout(callback, 1000);
-
-  vi.advanceTimersByTime(1000);
-  expect(callback).toHaveBeenCalled();
-
-  vi.useRealTimers();
+export default defineConfig({
+  test: {
+    globals: true,         // No need to import test(), describe(), expect()
+    environment: 'jsdom',  // Simulates browser DOM
+    setupFiles: './src/setupTests.ts',
+    exclude: [
+      // System tests excluded by default
+      ...(process.env.INCLUDE_SYSTEM_TESTS !== 'true'
+        ? ['**/*.system.test.ts']
+        : []),
+    ],
+  },
 });
 ```
 
 ## Best Practices
 
 ### General
-1. **Test behavior, not implementation**: Focus on what the user sees and does
-2. **Use semantic queries**: Prefer `getByRole` for better accessibility
-3. **Avoid testing internals**: Don't test state or props directly
-4. **Keep tests simple**: One concept per test
-5. **Use descriptive test names**: Explain what and why
+1. **Test behavior, not implementation** - Test what users see/do
+2. **Use semantic queries** - Prefer `getByRole` for accessibility
+3. **Co-locate tests** - Keep tests next to code they test
+4. **One concept per test** - Simple, focused tests
+5. **Descriptive names** - Explain what and why
 
-### Component Testing
-6. **Render the minimum**: Only render what you need to test
-7. **Clean up after tests**: Use `cleanup()` (done automatically by React Testing Library)
-8. **Test user workflows**: Test complete user interactions, not just functions
-9. **Use act() when needed**: Vitest/RTL handles this automatically in most cases
+### Query Priority
+1. `getByRole` - Most preferred (accessibility-friendly)
+2. `getByLabelText` - For form fields
+3. `getByPlaceholderText` - For inputs
+4. `getByText` - For non-interactive elements
+5. `getByTestId` - Last resort (use `data-testid` attribute)
+
+### User Interactions
+Always use `userEvent` over `fireEvent`:
+```typescript
+import userEvent from '@testing-library/user-event';
+
+const user = userEvent.setup();
+await user.click(screen.getByRole('button'));
+await user.type(screen.getByRole('textbox'), 'Hello');
+await user.keyboard('{Enter}');
+```
 
 ### Async Testing
-10. **Use findBy for async**: `findBy*` queries wait for elements to appear
-11. **Use waitFor for async assertions**: Wait for conditions to be true
-    ```typescript
-    await waitFor(() => expect(screen.getByText('Loaded')).toBeInTheDocument());
-    ```
-12. **Don't use arbitrary timeouts**: Use proper async utilities
+```typescript
+// Use findBy* for elements that appear asynchronously
+const element = await screen.findByText('Loaded');
+
+// Use waitFor for complex conditions
+await waitFor(() => {
+  expect(screen.getByText('Loaded')).toBeInTheDocument();
+});
+```
 
 ### Mocking
-13. **Mock at the boundary**: Mock API calls, not internal functions
-14. **Clear mocks between tests**: Use `vi.clearAllMocks()` in `afterEach()`
-15. **Don't over-mock**: Only mock what's necessary
-
-## Common Patterns
-
-### Testing Forms
-
 ```typescript
-test('submits form with valid data', async () => {
-  const user = userEvent.setup();
-  const onSubmit = vi.fn();
+import { vi } from 'vitest';
 
-  render(<TaskForm onSubmit={onSubmit} />);
+// Mock functions
+const mockFn = vi.fn();
+expect(mockFn).toHaveBeenCalledWith('hello');
 
-  await user.type(screen.getByLabelText(/title/i), 'New task');
-  await user.click(screen.getByRole('button', { name: /submit/i }));
+// Mock modules
+vi.mock('./api', () => ({
+  fetchTasks: vi.fn(() => Promise.resolve([{ id: 1, title: 'Test' }])),
+}));
 
-  expect(onSubmit).toHaveBeenCalledWith({ title: 'New task' });
-});
-```
-
-### Testing API Calls
-
-```typescript
-import { rest } from 'msw';
-import { setupServer } from 'msw/node';
-
-const server = setupServer(
-  rest.get('/api/tasks', (req, res, ctx) => {
-    return res(ctx.json([{ id: 1, title: 'Test task' }]));
-  })
-);
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
-test('fetches and displays tasks', async () => {
-  render(<TaskList />);
-
-  expect(await screen.findByText('Test task')).toBeInTheDocument();
-});
-```
-
-### Testing Routing
-
-```typescript
-import { MemoryRouter } from 'react-router-dom';
-
-test('navigates to task page', async () => {
-  const user = userEvent.setup();
-
-  render(
-    <MemoryRouter initialEntries={['/']}>
-      <App />
-    </MemoryRouter>
-  );
-
-  await user.click(screen.getByRole('link', { name: /tasks/i }));
-  expect(screen.getByRole('heading', { name: /tasks/i })).toBeInTheDocument();
-});
-```
-
-## Quick Reference
-
-```bash
-# Run all tests
-bun test
-
-# Run tests once (CI)
-bun test run
-
-# Run with coverage
-bun test:ci
-
-# Run specific test file
-bun test Button.test.tsx
-
-# Run tests matching pattern
-bun test --grep "form validation"
-
-# Update snapshots (if using snapshot testing)
-bun test -u
-
-# View coverage report
-open coverage/index.html
+// Mock timers
+vi.useFakeTimers();
+vi.advanceTimersByTime(1000);
+vi.useRealTimers();
 ```
 
 ## Troubleshooting
 
-### Tests Failing Unexpectedly
-- Clear Bun cache: `bun pm cache rm && bun install`
-- Check for async issues: Use `findBy*` or `waitFor()`
-- Ensure cleanup: Tests should be independent
+### Tests Failing
+- **Async issues**: Use `findBy*` or `waitFor()`
+- **Cleanup issues**: Tests should be independent
+- **Mock issues**: Clear mocks in `afterEach(() => vi.clearAllMocks())`
 
-### jsdom Limitations
-- No layout calculation (offsetWidth, scrollHeight are 0)
-- No actual rendering (use visual regression tests for UI)
-- Limited Web API support (check jsdom docs)
+### System Tests Failing
+- **Backend not running**: Start with `docker-compose up -d` (recommended) or `cd packages/server && cargo run`
+- **Port conflict**: Check port 8000 is available, stop other services
+- **Database issues**: Docker handles this automatically
 
-### Module Resolution Issues
-- Check `tsconfig.json` paths configuration
-- Ensure imports match file structure
-- Clear Bun cache if needed
+### E2E Tests Failing
+- **Backend/frontend not running**: Start with `docker-compose up -d` (recommended)
+- **Port conflicts**: Check ports 8000 (backend) and 5173 (frontend)
+- **Timing issues**: Increase `defaultCommandTimeout` in `cypress.config.ts`
+- **Docker issues**: Ensure Docker is running and containers are healthy
 
 ### Coverage Issues
-- Run with `--coverage.enabled` flag
-- Check `coverage/` directory for reports
-- Adjust coverage thresholds in `vite.config.ts` if needed
+```bash
+# Generate coverage report
+bunx vitest run --coverage
 
-## CI Integration
+# View coverage
+open coverage/index.html
+```
 
-Tests run automatically in GitHub Actions (`.github/workflows/client-ci.yml`) on push/PR:
+## CI/CD
 
-- Linting: `bun run lint`
-- Tests: `bun test run`
-- Coverage: `bun test:ci`
+Tests run automatically in GitHub Actions (`.github/workflows/client-ci.yml`):
 
-All tests must pass before merging PRs.
+**What runs in CI:**
+- ✅ Unit tests (`bun run test:unit`)
+- ✅ Integration tests (`bun run test:integration`)
+- ❌ System tests (excluded - need backend)
+- ❌ E2E tests (excluded - need full stack)
+
+**Why excluded:**
+System and E2E tests require running servers. While the server uses Docker/testcontainers for its integration tests (which work in CI), client system/E2E tests need the actual backend server running.
+
+**To run system tests in CI** (optional):
+1. Add backend service to workflow
+2. Set `INCLUDE_SYSTEM_TESTS=true` environment variable
+3. Run tests after backend is ready
+
+## Additional Resources
+
+- [Vitest Documentation](https://vitest.dev)
+- [React Testing Library](https://testing-library.com/react)
+- [Cypress Documentation](https://docs.cypress.io)
+- [MSW Documentation](https://mswjs.io)

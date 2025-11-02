@@ -14,6 +14,15 @@ export default defineConfig({
     environment: 'jsdom',
     // simulates browser DOM for testing React components
     setupFiles: './src/setupTests.ts', // optional setup file for jest-dom matchers
-    exclude: ['**/*.stories.tsx', '**/*.stories.ts', '**/node_modules/**'],
+    exclude: [
+      '**/*.stories.tsx',
+      '**/*.stories.ts',
+      '**/node_modules/**',
+      // System tests require backend server running - excluded by default
+      // Run with: bunx vitest run src/tests/system/
+      ...(process.env.INCLUDE_SYSTEM_TESTS !== 'true'
+        ? ['**/*.system.test.ts']
+        : []),
+    ],
   },
 });

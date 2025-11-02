@@ -1,5 +1,28 @@
 # Contributing Guide
 
+## Adding Features
+
+**Client (React/TypeScript):**
+- **Structure**: Recursive component folders with co-located files
+- **Guide**: [`packages/client/docs/adding-features.md`](../packages/client/docs/adding-features.md)
+- **Example**: `src/components/calendar/task-item/` (component + types + tests + stories)
+
+**Server (Rust):**
+- **Structure**: Domain-driven architecture (entity → repository → GraphQL)
+- **Guide**: [`packages/server/docs/adding-entities.md`](../packages/server/docs/adding-entities.md)
+- **Example**: `src/domains/tasks/` (entity, repository, queries, mutations, types)
+
+**Quick Start:**
+```bash
+# Client: Add new component
+mkdir -p src/components/feature/component-name
+# Create: Component.tsx, Component.types.ts, Component.test.tsx
+
+# Server: Add new domain
+mkdir -p src/domains/your_domain
+# Create: entity.rs, repository.rs, queries.rs, mutations.rs, types.rs
+```
+
 ## Code Comments and Issue Creation
 
 This project uses automated TODO scanning to convert code comments into GitHub issues.
@@ -144,14 +167,37 @@ Location: packages/server/src/repositories/task_repository.rs:34
 Note: Add the 'enhancement' label manually if desired
 ```
 
+## Testing Before Commits
+
+**Always run tests before committing:**
+
+```bash
+# Client
+cd packages/client
+bun run test:unit && bun run test:integration  # ~7 seconds
+
+# Server
+cd packages/server
+cargo test unit && cargo test integration      # Depends on tests
+```
+
+**Test tiers:**
+- **Unit** - Fast, isolated tests (always run)
+- **Integration** - Mocked API tests (always run)
+- **System** - Real backend tests (run before push)
+- **E2E** - Full stack tests (run before PR)
+
+See [`packages/client/docs/testing.md`](../packages/client/docs/testing.md) for detailed testing guide.
+
 ## Development Workflow
 
 1. Write code with TODO comments for future work
-2. Create PR and get review
-3. Merge to `dev` - TODOs become issues
-4. Work on issues from backlog
-5. Remove TODO when implementing - issue auto-closes
-6. Clean, tracked codebase!
+2. **Run tests** - `test:unit && test:integration`
+3. Create PR and get review
+4. Merge to `dev` - TODOs become issues
+5. Work on issues from backlog
+6. Remove TODO when implementing - issue auto-closes
+7. Clean, tracked codebase!
 
 ## Manual Issue Creation
 

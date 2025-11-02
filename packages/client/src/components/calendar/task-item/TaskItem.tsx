@@ -37,24 +37,17 @@ export const TaskItem = ({
 
   return (
     <div
+      data-testid="task-item"
       className={`group flex items-center gap-2 py-2 px-3 hover:bg-gray-50 transition-colors ${className}`}
     >
       {/* Checkbox */}
-      <button
-        type="button"
-        onClick={handleToggle}
-        className="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded hover:border-gray-400 transition-colors flex items-center justify-center"
+      <input
+        type="checkbox"
+        checked={task.completed}
+        onChange={handleToggle}
+        className="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer"
         aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
-      >
-        {task.completed && (
-          <span
-            className="material-symbols-outlined text-sm"
-            aria-hidden="true"
-          >
-            check
-          </span>
-        )}
-      </button>
+      />
 
       {/* Task Text */}
       {isEditing ? (
@@ -82,6 +75,7 @@ export const TaskItem = ({
       {/* Delete Button */}
       <button
         type="button"
+        data-testid="delete-task-button"
         onClick={handleDelete}
         className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
         aria-label="Delete task"
