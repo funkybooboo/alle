@@ -13,7 +13,7 @@ async fn test_task_crud_sqlite() {
     // Act
     let task = ctx
         .task_repository
-        .create("SQLite test".to_string())
+        .create("SQLite test".to_string(), chrono::Utc::now())
         .await
         .unwrap();
 
@@ -35,7 +35,7 @@ async fn test_task_crud_postgres() {
     // Act
     let task = ctx
         .task_repository
-        .create("Postgres test".to_string())
+        .create("Postgres test".to_string(), chrono::Utc::now())
         .await
         .unwrap();
 
@@ -58,7 +58,7 @@ async fn test_task_crud_mysql() {
     // Act
     let task = ctx
         .task_repository
-        .create("MySQL test".to_string())
+        .create("MySQL test".to_string(), chrono::Utc::now())
         .await
         .unwrap();
 

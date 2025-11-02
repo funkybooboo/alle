@@ -11,7 +11,7 @@ async fn test_create_task() {
     // Act
     let task = ctx
         .task_repository
-        .create("New task".to_string())
+        .create("New task".to_string(), chrono::Utc::now())
         .await
         .unwrap();
 
@@ -73,7 +73,7 @@ async fn test_update_title_only() {
     let updated = factory
         .ctx
         .task_repository
-        .update(task.id, Some("Updated".to_string()), None)
+        .update(task.id, Some("Updated".to_string()), None, None)
         .await
         .unwrap();
 
@@ -91,7 +91,7 @@ async fn test_update_completed_only() {
     let updated = factory
         .ctx
         .task_repository
-        .update(task.id, None, Some(true))
+        .update(task.id, None, Some(true), None)
         .await
         .unwrap();
 
@@ -109,7 +109,7 @@ async fn test_update_both_fields() {
     let updated = factory
         .ctx
         .task_repository
-        .update(task.id, Some("Updated".to_string()), Some(true))
+        .update(task.id, Some("Updated".to_string()), Some(true), None)
         .await
         .unwrap();
 
@@ -125,7 +125,7 @@ async fn test_update_nonexistent_task() {
     // Act
     let result = ctx
         .task_repository
-        .update(99999, Some("Updated".to_string()), None)
+        .update(99999, Some("Updated".to_string()), None, None)
         .await;
 
     // Assert
@@ -226,7 +226,7 @@ async fn test_task_timestamps() {
     // Act
     let task = ctx
         .task_repository
-        .create("Test".to_string())
+        .create("Test".to_string(), chrono::Utc::now())
         .await
         .unwrap();
 
@@ -248,7 +248,7 @@ async fn test_update_changes_updated_at() {
     let updated = factory
         .ctx
         .task_repository
-        .update(task.id, Some("Updated".to_string()), None)
+        .update(task.id, Some("Updated".to_string()), None, None)
         .await
         .unwrap();
 

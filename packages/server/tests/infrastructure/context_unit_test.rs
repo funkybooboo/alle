@@ -42,7 +42,7 @@ async fn test_app_context_repository_operations() {
     // Create a task through the repository
     let task = context
         .task_repository
-        .create("Test task".to_string())
+        .create("Test task".to_string(), chrono::Utc::now())
         .await
         .expect("Failed to create task");
 

@@ -108,18 +108,22 @@ async fn test_graphql_multiple_queries() {
 async fn test_graphql_create_and_query() {
     // Test creating a task and immediately querying it
     let ctx = test_app_context().await;
+    let date = chrono::Utc::now().to_rfc3339();
 
-    let mutation = r#"
-        mutation {
-            createTask(input: { title: "Created via GraphQL" }) {
+    let mutation = format!(
+        r#"
+        mutation {{
+            createTask(input: {{ title: "Created via GraphQL", date: "{}" }}) {{
                 id
                 title
                 completed
-            }
-        }
-    "#;
+            }}
+        }}
+        "#,
+        date
+    );
 
-    let data = execute_query(ctx.clone(), mutation).await;
+    let data = execute_query(ctx.clone(), &mutation).await;
     let created_task = data.get("createTask").unwrap();
     let task_id = created_task["id"].as_i64().unwrap();
 
@@ -217,17 +221,18 @@ async fn test_graphql_delete_and_verify() {
 async fn test_graphql_bulk_operations() {
     // Test creating multiple tasks and querying them
     let ctx = test_app_context().await;
+    let date = chrono::Utc::now().to_rfc3339();
 
     for i in 1..=5 {
         let mutation = format!(
             r#"
             mutation {{
-                createTask(input: {{ title: "Bulk task {}" }}) {{
+                createTask(input: {{ title: "Bulk task {}", date: "{}" }}) {{
                     id
                 }}
             }}
             "#,
-            i
+            i, date
         );
         execute_query(ctx.clone(), &mutation).await;
     }
@@ -316,16 +321,20 @@ async fn test_graphql_nested_query() {
 async fn test_graphql_mutation_chain() {
     // Test chaining multiple mutations
     let ctx = test_app_context().await;
+    let date = chrono::Utc::now().to_rfc3339();
 
-    let mutation1 = r#"
-        mutation {
-            createTask(input: { title: "First" }) {
+    let mutation1 = format!(
+        r#"
+        mutation {{
+            createTask(input: {{ title: "First", date: "{}" }}) {{
                 id
-            }
-        }
-    "#;
+            }}
+        }}
+        "#,
+        date
+    );
 
-    let data1 = execute_query(ctx.clone(), mutation1).await;
+    let data1 = execute_query(ctx.clone(), &mutation1).await;
     let task_id = data1["createTask"]["id"].as_i64().unwrap();
 
     let mutation2 = format!(
@@ -445,17 +454,21 @@ async fn test_graphql_empty_database_queries() {
 async fn test_graphql_special_characters_in_title() {
     // Test that special characters are properly handled
     let ctx = test_app_context().await;
+    let date = chrono::Utc::now().to_rfc3339();
 
-    let mutation = r#"
-        mutation {
-            createTask(input: { title: "Task with \"quotes\" and 'apostrophes' & symbols" }) {
+    let mutation = format!(
+        r#"
+        mutation {{
+            createTask(input: {{ title: "Task with \"quotes\" and 'apostrophes' & symbols", date: "{}" }}) {{
                 id
                 title
-            }
-        }
-    "#;
+            }}
+        }}
+        "#,
+        date
+    );
 
-    let data = execute_query(ctx.clone(), mutation).await;
+    let data = execute_query(ctx.clone(), &mutation).await;
     let task = data["createTask"].clone();
     let task_id = task["id"].as_i64().unwrap();
 
@@ -485,17 +498,18 @@ async fn test_graphql_long_title() {
     // Test handling of very long titles
     let ctx = test_app_context().await;
     let long_title = "A".repeat(500);
+    let date = chrono::Utc::now().to_rfc3339();
 
     let mutation = format!(
         r#"
         mutation {{
-            createTask(input: {{ title: "{}" }}) {{
+            createTask(input: {{ title: "{}", date: "{}" }}) {{
                 id
                 title
             }}
         }}
         "#,
-        long_title
+        long_title, date
     );
 
     let data = execute_query(ctx, &mutation).await;
@@ -570,16 +584,20 @@ async fn test_graphql_multiple_deletes() {
 async fn test_graphql_create_empty_title() {
     // Test creating task with empty title (should be allowed)
     let ctx = test_app_context().await;
+    let date = chrono::Utc::now().to_rfc3339();
 
-    let mutation = r#"
-        mutation {
-            createTask(input: { title: "" }) {
+    let mutation = format!(
+        r#"
+        mutation {{
+            createTask(input: {{ title: "", date: "{}" }}) {{
                 id
                 title
-            }
-        }
-    "#;
+            }}
+        }}
+        "#,
+        date
+    );
 
-    let data = execute_query(ctx, mutation).await;
+    let data = execute_query(ctx, &mutation).await;
     assert_eq!(data["createTask"]["title"], "");
 }

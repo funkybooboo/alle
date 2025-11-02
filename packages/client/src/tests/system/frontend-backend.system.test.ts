@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { taskAPI } from '../../api/task-api';
-import type { Task } from '../../components/calendar/task-item/TaskItem.types';
 
 /**
  * System tests for frontend-backend integration
@@ -25,7 +24,7 @@ describe('Frontend-Backend System Tests', () => {
     for (const id of createdTaskIds) {
       try {
         await taskAPI.deleteTask(id);
-      } catch (error) {
+      } catch {
         // Task might already be deleted, ignore errors
       }
     }

@@ -1,162 +1,72 @@
 # Alle
 
-Open-source minimalist to-do list app inspired by Teuxdeux. Clean, simple, and focused on getting things done.
+Minimalist to-do list app inspired by Teuxdeux. Simple task management focused on getting things done.
 
-## Features
+**Features:** Drag-and-drop, automatic rollover, recurring tasks, offline mode, markdown support
 
-- Drag-and-drop task organization
-- Automatic task rollover
-- Recurring to-dos
-- Someday lists for long-term planning
-- Offline functionality
-- Markdown and emoji support
-
-See [`docs/high-level-idea.md`](docs/high-level-idea.md) for complete feature list.
+See [`docs/high-level-idea.md`](docs/high-level-idea.md) for details.
 
 ## Tech Stack
 
-**Frontend**: React 19 + TypeScript + Vite + Bun
-**Backend**: Rust + Tokio async runtime
+**Frontend:** React 19 + TypeScript + Vite + Bun
+**Backend:** Rust + Tokio async runtime
 
 ## Quick Start
 
-### Prerequisites
-
 ```bash
-# Install Bun
-curl -fsSL https://bun.sh/install | bash
+# Install prerequisites
+curl -fsSL https://bun.sh/install | bash  # Bun
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  # Rust
 
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+# Client
+cd packages/client && bun install && bun run dev  # → http://localhost:5173
 
-### Running the App
-
-**Client** (frontend):
-```bash
-cd packages/client
-bun install
-bun run dev
-# → http://localhost:5173
-```
-
-**Server** (backend):
-```bash
-cd packages/server
-cargo run
+# Server (separate terminal)
+cd packages/server && cargo run
 ```
 
 ## Development
 
-### Client Commands
+**Client:** `bun run dev` | `bun run build` | `bun run lint` | `bun test`
+**Server:** `cargo run` | `cargo test` | `cargo fmt` | `cargo clippy`
 
-```bash
-cd packages/client
+See package READMEs for details: [`client`](packages/client/README.md) | [`server`](packages/server/README.md)
 
-bun run dev              # Start dev server
-bun run build            # Build for production
-bun run lint             # Run ESLint
-bun run format           # Format with Prettier
-bun test                 # Run tests
-bun test --coverage      # Run with coverage
-```
-
-See [`packages/client/README.md`](packages/client/README.md) for detailed documentation.
-
-### Server Commands
-
-```bash
-cd packages/server
-
-cargo run                # Run server
-cargo build --release    # Build optimized
-cargo test               # Run tests
-cargo fmt                # Format code
-cargo clippy             # Run linter
-cargo audit              # Security scan
-cargo deny check         # Check licenses & policies
-```
-
-See [`packages/server/README.md`](packages/server/README.md) for detailed documentation.
-
-## Project Structure
+## Structure
 
 ```
-alle/
-├── packages/
-│   ├── client/          # React + TypeScript frontend
-│   └── server/          # Rust backend
-├── docs/                # Documentation
-├── .github/workflows/   # CI/CD
-│   ├── client-ci.yml    # Client CI pipeline
-│   └── server-ci.yml    # Server CI pipeline
-├── LICENSE              # GPL-3.0
-├── CLAUDE.md           # AI development guidance
-└── README.md
+packages/client/   # React frontend
+packages/server/   # Rust backend
+.github/workflows/ # CI/CD pipelines
 ```
 
 ## CI/CD
 
-GitHub Actions runs on push/PR to `main`, `dev`, `test`:
-
-**Client CI** (5 jobs):
-1. Code Quality - Format, lint, type-check
-2. Test & Coverage - Run tests with coverage reports
-3. Build - Production bundle
-4. Security Scan - Dependency audit + Trivy
-5. Bundle Analysis - Size tracking (main only)
-
-**Server CI** (runs on push/PR to `main`):
-- Build with `cargo build --verbose`
-- Test with `cargo test --verbose`
+GitHub Actions on push/PR to `main`, `dev`, `test`:
+- **Client:** Quality checks, tests, build, security scan
+- **Server:** Build, tests
 
 ## Git Workflow
 
-- **main** - Production branch (active development)
-- **dev** - Development integration
-- **test** - Pre-production QA
-- **stable/\<date\>** - Production releases
-- **feature/**, **fix/**, **refactor/**, **hotfix/** - Topic branches
-
-Currently in early development phase working primarily on `main`.
+**main** (production) → **dev** → **test** → **stable/\<date\>** releases
+Topic branches: `feature/`, `fix/`, `refactor/`, `hotfix/`
 
 ## Testing
 
-**Client**: Vitest + React Testing Library (jsdom environment)
-**Server**: Rust's built-in test framework + Tokio async tests
+**Client:** Vitest + React Testing Library — **Server:** Cargo + Tokio
 
 ```bash
-# Run all tests
 cd packages/client && bun test
 cd packages/server && cargo test
 ```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/name`)
-3. Make your changes
-4. Run tests and linters
-5. Commit changes (`git commit -m 'Add feature'`)
-6. Push to branch (`git push origin feature/name`)
-7. Open a Pull Request
+1. Fork → create branch → make changes → test/lint
+2. Commit → push → open PR
 
 ## License
 
-**GPL-3.0-or-later** - See [LICENSE](LICENSE) file.
-
-This is free and open-source software. You can use, modify, and distribute it freely. If you distribute modified versions, you must:
-- Share the source code
-- License under GPL-3.0
-- Document changes
-- Include copyright notices
-
-Learn more: [GNU GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
-
-## Acknowledgments
+**GPL-3.0-or-later** — Free to use, modify, and distribute. Modified versions must share source code under GPL-3.0. See [LICENSE](LICENSE).
 
 Inspired by [Teuxdeux](https://teuxdeux.com).
-
-## Disclaimer
-
-Use at your own risk and accept and all consequences

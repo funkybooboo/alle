@@ -1,6 +1,23 @@
 import { graphql, HttpResponse } from 'msw';
 import { mockTasks } from '../fixtures/tasks';
 
+// Mock GraphQL response types
+interface CreateTaskVariables {
+  title: string;
+  date: string;
+}
+
+interface UpdateTaskVariables {
+  id: number;
+  title?: string;
+  completed?: boolean;
+  date?: string;
+}
+
+interface DeleteTaskVariables {
+  id: number;
+}
+
 // Mock GraphQL responses
 let tasksStore = [...mockTasks];
 
@@ -23,11 +40,12 @@ export const handlers = [
 
   // Create task
   graphql.mutation('CreateTask', async ({ variables }) => {
+    const vars = variables as CreateTaskVariables;
     const newTask = {
       id: String(tasksStore.length + 1),
-      text: (variables as any).title,
+      text: vars.title,
       completed: false,
-      date: new Date((variables as any).date),
+      date: new Date(vars.date),
     };
     tasksStore.push(newTask);
 
@@ -47,7 +65,7 @@ export const handlers = [
 
   // Update task
   graphql.mutation('UpdateTask', async ({ variables }) => {
-    const vars = variables as any;
+    const vars = variables as UpdateTaskVariables;
     const taskIndex = tasksStore.findIndex((t) => t.id === String(vars.id));
 
     if (taskIndex === -1) {
@@ -84,7 +102,7 @@ export const handlers = [
 
   // Delete task
   graphql.mutation('DeleteTask', async ({ variables }) => {
-    const vars = variables as any;
+    const vars = variables as DeleteTaskVariables;
     const taskIndex = tasksStore.findIndex((t) => t.id === String(vars.id));
 
     if (taskIndex === -1) {

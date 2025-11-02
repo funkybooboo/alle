@@ -116,18 +116,22 @@ async fn test_graphql_mutation_create_task() {
     // Arrange
     let ctx = test_app_context().await;
     let schema = create_schema(ctx.clone());
-    let mutation = r#"
-        mutation {
-            createTask(input: { title: "New task" }) {
+    let date = chrono::Utc::now().to_rfc3339();
+    let mutation = format!(
+        r#"
+        mutation {{
+            createTask(input: {{ title: "New task", date: "{}" }}) {{
                 id
                 title
                 completed
-            }
-        }
-    "#;
+            }}
+        }}
+        "#,
+        date
+    );
 
     // Act
-    let response = schema.execute(Request::new(mutation)).await;
+    let response = schema.execute(Request::new(&mutation)).await;
 
     // Assert
     assert!(response.errors.is_empty());

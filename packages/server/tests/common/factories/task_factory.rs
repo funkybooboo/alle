@@ -19,9 +19,10 @@ impl TaskFactory {
 
     /// Create a task with default values
     pub async fn create(&self, title: &str) -> alle_server::domains::tasks::entity::Model {
+        let date = chrono::Utc::now();
         self.ctx
             .task_repository
-            .create(title.to_string())
+            .create(title.to_string(), date)
             .await
             .expect("Failed to create test task")
     }
@@ -34,7 +35,7 @@ impl TaskFactory {
         let task = self.create(title).await;
         self.ctx
             .task_repository
-            .update(task.id, None, Some(true))
+            .update(task.id, None, Some(true), None)
             .await
             .expect("Failed to update task to completed")
     }
