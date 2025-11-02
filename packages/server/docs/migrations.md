@@ -4,7 +4,7 @@ Migrations run automatically on server startup.
 
 ## Adding a Migration
 
-1. Create file `src/migration/m{YYYYMMDD}_{NNNNNN}_description.rs`:
+1. Create file `src/infrastructure/database/migration/m{YYYYMMDD}_{NNNNNN}_description.rs`:
 
 ```rust
 use sea_orm_migration::prelude::*;
@@ -41,7 +41,7 @@ enum Users {
 }
 ```
 
-2. Register in `src/migration/mod.rs`:
+2. Register in `src/infrastructure/database/migration/mod.rs`:
 
 ```rust
 vec![
@@ -70,7 +70,7 @@ Migrations completed successfully
 
 ## Troubleshooting
 
-Migration errors - check syntax in `src/migration/` files.
+Migration errors - check syntax in `src/infrastructure/database/migration/` files.
 
 View schema:
 ```bash
