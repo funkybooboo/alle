@@ -13,7 +13,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .map_err(|e| format!("Failed to load configuration: {}", e))?;
 
     // Database setup
-    println!("Connecting to database: {}", config.database.url());
+    println!(
+        "Connecting to database: {}",
+        config.database.sanitized_url()
+    );
     let db =
         infrastructure::database::connection::establish_connection(config.database.url()).await?;
 
