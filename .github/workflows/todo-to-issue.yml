@@ -1,8 +1,6 @@
 name: TODO to Issue
 
 on:
-  push:
-    branches: [main, test, dev]
   pull_request:
     branches: [main, test, dev]
   workflow_dispatch:
