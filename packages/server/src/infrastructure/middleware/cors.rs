@@ -1,3 +1,4 @@
+use hyper::header::HeaderValue;
 use hyper::{Body, Request, Response, StatusCode};
 
 /// CORS middleware configuration
@@ -24,25 +25,22 @@ impl CorsConfig {
     pub fn apply_headers(&self, mut response: Response<Body>) -> Response<Body> {
         let headers = response.headers_mut();
 
-        headers.insert(
-            "Access-Control-Allow-Origin",
-            self.allowed_origins.join(", ").parse().unwrap(),
-        );
+        if let Ok(value) = HeaderValue::from_str(&self.allowed_origins.join(", ")) {
+            headers.insert("Access-Control-Allow-Origin", value);
+        }
 
-        headers.insert(
-            "Access-Control-Allow-Methods",
-            self.allowed_methods.join(", ").parse().unwrap(),
-        );
+        if let Ok(value) = HeaderValue::from_str(&self.allowed_methods.join(", ")) {
+            headers.insert("Access-Control-Allow-Methods", value);
+        }
 
-        headers.insert(
-            "Access-Control-Allow-Headers",
-            self.allowed_headers.join(", ").parse().unwrap(),
-        );
+        if let Ok(value) = HeaderValue::from_str(&self.allowed_headers.join(", ")) {
+            headers.insert("Access-Control-Allow-Headers", value);
+        }
 
-        headers.insert(
-            "Access-Control-Max-Age",
-            self.max_age.to_string().parse().unwrap(),
-        );
+        // Since max_age is a u32 converted to string, it will always be a valid numeric string
+        if let Ok(value) = HeaderValue::from_str(&self.max_age.to_string()) {
+            headers.insert("Access-Control-Max-Age", value);
+        }
 
         response
     }
