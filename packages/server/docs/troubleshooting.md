@@ -27,7 +27,7 @@ ALLE_SERVER_PORT=8001
 
 ## Migration Failures
 
-Check migration files in `src/migration/` for syntax errors.
+Check migration files in `src/infrastructure/database/migration/` for syntax errors.
 
 View schema:
 ```bash
