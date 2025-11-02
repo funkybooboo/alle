@@ -101,7 +101,15 @@ async fn handle_graphql(
     };
 
     let graphql_response = schema.execute(graphql_request).await;
-    let json = serde_json::to_string(&graphql_response).unwrap();
+    let json = match serde_json::to_string(&graphql_response) {
+        Ok(s) => s,
+        Err(e) => {
+            return Ok(Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Body::from(format!("Failed to serialize response: {}", e)))
+                .unwrap());
+        }
+    };
 
     Ok(Response::builder()
         .status(StatusCode::OK)
