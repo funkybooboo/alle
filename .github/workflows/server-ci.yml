@@ -1,11 +1,6 @@
 name: Server CI
 
 on:
-  push:
-    branches: [main, dev, test]
-    paths:
-      - 'packages/server/**'
-      - '.github/workflows/server-ci.yml'
   pull_request:
     branches: [main, dev, test]
     paths:
