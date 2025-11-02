@@ -63,6 +63,7 @@ Cypress.Commands.add('createTask', (text: string, date: string) => {
 
 // Extend Cypress namespace for TypeScript
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       /**
@@ -75,7 +76,7 @@ declare global {
        * Custom command to create a task via GraphQL
        * @example cy.createTask('Task text', '2025-11-05')
        */
-      createTask(text: string, date: string): Chainable<Response<any>>;
+      createTask(text: string, date: string): Chainable<Response<unknown>>;
     }
   }
 }

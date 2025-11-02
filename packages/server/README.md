@@ -2,7 +2,7 @@
 
 Rust backend with GraphQL API, built on Tokio async runtime.
 
-**Features:** Interactive docs (GraphQL Playground), SeaORM, migrations, comprehensive tests, Docker support
+**Features:** GraphQL Playground, SeaORM, migrations, comprehensive tests, Docker support
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  # Install Rust
 cp .env.example .env && cargo run  # → http://localhost:8000
 ```
 
-**APIs:** [GraphQL Playground](http://localhost:8000/graphql)
+**API:** [GraphQL Playground](http://localhost:8000/graphql)
 
 ## Development
 

@@ -39,7 +39,10 @@ export const CalendarView = ({
   }, [tasks]);
 
   return (
-    <div data-testid="calendar-view" className={`flex h-full overflow-x-auto ${className}`}>
+    <div
+      data-testid="calendar-view"
+      className={`flex h-full overflow-x-auto ${className}`}
+    >
       {dates.map((date) => {
         const dateKey = date.toDateString();
         const dayTasks = tasksByDate.get(dateKey) || [];
