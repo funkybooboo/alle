@@ -2,12 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '../tests/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import { Home } from './Home';
-import { setupMockServer } from '../tests/mocks/setup';
 import { resetTasksStore } from '../tests/mocks/graphql-handlers';
 import { BrowserRouter } from 'react-router-dom';
-
-// Setup MSW server
-setupMockServer();
 
 // Helper to render Home within Router
 const renderHome = () => {

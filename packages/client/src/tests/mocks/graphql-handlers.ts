@@ -1,119 +1,123 @@
-import { graphql, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { mockTasks } from '../fixtures/tasks';
 
-// Mock GraphQL response types
-interface CreateTaskVariables {
-  title: string;
-  date: string;
-}
-
-interface UpdateTaskVariables {
-  id: number;
-  title?: string;
-  completed?: boolean;
-  date?: string;
-}
-
-interface DeleteTaskVariables {
-  id: number;
-}
+// GraphQL endpoint URL
+const GRAPHQL_URL = 'http://localhost:8000/graphql';
 
 // Mock GraphQL responses
 let tasksStore = [...mockTasks];
 
 export const handlers = [
-  // Get all tasks
-  graphql.query('GetAllTasks', () => {
-    return HttpResponse.json({
-      data: {
-        tasks: tasksStore.map((task) => ({
-          id: parseInt(task.id, 10),
-          title: task.text,
-          completed: task.completed,
-          date: task.date.toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        })),
-      },
-    });
-  }),
-
-  // Create task
-  graphql.mutation('CreateTask', async ({ variables }) => {
-    const vars = variables as CreateTaskVariables;
-    const newTask = {
-      id: String(tasksStore.length + 1),
-      text: vars.title,
-      completed: false,
-      date: new Date(vars.date),
+  // Handle all GraphQL requests
+  http.post(GRAPHQL_URL, async ({ request }) => {
+    const body = (await request.json()) as {
+      query: string;
+      variables?: Record<string, unknown>;
     };
-    tasksStore.push(newTask);
 
-    return HttpResponse.json({
-      data: {
-        createTask: {
-          id: parseInt(newTask.id, 10),
-          title: newTask.text,
-          completed: newTask.completed,
-          date: newTask.date.toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      },
-    });
-  }),
-
-  // Update task
-  graphql.mutation('UpdateTask', async ({ variables }) => {
-    const vars = variables as UpdateTaskVariables;
-    const taskIndex = tasksStore.findIndex((t) => t.id === String(vars.id));
-
-    if (taskIndex === -1) {
-      return HttpResponse.json(
-        {
-          errors: [{ message: 'Task not found' }],
-        },
-        { status: 404 }
-      );
-    }
-
-    const task = tasksStore[taskIndex];
-    const updatedTask = {
-      ...task,
-      text: vars.title ?? task.text,
-      completed: vars.completed ?? task.completed,
-      date: vars.date ? new Date(vars.date) : task.date,
-    };
-    tasksStore[taskIndex] = updatedTask;
-
-    return HttpResponse.json({
-      data: {
-        updateTask: {
-          id: parseInt(updatedTask.id, 10),
-          title: updatedTask.text,
-          completed: updatedTask.completed,
-          date: updatedTask.date.toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      },
-    });
-  }),
-
-  // Delete task
-  graphql.mutation('DeleteTask', async ({ variables }) => {
-    const vars = variables as DeleteTaskVariables;
-    const taskIndex = tasksStore.findIndex((t) => t.id === String(vars.id));
-
-    if (taskIndex === -1) {
+    // GetAllTasks query
+    if (body.query.includes('GetAllTasks')) {
       return HttpResponse.json({
-        data: { deleteTask: false },
+        data: {
+          tasks: tasksStore.map((task) => ({
+            id: parseInt(task.id, 10),
+            title: task.text,
+            completed: task.completed,
+            date: task.date.toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })),
+        },
       });
     }
 
-    tasksStore.splice(taskIndex, 1);
+    // CreateTask mutation
+    if (body.query.includes('createTask')) {
+      const { title, date } = body.variables as { title: string; date: string };
+      const newTask = {
+        id: String(tasksStore.length + 1),
+        text: title,
+        completed: false,
+        date: new Date(date),
+      };
+      tasksStore.push(newTask);
+
+      return HttpResponse.json({
+        data: {
+          createTask: {
+            id: parseInt(newTask.id, 10),
+            title: newTask.text,
+            completed: newTask.completed,
+            date: newTask.date.toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      });
+    }
+
+    // UpdateTask mutation
+    if (body.query.includes('updateTask')) {
+      const { id, title, completed, date } = body.variables as {
+        id: number;
+        title?: string;
+        completed?: boolean;
+        date?: string;
+      };
+      const taskIndex = tasksStore.findIndex((t) => t.id === String(id));
+
+      if (taskIndex === -1) {
+        return HttpResponse.json(
+          {
+            errors: [{ message: 'Task not found' }],
+          },
+          { status: 404 }
+        );
+      }
+
+      const task = tasksStore[taskIndex];
+      const updatedTask = {
+        ...task,
+        text: title ?? task.text,
+        completed: completed ?? task.completed,
+        date: date ? new Date(date) : task.date,
+      };
+      tasksStore[taskIndex] = updatedTask;
+
+      return HttpResponse.json({
+        data: {
+          updateTask: {
+            id: parseInt(updatedTask.id, 10),
+            title: updatedTask.text,
+            completed: updatedTask.completed,
+            date: updatedTask.date.toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      });
+    }
+
+    // DeleteTask mutation
+    if (body.query.includes('deleteTask')) {
+      const { id } = body.variables as { id: number };
+      const taskIndex = tasksStore.findIndex((t) => t.id === String(id));
+
+      if (taskIndex === -1) {
+        return HttpResponse.json({
+          data: { deleteTask: false },
+        });
+      }
+
+      tasksStore.splice(taskIndex, 1);
+      return HttpResponse.json({
+        data: { deleteTask: true },
+      });
+    }
+
+    // Default response for unhandled queries
     return HttpResponse.json({
-      data: { deleteTask: true },
+      errors: [{ message: 'Unhandled GraphQL operation' }],
     });
   }),
 ];
