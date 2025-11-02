@@ -1,3 +1,4 @@
+use hyper::header::HeaderValue;
 use hyper::{Body, Request, Response, StatusCode};
 
 /// CORS middleware configuration
@@ -21,38 +22,34 @@ impl Default for CorsConfig {
 
 impl CorsConfig {
     /// Apply CORS headers to a response
-    pub fn apply_headers(&self, mut response: Response<Body>) -> Response<Body> {
+    pub fn apply_headers(&self, mut response: Response<Body>) -> Result<Response<Body>, String> {
         let headers = response.headers_mut();
 
-        headers.insert(
-            "Access-Control-Allow-Origin",
-            self.allowed_origins.join(", ").parse().unwrap(),
-        );
+        let origin_value = HeaderValue::from_str(&self.allowed_origins.join(", "))
+            .map_err(|e| format!("Invalid CORS origin header value: {}", e))?;
+        headers.insert("Access-Control-Allow-Origin", origin_value);
 
-        headers.insert(
-            "Access-Control-Allow-Methods",
-            self.allowed_methods.join(", ").parse().unwrap(),
-        );
+        let methods_value = HeaderValue::from_str(&self.allowed_methods.join(", "))
+            .map_err(|e| format!("Invalid CORS methods header value: {}", e))?;
+        headers.insert("Access-Control-Allow-Methods", methods_value);
 
-        headers.insert(
-            "Access-Control-Allow-Headers",
-            self.allowed_headers.join(", ").parse().unwrap(),
-        );
+        let headers_value = HeaderValue::from_str(&self.allowed_headers.join(", "))
+            .map_err(|e| format!("Invalid CORS headers header value: {}", e))?;
+        headers.insert("Access-Control-Allow-Headers", headers_value);
 
-        headers.insert(
-            "Access-Control-Max-Age",
-            self.max_age.to_string().parse().unwrap(),
-        );
+        let max_age_value = HeaderValue::from_str(&self.max_age.to_string())
+            .map_err(|e| format!("Invalid CORS max-age header value: {}", e))?;
+        headers.insert("Access-Control-Max-Age", max_age_value);
 
-        response
+        Ok(response)
     }
 
     /// Handle preflight OPTIONS request
-    pub fn handle_preflight(&self) -> Response<Body> {
+    pub fn handle_preflight(&self) -> Result<Response<Body>, String> {
         let response = Response::builder()
             .status(StatusCode::NO_CONTENT)
             .body(Body::empty())
-            .unwrap();
+            .map_err(|e| format!("Failed to build preflight response: {}", e))?;
 
         self.apply_headers(response)
     }

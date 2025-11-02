@@ -21,7 +21,9 @@ fn test_cors_apply_headers() {
     let config = CorsConfig::default();
     let response = Response::new(Body::empty());
 
-    let response_with_cors = config.apply_headers(response);
+    let response_with_cors = config
+        .apply_headers(response)
+        .expect("Failed to apply CORS headers");
 
     let headers = response_with_cors.headers();
     assert!(headers.contains_key("access-control-allow-origin"));
@@ -33,7 +35,9 @@ fn test_cors_apply_headers() {
 #[test]
 fn test_cors_handle_preflight() {
     let config = CorsConfig::default();
-    let response = config.handle_preflight();
+    let response = config
+        .handle_preflight()
+        .expect("Failed to handle preflight request");
 
     assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
@@ -70,4 +74,23 @@ fn test_cors_custom_config() {
 
     assert_eq!(config.allowed_origins.len(), 1);
     assert_eq!(config.max_age, 3600);
+}
+
+#[test]
+fn test_cors_apply_headers_with_invalid_values() {
+    // Test with invalid header values (newlines are not allowed in HTTP headers)
+    let config = CorsConfig {
+        allowed_origins: vec!["http://example.com\nmalicious".to_string()],
+        allowed_methods: vec!["GET".to_string()],
+        allowed_headers: vec!["Content-Type".to_string()],
+        max_age: 3600,
+    };
+
+    let response = Response::new(Body::empty());
+    let result = config.apply_headers(response);
+
+    assert!(result.is_err(), "Expected error for invalid header value");
+    assert!(result
+        .unwrap_err()
+        .contains("Invalid CORS origin header value"));
 }
