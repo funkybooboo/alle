@@ -110,7 +110,7 @@ async fn retry_connect(
         }
     }
 
-    Err(last_error.unwrap_or_else(|| DbErr::Custom("Failed to connect after retries".to_string())))
+    Err(last_error.unwrap_or_else(|| DbErr::Custom(format!("Failed to connect after {} retries", max_retries))))
 }
 
 /// Set up a SQLite test database using testcontainers (file-based for integration tests)
