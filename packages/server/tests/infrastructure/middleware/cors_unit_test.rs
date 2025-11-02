@@ -71,3 +71,53 @@ fn test_cors_custom_config() {
     assert_eq!(config.allowed_origins.len(), 1);
     assert_eq!(config.max_age, 3600);
 }
+
+#[test]
+fn test_cors_handles_invalid_header_values() {
+    // Test with header values containing invalid characters (newlines, control chars)
+    let config = CorsConfig {
+        allowed_origins: vec!["http://example.com\n".to_string()], // Invalid: contains newline
+        allowed_methods: vec!["GET".to_string()],
+        allowed_headers: vec!["X-Invalid\r\nHeader".to_string()], // Invalid: contains CRLF
+        max_age: 3600,
+    };
+
+    let response = Response::new(Body::empty());
+    let response_with_cors = config.apply_headers(response);
+
+    // Should still have CORS headers with fallback values
+    let headers = response_with_cors.headers();
+    assert!(headers.contains_key("access-control-allow-origin"));
+    assert!(headers.contains_key("access-control-allow-methods"));
+    assert!(headers.contains_key("access-control-allow-headers"));
+    assert!(headers.contains_key("access-control-max-age"));
+
+    // Fallback origin should be "*"
+    let origin = headers.get("access-control-allow-origin").unwrap();
+    assert_eq!(origin, "*");
+
+    // Fallback headers should be "Content-Type"
+    let allowed_headers = headers.get("access-control-allow-headers").unwrap();
+    assert_eq!(allowed_headers, "Content-Type");
+}
+
+#[test]
+fn test_cors_handles_invalid_methods() {
+    // Test with invalid method values
+    let config = CorsConfig {
+        allowed_origins: vec!["*".to_string()],
+        allowed_methods: vec!["GET\nPOST".to_string()], // Invalid: contains newline
+        allowed_headers: vec!["Content-Type".to_string()],
+        max_age: 3600,
+    };
+
+    let response = Response::new(Body::empty());
+    let response_with_cors = config.apply_headers(response);
+
+    let headers = response_with_cors.headers();
+    assert!(headers.contains_key("access-control-allow-methods"));
+
+    // Fallback methods should be "GET, POST, OPTIONS"
+    let methods = headers.get("access-control-allow-methods").unwrap();
+    assert_eq!(methods, "GET, POST, OPTIONS");
+}
