@@ -1,13 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { taskAPI } from './task-api';
-import { setupMockServer } from '../tests/mocks/setup';
 import {
   resetTasksStore,
   getTasksStore,
 } from '../tests/mocks/graphql-handlers';
-
-// Setup MSW server
-setupMockServer();
 
 describe('taskAPI', () => {
   beforeEach(() => {
