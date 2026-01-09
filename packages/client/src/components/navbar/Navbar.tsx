@@ -49,9 +49,9 @@ export const Navbar = ({
 
   return (
     <nav
-      className={`w-full flex sticky items-center gap-4 px-4 py-2 flex-row justify-between h-14 md:h-18 lg:h-22 ${styles.navbar} ${className}`}
+      className={`w-full flex sticky items-center px-4 py-2 flex-row h-14 md:h-18 lg:h-22 ${styles.navbar} ${className}`}
     >
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex-1 flex flex-row items-center gap-4">
         <NavbarIcon
           iconName="search"
           isOpen={isSearchOpen}
@@ -61,10 +61,20 @@ export const Navbar = ({
         <div className={`block md:hidden ${styles.today}`}>
           {formatCurrentDate()}
         </div>
+      </div>
+
+      <div className="flex justify-center">
         <h1 className={`hidden md:block ${styles.title}`}>Alle</h1>
       </div>
 
-      <div className="flex flex-row gap-1">
+      <div className="flex-1 flex flex-row gap-1 items-center justify-end">
+        <button
+          onClick={() => onNavigateToday?.()}
+          className="px-3 py-1 rounded bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors mr-2"
+          data-testid="today-button"
+        >
+          Today
+        </button>
         <NavbarIcon
           iconName="keyboard_double_arrow_left"
           isOpen={false}
@@ -76,13 +86,6 @@ export const Navbar = ({
           isOpen={false}
           handleClick={() => onNavigatePrevDay?.()}
           handleKeyDown={() => {}}
-        />
-        <NavbarIcon
-          iconName="calendar_today"
-          isOpen={false}
-          handleClick={() => onNavigateToday?.()}
-          handleKeyDown={() => {}}
-          data-testid="today-button"
         />
         <NavbarIcon
           iconName="keyboard_arrow_right"

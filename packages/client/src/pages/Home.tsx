@@ -1,8 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Navbar } from '../components/navbar/Navbar';
 import { CalendarView } from '../components/calendar/calendar-view/CalendarView';
+import { SearchPanel } from '../components/search/SearchPanel';
+import { SettingsPanel } from '../components/settings/SettingsPanel';
+import { ColumnControls } from '../components/column-controls/ColumnControls';
 import type { Task } from '../components/calendar/task-item/TaskItem.types';
+import type { UserSettings } from '../types/settings.types';
+import { DEFAULT_SETTINGS } from '../types/settings.types';
 import { taskAPI } from '../api/task-api';
+import { settingsAPI } from '../api/settings-api';
 
 export const Home = () => {
   // Initialize with today's date at midnight for the center of the 5-day view
@@ -10,6 +16,55 @@ export const Home = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [numDays, setNumDays] = useState(5);
+  const [isAutoMode, setIsAutoMode] = useState(true);
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
+
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const fetchedSettings = await settingsAPI.getSettings();
+        setSettings(fetchedSettings);
+      } catch (err) {
+        console.error('Error loading settings:', err);
+        // Will use DEFAULT_SETTINGS
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  // Calculate number of days based on window width (only in auto mode)
+  useEffect(() => {
+    const calculateNumDays = () => {
+      if (!isAutoMode) return; // Skip if in manual mode
+
+      const width = window.innerWidth;
+      const { autoColumnBreakpoints, autoColumnCounts } = settings;
+
+      if (width < autoColumnBreakpoints.small) {
+        setNumDays(autoColumnCounts.small);
+      } else if (width < autoColumnBreakpoints.medium) {
+        setNumDays(autoColumnCounts.medium);
+      } else if (width < autoColumnBreakpoints.large) {
+        setNumDays(autoColumnCounts.large);
+      } else if (width < autoColumnBreakpoints.xlarge) {
+        setNumDays(autoColumnCounts.xlarge);
+      } else {
+        setNumDays(autoColumnCounts.xxlarge);
+      }
+    };
+
+    // Calculate on mount
+    calculateNumDays();
+
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateNumDays);
+    return () => window.removeEventListener('resize', calculateNumDays);
+  }, [isAutoMode, settings]);
 
   // Load tasks on mount
   useEffect(() => {
@@ -32,40 +87,45 @@ export const Home = () => {
 
   // Navigation handlers
   const handleNavigateToday = useCallback(() => {
-    setCurrentDate(new Date());
-  }, []);
+    const today = new Date();
+    if (settings.todayShowsPrevious) {
+      // Show previous day before today
+      today.setDate(today.getDate() - 1);
+    }
+    setCurrentDate(today);
+  }, [settings.todayShowsPrevious]);
 
   const handleNavigatePrevDay = useCallback(() => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() - 1);
+      newDate.setDate(newDate.getDate() - settings.singleArrowDays);
       return newDate;
     });
-  }, []);
+  }, [settings.singleArrowDays]);
 
   const handleNavigateNextDay = useCallback(() => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() + 1);
+      newDate.setDate(newDate.getDate() + settings.singleArrowDays);
       return newDate;
     });
-  }, []);
+  }, [settings.singleArrowDays]);
 
   const handleNavigatePrevWeek = useCallback(() => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() - 7);
+      newDate.setDate(newDate.getDate() - settings.doubleArrowDays);
       return newDate;
     });
-  }, []);
+  }, [settings.doubleArrowDays]);
 
   const handleNavigateNextWeek = useCallback(() => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() + 7);
+      newDate.setDate(newDate.getDate() + settings.doubleArrowDays);
       return newDate;
     });
-  }, []);
+  }, [settings.doubleArrowDays]);
 
   // Task handlers
   const handleAddTask = useCallback(async (date: Date, text: string) => {
@@ -125,6 +185,44 @@ export const Home = () => {
     []
   );
 
+  // Search handler
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => !prev);
+  }, []);
+
+  // Column control handlers
+  const handleDecreaseColumns = useCallback(() => {
+    if (numDays > 1) {
+      setNumDays((prev) => prev - 1);
+      setIsAutoMode(false); // Switch to manual mode
+    }
+  }, [numDays]);
+
+  const handleIncreaseColumns = useCallback(() => {
+    setNumDays((prev) => prev + 1);
+    setIsAutoMode(false); // Switch to manual mode
+  }, []);
+
+  const handleToggleAuto = useCallback(() => {
+    setIsAutoMode((prev) => !prev);
+  }, []);
+
+  // Settings handlers
+  const handleOpenSettings = useCallback(() => {
+    setIsSettingsOpen(true);
+  }, []);
+
+  const handleSaveSettings = useCallback(async (newSettings: UserSettings) => {
+    try {
+      const updatedSettings = await settingsAPI.updateSettings(newSettings);
+      setSettings(updatedSettings);
+      setError(null);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setError('Failed to save settings');
+    }
+  }, []);
+
   return (
     <div className="h-screen flex flex-col">
       <Navbar
@@ -134,6 +232,7 @@ export const Home = () => {
         onNavigateNextDay={handleNavigateNextDay}
         onNavigatePrevWeek={handleNavigatePrevWeek}
         onNavigateNextWeek={handleNavigateNextWeek}
+        onSearchToggle={handleSearchToggle}
       />
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 relative">
@@ -146,11 +245,25 @@ export const Home = () => {
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden w-full">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500">Loading tasks...</div>
           </div>
+        ) : isSearchOpen ? (
+          <SearchPanel
+            tasks={tasks}
+            onToggleTask={handleToggleTask}
+            onDeleteTask={handleDeleteTask}
+            onEditTask={handleEditTask}
+            onClose={() => setIsSearchOpen(false)}
+          />
+        ) : isSettingsOpen ? (
+          <SettingsPanel
+            settings={settings}
+            onSave={handleSaveSettings}
+            onClose={() => setIsSettingsOpen(false)}
+          />
         ) : (
           <CalendarView
             tasks={tasks}
@@ -158,17 +271,22 @@ export const Home = () => {
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
             onEditTask={handleEditTask}
-            startDate={(() => {
-              // Calculate start date as 2 days before currentDate
-              // This creates a view showing: 2 past days, today, 2 future days
-              const start = new Date(currentDate);
-              start.setDate(start.getDate() - 2);
-              return start;
-            })()}
-            numDays={5}
+            startDate={currentDate}
+            numDays={numDays}
+            columnMinWidth={settings.columnMinWidth}
           />
         )}
       </div>
+      {!isSearchOpen && !isSettingsOpen && (
+        <ColumnControls
+          numDays={numDays}
+          isAutoMode={isAutoMode}
+          onDecrease={handleDecreaseColumns}
+          onIncrease={handleIncreaseColumns}
+          onToggleAuto={handleToggleAuto}
+          onOpenSettings={handleOpenSettings}
+        />
+      )}
     </div>
   );
 };

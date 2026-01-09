@@ -3,6 +3,9 @@ services:
   client:
     build: ./packages/client
     container_name: alle-client
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     ports:
       - "5173:5173"
     volumes:
@@ -13,6 +16,9 @@ services:
   server:
     build: ./packages/server
     container_name: alle-server
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     ports:
       - "8000:8000"
     environment:

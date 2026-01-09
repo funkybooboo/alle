@@ -10,6 +10,7 @@ export const CalendarView = ({
   onEditTask,
   startDate = new Date(),
   numDays = 7,
+  columnMinWidth = 300,
   className = '',
 }: CalendarViewProps) => {
   // Generate array of dates starting from startDate
@@ -41,7 +42,10 @@ export const CalendarView = ({
   return (
     <div
       data-testid="calendar-view"
-      className={`flex h-full overflow-x-auto ${className}`}
+      className={`grid h-full w-full overflow-x-auto ${className}`}
+      style={{
+        gridTemplateColumns: `repeat(${numDays}, minmax(${columnMinWidth}px, 1fr))`,
+      }}
     >
       {dates.map((date) => {
         const dateKey = date.toDateString();

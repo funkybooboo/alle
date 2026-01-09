@@ -8,5 +8,6 @@ export interface CalendarViewProps {
   onEditTask?: (taskId: string, newText: string) => void;
   startDate?: Date;
   numDays?: number;
+  columnMinWidth?: number;
   className?: string;
 }

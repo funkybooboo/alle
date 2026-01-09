@@ -2,6 +2,7 @@ pub use sea_orm_migration::{MigrationTrait, MigratorTrait};
 
 mod m20250101_000001_create_tasks_table;
 mod m20250102_000001_add_date_to_tasks;
+mod m20260108_000001_create_settings_table;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20250101_000001_create_tasks_table::Migration),
             Box::new(m20250102_000001_add_date_to_tasks::Migration),
+            Box::new(m20260108_000001_create_settings_table::Migration),
         ]
     }
 }
