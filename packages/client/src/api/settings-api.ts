@@ -14,6 +14,8 @@ const GET_SETTINGS = gql`
       doubleArrowDays
       autoColumnBreakpoints
       autoColumnCounts
+      drawerHeight
+      drawerIsOpen
     }
   }
 `;
@@ -26,6 +28,8 @@ const UPDATE_SETTINGS = gql`
     $doubleArrowDays: Int
     $autoColumnBreakpoints: JSON
     $autoColumnCounts: JSON
+    $drawerHeight: Int
+    $drawerIsOpen: Boolean
   ) {
     updateSettings(
       input: {
@@ -35,6 +39,8 @@ const UPDATE_SETTINGS = gql`
         doubleArrowDays: $doubleArrowDays
         autoColumnBreakpoints: $autoColumnBreakpoints
         autoColumnCounts: $autoColumnCounts
+        drawerHeight: $drawerHeight
+        drawerIsOpen: $drawerIsOpen
       }
     ) {
       id
@@ -44,6 +50,8 @@ const UPDATE_SETTINGS = gql`
       doubleArrowDays
       autoColumnBreakpoints
       autoColumnCounts
+      drawerHeight
+      drawerIsOpen
     }
   }
 `;
@@ -57,6 +65,8 @@ interface GraphQLSettings {
   doubleArrowDays: number;
   autoColumnBreakpoints: string | object;
   autoColumnCounts: string | object;
+  drawerHeight: number;
+  drawerIsOpen: boolean;
 }
 
 // Convert GraphQL settings to frontend UserSettings type
@@ -80,6 +90,8 @@ const toSettings = (gqlSettings: GraphQLSettings): UserSettings => {
     doubleArrowDays: gqlSettings.doubleArrowDays,
     autoColumnBreakpoints: breakpoints,
     autoColumnCounts: counts,
+    drawerHeight: gqlSettings.drawerHeight,
+    drawerIsOpen: gqlSettings.drawerIsOpen,
   };
 };
 
@@ -107,6 +119,8 @@ export const settingsAPI = {
       doubleArrowDays: settings.doubleArrowDays,
       autoColumnBreakpoints: settings.autoColumnBreakpoints,
       autoColumnCounts: settings.autoColumnCounts,
+      drawerHeight: settings.drawerHeight,
+      drawerIsOpen: settings.drawerIsOpen,
     });
     return toSettings(data.updateSettings);
   },

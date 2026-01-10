@@ -17,6 +17,8 @@ export interface UserSettings {
     xlarge: number; // Number of columns for extra large screens
     xxlarge: number; // Number of columns for ultra-wide screens
   };
+  drawerHeight: number; // Height of the someday drawer in pixels
+  drawerIsOpen: boolean; // Whether the someday drawer is open
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -37,4 +39,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
     xlarge: 5,
     xxlarge: 7,
   },
+  drawerHeight: 300,
+  drawerIsOpen: true,
 };

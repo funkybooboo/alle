@@ -7,6 +7,7 @@ interface NavbarIconProps {
   handleClick: () => void;
   handleKeyDown: (event: React.KeyboardEvent) => void;
   'data-testid'?: string;
+  title?: string;
 }
 
 export const NavbarIcon = ({
@@ -15,16 +16,18 @@ export const NavbarIcon = ({
   handleClick,
   handleKeyDown,
   'data-testid': dataTestId,
+  title,
 }: NavbarIconProps) => {
   return (
     <button
       type="button"
       data-testid={dataTestId}
-      aria-label={iconName}
+      aria-label={title || iconName}
       aria-expanded={isOpen}
       aria-controls="search-panel"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      title={title}
       className={`p-2 rounded-full flex items-center justify-center ${styles.iconButton}`}
     >
       <span className="material-symbols-outlined" aria-hidden="true">

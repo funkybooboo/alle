@@ -7,6 +7,8 @@ export const ColumnControls = ({
   onIncrease,
   onToggleAuto,
   onOpenSettings,
+  onOpenHelp,
+  onOpenTrash,
 }: ColumnControlsProps) => {
   return (
     <div className="h-10 border-t border-gray-200 bg-gray-50 flex items-center justify-between px-4">
@@ -56,8 +58,24 @@ export const ColumnControls = ({
       </button>
       </div>
 
-      {/* Spacer for visual balance */}
-      <div className="w-[100px]" />
+      {/* Help and Trash buttons on the right */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenHelp}
+          className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700"
+          aria-label="Help"
+          title="Help (Ctrl+K)"
+        >
+          <span className="material-symbols-outlined text-sm">help</span>
+        </button>
+        <button
+          onClick={onOpenTrash}
+          className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700"
+          aria-label="Trash"
+        >
+          <span className="material-symbols-outlined text-sm">delete</span>
+        </button>
+      </div>
     </div>
   );
 };

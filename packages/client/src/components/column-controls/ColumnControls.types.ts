@@ -5,4 +5,6 @@ export interface ColumnControlsProps {
   onIncrease: () => void;
   onToggleAuto: () => void;
   onOpenSettings: () => void;
+  onOpenHelp: () => void;
+  onOpenTrash: () => void;
 }

@@ -12,13 +12,20 @@ export const Navbar = ({
   onNavigatePrevWeek,
   onNavigateNextWeek,
   onSearchToggle,
+  onCalendarToggle,
   className = '',
 }: NavbarProps) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleSearchToggle = () => {
     setIsSearchOpen(!isSearchOpen);
     onSearchToggle?.();
+  };
+
+  const handleCalendarToggle = () => {
+    setIsCalendarOpen(!isCalendarOpen);
+    onCalendarToggle?.();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -49,7 +56,7 @@ export const Navbar = ({
 
   return (
     <nav
-      className={`w-full flex sticky items-center px-4 py-2 flex-row h-14 md:h-18 lg:h-22 ${styles.navbar} ${className}`}
+      className={`w-full flex sticky items-center px-4 py-1 flex-row h-10 ${styles.navbar} ${className}`}
     >
       <div className="flex-1 flex flex-row items-center gap-4">
         <NavbarIcon
@@ -57,6 +64,7 @@ export const Navbar = ({
           isOpen={isSearchOpen}
           handleClick={handleSearchToggle}
           handleKeyDown={handleKeyDown}
+          title="Search (/)"
         />
         <div className={`block md:hidden ${styles.today}`}>
           {formatCurrentDate()}
@@ -72,6 +80,8 @@ export const Navbar = ({
           onClick={() => onNavigateToday?.()}
           className="px-3 py-1 rounded bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors mr-2"
           data-testid="today-button"
+          title="Today (t)"
+          aria-label="Go to today"
         >
           Today
         </button>
@@ -80,24 +90,35 @@ export const Navbar = ({
           isOpen={false}
           handleClick={() => onNavigatePrevWeek?.()}
           handleKeyDown={() => {}}
+          title="Previous week (Shift+H)"
         />
         <NavbarIcon
           iconName="keyboard_arrow_left"
           isOpen={false}
           handleClick={() => onNavigatePrevDay?.()}
           handleKeyDown={() => {}}
+          title="Previous day (h)"
         />
         <NavbarIcon
           iconName="keyboard_arrow_right"
           isOpen={false}
           handleClick={() => onNavigateNextDay?.()}
           handleKeyDown={() => {}}
+          title="Next day (l)"
         />
         <NavbarIcon
           iconName="keyboard_double_arrow_right"
           isOpen={false}
           handleClick={() => onNavigateNextWeek?.()}
           handleKeyDown={() => {}}
+          title="Next week (Shift+L)"
+        />
+        <NavbarIcon
+          iconName="calendar_month"
+          isOpen={isCalendarOpen}
+          handleClick={handleCalendarToggle}
+          handleKeyDown={() => {}}
+          title="Calendar (g)"
         />
       </div>
     </nav>

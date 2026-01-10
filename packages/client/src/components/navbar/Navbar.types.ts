@@ -6,5 +6,6 @@ export interface NavbarProps {
   onNavigatePrevWeek?: () => void;
   onNavigateNextWeek?: () => void;
   onSearchToggle?: () => void;
+  onCalendarToggle?: () => void;
   className?: string;
 }
