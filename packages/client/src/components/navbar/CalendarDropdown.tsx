@@ -19,14 +19,18 @@ export const CalendarDropdown = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
 
@@ -62,8 +66,18 @@ export const CalendarDropdown = ({
   }
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   return (
@@ -84,7 +98,9 @@ export const CalendarDropdown = ({
           }}
           className="p-1 hover:bg-gray-100 rounded"
         >
-          <span className="material-symbols-outlined text-xl">chevron_left</span>
+          <span className="material-symbols-outlined text-xl">
+            chevron_left
+          </span>
         </button>
 
         <span className="font-semibold">
@@ -102,21 +118,24 @@ export const CalendarDropdown = ({
           }}
           className="p-1 hover:bg-gray-100 rounded"
         >
-          <span className="material-symbols-outlined text-xl">chevron_right</span>
+          <span className="material-symbols-outlined text-xl">
+            chevron_right
+          </span>
         </button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-          <div key={day} className="text-xs text-gray-500 text-center font-medium p-2">
+          <div
+            key={day}
+            className="text-xs text-gray-500 text-center font-medium p-2"
+          >
             {day}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
-        {days}
-      </div>
+      <div className="grid grid-cols-7 gap-1">{days}</div>
     </div>
   );
 };

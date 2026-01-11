@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
 import { graphqlClient } from './graphql-client';
-import type { UserSettings } from '../types/settings.types';
-import { DEFAULT_SETTINGS } from '../types/settings.types';
+import type { UserSettings, KeyboardShortcuts } from '../types/settings.types';
+import { DEFAULT_SETTINGS, DEFAULT_SHORTCUTS } from '../types/settings.types';
 
 // GraphQL Queries
 const GET_SETTINGS = gql`
@@ -16,6 +16,7 @@ const GET_SETTINGS = gql`
       autoColumnCounts
       drawerHeight
       drawerIsOpen
+      theme
     }
   }
 `;
@@ -30,6 +31,7 @@ const UPDATE_SETTINGS = gql`
     $autoColumnCounts: JSON
     $drawerHeight: Int
     $drawerIsOpen: Boolean
+    $theme: Theme
   ) {
     updateSettings(
       input: {
@@ -41,6 +43,7 @@ const UPDATE_SETTINGS = gql`
         autoColumnCounts: $autoColumnCounts
         drawerHeight: $drawerHeight
         drawerIsOpen: $drawerIsOpen
+        theme: $theme
       }
     ) {
       id
@@ -52,6 +55,7 @@ const UPDATE_SETTINGS = gql`
       autoColumnCounts
       drawerHeight
       drawerIsOpen
+      theme
     }
   }
 `;
@@ -67,6 +71,7 @@ interface GraphQLSettings {
   autoColumnCounts: string | object;
   drawerHeight: number;
   drawerIsOpen: boolean;
+  theme: 'LIGHT' | 'DARK';
 }
 
 // Convert GraphQL settings to frontend UserSettings type
@@ -82,6 +87,30 @@ const toSettings = (gqlSettings: GraphQLSettings): UserSettings => {
       ? JSON.parse(gqlSettings.autoColumnCounts)
       : gqlSettings.autoColumnCounts;
 
+  // Load visual settings from localStorage
+  const storedFontSize = localStorage.getItem('alle_fontSize') as
+    | 'small'
+    | 'medium'
+    | 'large'
+    | null;
+  const storedFontType = localStorage.getItem('alle_fontType') as
+    | 'sans'
+    | 'serif'
+    | 'mono'
+    | 'opendyslexic'
+    | null;
+
+  // Load keyboard shortcuts from localStorage
+  let keyboardShortcuts: KeyboardShortcuts = DEFAULT_SHORTCUTS;
+  const storedShortcuts = localStorage.getItem('alle_keyboardShortcuts');
+  if (storedShortcuts) {
+    try {
+      keyboardShortcuts = JSON.parse(storedShortcuts);
+    } catch (e) {
+      console.error('Failed to parse keyboard shortcuts from localStorage', e);
+    }
+  }
+
   return {
     id: gqlSettings.id,
     columnMinWidth: gqlSettings.columnMinWidth,
@@ -92,6 +121,10 @@ const toSettings = (gqlSettings: GraphQLSettings): UserSettings => {
     autoColumnCounts: counts,
     drawerHeight: gqlSettings.drawerHeight,
     drawerIsOpen: gqlSettings.drawerIsOpen,
+    theme: gqlSettings.theme,
+    keyboardShortcuts,
+    fontSize: storedFontSize || DEFAULT_SETTINGS.fontSize,
+    fontType: storedFontType || DEFAULT_SETTINGS.fontType,
   };
 };
 
@@ -110,6 +143,20 @@ export const settingsAPI = {
   },
 
   async updateSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
+    // Persist visual settings to localStorage
+    if (settings.fontSize) {
+      localStorage.setItem('alle_fontSize', settings.fontSize);
+    }
+    if (settings.fontType) {
+      localStorage.setItem('alle_fontType', settings.fontType);
+    }
+    if (settings.keyboardShortcuts) {
+      localStorage.setItem(
+        'alle_keyboardShortcuts',
+        JSON.stringify(settings.keyboardShortcuts)
+      );
+    }
+
     const data = await graphqlClient.request<{
       updateSettings: GraphQLSettings;
     }>(UPDATE_SETTINGS, {
@@ -121,6 +168,7 @@ export const settingsAPI = {
       autoColumnCounts: settings.autoColumnCounts,
       drawerHeight: settings.drawerHeight,
       drawerIsOpen: settings.drawerIsOpen,
+      theme: settings.theme,
     });
     return toSettings(data.updateSettings);
   },

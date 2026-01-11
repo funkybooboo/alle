@@ -1,4 +1,9 @@
+pub mod color_presets;
 pub mod settings;
 pub mod someday;
+pub mod tag_presets;
+pub mod task_attachments;
+pub mod task_links;
+pub mod task_tags;
 pub mod tasks;
 pub mod trash;

@@ -6,7 +6,11 @@ export interface FadeTransitionProps {
   duration?: number;
 }
 
-export const FadeTransition = ({ show, children, duration = 150 }: FadeTransitionProps) => {
+export const FadeTransition = ({
+  show,
+  children,
+  duration = 150,
+}: FadeTransitionProps) => {
   const [shouldRender, setShouldRender] = useState(show);
   const [isVisible, setIsVisible] = useState(false);
 

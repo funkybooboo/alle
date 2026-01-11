@@ -16,6 +16,7 @@ pub struct Model {
     pub auto_column_counts: String,      // JSON
     pub drawer_height: i32,
     pub drawer_is_open: bool,
+    pub theme: String, // "light" or "dark"
     pub created_at: DateTimeUtc,
     pub updated_at: DateTimeUtc,
 }

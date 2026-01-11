@@ -3,12 +3,22 @@
   border-bottom: 1px solid var(--color-navbar-border);
 }
 
+:global(.dark) .navbar {
+  background-color: rgb(31 41 55);
+  border-bottom: 1px solid rgb(55 65 81);
+}
+
 .today {
   font-weight: bold;
   color: black;
   border-radius: 5px;
   padding: 8px;
   background-color: var(--color-translucent-alt-heavy);
+}
+
+:global(.dark) .today {
+  color: white;
+  background-color: rgba(59, 130, 246, 0.3);
 }
 
 .title {

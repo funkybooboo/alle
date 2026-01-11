@@ -1,28 +1,34 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-export interface ColumnProps<T> {
+export interface ColumnProps<
+  T extends { id: string | number },
+  EditArgs extends unknown[] = [string],
+> {
   header: ReactNode;
   tasks: T[];
   TaskItemComponent: React.ComponentType<{
     task: T;
-    onToggle?: (id: any) => void;
-    onDelete?: (id: any) => void;
-    onEdit?: (id: any, ...args: any[]) => void;
+    onToggle?: (id: T['id']) => void;
+    onDelete?: (id: T['id']) => void;
+    onEdit?: (id: T['id'], ...args: EditArgs) => void;
   }>;
   TaskInputComponent: React.ComponentType<{
     onAdd: (text: string) => void;
     placeholder?: string;
   }>;
-  onToggleTask?: (id: any) => void;
-  onDeleteTask?: (id: any) => void;
-  onEditTask?: (id: any, ...args: any[]) => void;
+  onToggleTask?: (id: T['id']) => void;
+  onDeleteTask?: (id: T['id']) => void;
+  onEditTask?: (id: T['id'], ...args: EditArgs) => void;
   onAddTask?: (text: string) => void;
   inputPlaceholder?: string;
   isHighlighted?: boolean;
   className?: string;
 }
 
-export function Column<T>({
+export function Column<
+  T extends { id: string | number },
+  EditArgs extends unknown[] = [string],
+>({
   header,
   tasks,
   TaskItemComponent,
@@ -34,22 +40,24 @@ export function Column<T>({
   inputPlaceholder = 'Add a task...',
   isHighlighted = false,
   className = '',
-}: ColumnProps<T>) {
+}: ColumnProps<T, EditArgs>) {
   return (
     <div
-      className={`flex flex-col border-r border-gray-200 ${
-        isHighlighted ? 'bg-blue-50' : 'bg-white'
+      className={`flex flex-col border-r border-gray-200 dark:border-gray-700 ${
+        isHighlighted
+          ? 'bg-blue-50 dark:bg-gray-800'
+          : 'bg-white dark:bg-gray-900'
       } ${className}`}
     >
       {/* Header */}
-      <div className="px-4 py-1.5 border-b border-gray-200 bg-gray-50">
+      <div className="px-4 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         {header}
       </div>
 
       {/* Task List */}
       <div className="flex-1 overflow-y-auto">
         <div>
-          {tasks.map((task: any) => (
+          {tasks.map((task) => (
             <TaskItemComponent
               key={task.id}
               task={task}

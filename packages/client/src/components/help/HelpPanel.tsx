@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { PanelModal } from '../shared/PanelModal';
 
 export interface HelpPanelProps {
   onClose: () => void;
@@ -13,47 +14,38 @@ const shortcuts: ShortcutSection[] = [
   {
     title: 'Navigation',
     shortcuts: [
-      { keys: 'h / ←', description: 'Previous day' },
-      { keys: 'l / →', description: 'Next day' },
-      { keys: 'H / Shift+←', description: 'Previous week' },
-      { keys: 'L / Shift+→', description: 'Next week' },
-      { keys: 't', description: 'Go to today' },
-      { keys: 'g', description: 'Open calendar picker' },
+      { keys: '← / ArrowLeft', description: 'Previous day' },
+      { keys: '→ / ArrowRight', description: 'Next day' },
+      { keys: 'Shift+← / Shift+ArrowLeft', description: 'Previous week' },
+      { keys: 'Shift+→ / Shift+ArrowRight', description: 'Next week' },
+      { keys: 'Home', description: 'Go to today' },
     ],
   },
   {
-    title: 'Views',
+    title: 'Panels',
     shortcuts: [
-      { keys: '/', description: 'Open search' },
-      { keys: 'd', description: 'Toggle someday drawer' },
-      { keys: 's', description: 'Open settings' },
-      { keys: 'Ctrl+K', description: 'Open keyboard shortcuts' },
+      { keys: ',', description: 'Toggle search' },
+      { keys: 'Alt+,', description: 'Toggle settings' },
+      { keys: 'Alt+T', description: 'Toggle trash' },
+      { keys: 'Alt+C', description: 'Toggle calendar picker' },
+      { keys: '?', description: 'Toggle keyboard shortcuts' },
       { keys: 'Esc', description: 'Close current panel' },
     ],
   },
   {
-    title: 'Columns',
+    title: 'View Controls',
     shortcuts: [
-      { keys: '-', description: 'Decrease columns' },
-      { keys: '+', description: 'Increase columns' },
-      { keys: 'a', description: 'Toggle auto mode' },
+      { keys: '[', description: 'Decrease columns' },
+      { keys: ']', description: 'Increase columns' },
+      { keys: 'Alt+A', description: 'Toggle auto column mode' },
+      { keys: 'Alt+Shift+D', description: 'Toggle dark mode' },
     ],
   },
   {
-    title: 'Tasks',
+    title: 'Task Editing',
     shortcuts: [
-      { keys: 'n', description: 'New task (in focused column)' },
       { keys: 'Enter', description: 'Save task' },
       { keys: 'Esc', description: 'Cancel editing' },
-      { keys: 'Space', description: 'Toggle task completion' },
-      { keys: 'Backspace', description: 'Delete task' },
-    ],
-  },
-  {
-    title: 'Other',
-    shortcuts: [
-      { keys: '?', description: 'Show help menu' },
-      { keys: 'r', description: 'Open trash' },
     ],
   },
 ];
@@ -71,63 +63,58 @@ export const HelpPanel = ({ onClose }: HelpPanelProps) => {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">Keyboard Shortcuts</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close"
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 gap-8">
-            {shortcuts.map((section) => (
-              <div key={section.title}>
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">
-                  {section.title}
-                </h3>
-                <div className="space-y-2">
-                  {section.shortcuts.map((shortcut) => (
-                    <div
-                      key={shortcut.keys}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {shortcut.description}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        {shortcut.keys.split(' / ').map((key, idx) => (
-                          <span key={idx}>
-                            {idx > 0 && (
-                              <span className="text-gray-400 mx-1">/</span>
-                            )}
-                            <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded shadow-sm">
-                              {key}
-                            </kbd>
-                          </span>
-                        ))}
-                      </div>
+    <PanelModal
+      title="Keyboard Shortcuts"
+      onClose={onClose}
+      footer={
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Press{' '}
+          <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+            ?
+          </kbd>{' '}
+          or{' '}
+          <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+            Esc
+          </kbd>{' '}
+          to close
+        </p>
+      }
+    >
+      <div className="h-full overflow-y-auto p-6">
+        <div className="grid grid-cols-2 gap-8">
+          {shortcuts.map((section) => (
+            <div key={section.title}>
+              <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
+                {section.title}
+              </h3>
+              <div className="space-y-2">
+                {section.shortcuts.map((shortcut) => (
+                  <div
+                    key={shortcut.keys}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {shortcut.description}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {shortcut.keys.split(' / ').map((key, idx) => (
+                        <span key={idx}>
+                          {idx > 0 && (
+                            <span className="text-gray-400 dark:text-gray-500 mx-1">/</span>
+                          )}
+                          <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                            {key}
+                          </kbd>
+                        </span>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 text-sm text-gray-500">
-          Press <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded">Esc</kbd> or{' '}
-          <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded">?</kbd> to close
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    </PanelModal>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavbarIcon } from './NavbarIcon';
+import { IconButton } from '../shared/IconButton';
 import type { NavbarProps } from './Navbar.types';
 import styles from './Navbar.module.css';
 import '../../utils.css';
@@ -28,12 +28,6 @@ export const Navbar = ({
     onCalendarToggle?.();
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape' && isSearchOpen) {
-      setIsSearchOpen(false);
-    }
-  };
-
   const formatCurrentDate = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -56,15 +50,14 @@ export const Navbar = ({
 
   return (
     <nav
-      className={`w-full flex sticky items-center px-4 py-1 flex-row h-10 ${styles.navbar} ${className}`}
+      className={`w-full flex sticky top-0 z-50 items-center px-4 py-1 flex-row h-10 ${styles.navbar} ${className}`}
     >
       <div className="flex-1 flex flex-row items-center gap-4">
-        <NavbarIcon
-          iconName="search"
-          isOpen={isSearchOpen}
-          handleClick={handleSearchToggle}
-          handleKeyDown={handleKeyDown}
-          title="Search (/)"
+        <IconButton
+          icon="search"
+          toggled={isSearchOpen}
+          onClick={handleSearchToggle}
+          label="Search (,)"
         />
         <div className={`block md:hidden ${styles.today}`}>
           {formatCurrentDate()}
@@ -72,53 +65,44 @@ export const Navbar = ({
       </div>
 
       <div className="flex justify-center">
-        <h1 className={`hidden md:block ${styles.title}`}>Alle</h1>
+        <h1
+          className={`hidden md:block font-[Courier_New,Courier,monospace] font-bold text-lg`}
+        >
+          Alle
+        </h1>
       </div>
 
       <div className="flex-1 flex flex-row gap-1 items-center justify-end">
-        <button
+        <IconButton
+          icon="today"
           onClick={() => onNavigateToday?.()}
-          className="px-3 py-1 rounded bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors mr-2"
-          data-testid="today-button"
-          title="Today (t)"
-          aria-label="Go to today"
-        >
-          Today
-        </button>
-        <NavbarIcon
-          iconName="keyboard_double_arrow_left"
-          isOpen={false}
-          handleClick={() => onNavigatePrevWeek?.()}
-          handleKeyDown={() => {}}
-          title="Previous week (Shift+H)"
+          label="Go to today (Home)"
         />
-        <NavbarIcon
-          iconName="keyboard_arrow_left"
-          isOpen={false}
-          handleClick={() => onNavigatePrevDay?.()}
-          handleKeyDown={() => {}}
-          title="Previous day (h)"
+        <IconButton
+          icon="keyboard_double_arrow_left"
+          onClick={() => onNavigatePrevWeek?.()}
+          label="Previous week (Shift+←)"
         />
-        <NavbarIcon
-          iconName="keyboard_arrow_right"
-          isOpen={false}
-          handleClick={() => onNavigateNextDay?.()}
-          handleKeyDown={() => {}}
-          title="Next day (l)"
+        <IconButton
+          icon="keyboard_arrow_left"
+          onClick={() => onNavigatePrevDay?.()}
+          label="Previous day (←)"
         />
-        <NavbarIcon
-          iconName="keyboard_double_arrow_right"
-          isOpen={false}
-          handleClick={() => onNavigateNextWeek?.()}
-          handleKeyDown={() => {}}
-          title="Next week (Shift+L)"
+        <IconButton
+          icon="keyboard_arrow_right"
+          onClick={() => onNavigateNextDay?.()}
+          label="Next day (→)"
         />
-        <NavbarIcon
-          iconName="calendar_month"
-          isOpen={isCalendarOpen}
-          handleClick={handleCalendarToggle}
-          handleKeyDown={() => {}}
-          title="Calendar (g)"
+        <IconButton
+          icon="keyboard_double_arrow_right"
+          onClick={() => onNavigateNextWeek?.()}
+          label="Next week (Shift+→)"
+        />
+        <IconButton
+          icon="calendar_month"
+          toggled={isCalendarOpen}
+          onClick={handleCalendarToggle}
+          label="Calendar (Alt+C)"
         />
       </div>
     </nav>

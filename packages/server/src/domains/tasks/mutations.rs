@@ -9,16 +9,31 @@ pub struct TaskMutations;
 
 #[Object]
 impl TaskMutations {
-    /// Create a new task
+    /// Create a new task (calendar or someday)
     async fn create_task(&self, ctx: &Context<'_>, input: CreateTaskInput) -> Result<Task> {
         let app_ctx = ctx.data::<Arc<AppContext>>()?;
-        let date = input
-            .date
-            .parse::<chrono::DateTime<chrono::Utc>>()
-            .map_err(|e| Error::new(format!("Invalid date format: {}", e)))?;
+
+        // Parse date if provided
+        let date = if let Some(date_str) = input.date {
+            Some(
+                date_str
+                    .parse::<chrono::DateTime<chrono::Utc>>()
+                    .map_err(|e| Error::new(format!("Invalid date format: {}", e)))?,
+            )
+        } else {
+            None
+        };
+
         let task = app_ctx
             .task_repository
-            .create(input.title, date)
+            .create(
+                input.title,
+                date,
+                input.list_id,
+                input.position,
+                input.notes,
+                input.color,
+            )
             .await
             .map_err(|e| Error::new(format!("Database error: {}", e)))?;
         Ok(Task::from(task))
@@ -32,18 +47,30 @@ impl TaskMutations {
         input: UpdateTaskInput,
     ) -> Result<Task> {
         let app_ctx = ctx.data::<Arc<AppContext>>()?;
+
+        // Parse date if provided
         let date = if let Some(date_str) = input.date {
-            Some(
+            Some(Some(
                 date_str
                     .parse::<chrono::DateTime<chrono::Utc>>()
                     .map_err(|e| Error::new(format!("Invalid date format: {}", e)))?,
-            )
+            ))
         } else {
             None
         };
+
         let task = app_ctx
             .task_repository
-            .update(id, input.title, input.completed, date)
+            .update(
+                id,
+                input.title,
+                input.completed,
+                date,
+                input.list_id.map(Some),
+                input.position.map(Some),
+                input.notes.map(Some),
+                input.color.map(Some),
+            )
             .await
             .map_err(|e| Error::new(format!("Database error: {}", e)))?;
         Ok(Task::from(task))

@@ -1,6 +1,6 @@
-use sea_orm::*;
-use sea_orm::prelude::DateTimeUtc;
 use chrono::Utc;
+use sea_orm::prelude::DateTimeUtc;
+use sea_orm::*;
 
 use super::entity::{self, Entity as Trash};
 

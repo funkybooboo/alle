@@ -38,6 +38,7 @@ impl SettingsRepository {
             auto_column_counts: Set(default_counts.to_string()),
             drawer_height: Set(300),
             drawer_is_open: Set(true),
+            theme: Set("dark".to_string()),
             created_at: Set(now),
             updated_at: Set(now),
             ..Default::default()
@@ -57,6 +58,7 @@ impl SettingsRepository {
         auto_column_counts: Option<String>,
         drawer_height: Option<i32>,
         drawer_is_open: Option<bool>,
+        theme: Option<String>,
     ) -> Result<entity::Model, DbErr> {
         let current_settings = self.get().await?;
         let mut settings_active: entity::ActiveModel = current_settings.into();
@@ -84,6 +86,9 @@ impl SettingsRepository {
         }
         if let Some(val) = drawer_is_open {
             settings_active.drawer_is_open = Set(val);
+        }
+        if let Some(val) = theme {
+            settings_active.theme = Set(val);
         }
 
         settings_active.updated_at = Set(chrono::Utc::now());

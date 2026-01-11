@@ -25,6 +25,16 @@ async-graphql = "7.0"
 utoipa = { version = "5.3", features = ["chrono"] }
 utoipa-swagger-ui = { version = "8.0" }
 dotenvy = "0.15.7"
+axum = "0.8.8"
+async-graphql-axum = "7.1.0"
+tower-http = { version = "0.6.8", features = ["cors", "fs"] }
+tokio-stream = { version = "0.1.18", features = ["sync"] }
+futures-util = "0.3.31"
+rust-s3 = { version = "0.35", default-features = false, features = ["tokio-rustls-tls"] }
+tokio-util = { version = "0.7", features = ["io"] }
+bytes = "1.5"
+mime = "0.3"
+uuid = { version = "1.0", features = ["v4", "serde"] }
 
 [dev-dependencies]
 testcontainers = "0.23"

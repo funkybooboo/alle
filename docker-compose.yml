@@ -30,6 +30,11 @@ services:
       ALLE_SERVER_CORS_ORIGINS: http://localhost:3000,http://localhost:5173
       ALLE_SERVER_JWT_SECRET: ${ALLE_SERVER_JWT_SECRET:-change-this-secret-in-production}
       ALLE_SERVER_JWT_EXPIRATION: 86400
+      ALLE_SERVER_MINIO_ENDPOINT: minio:9000
+      ALLE_SERVER_MINIO_ACCESS_KEY: alle_access
+      ALLE_SERVER_MINIO_SECRET_KEY: alle_secret
+      ALLE_SERVER_MINIO_BUCKET: alle-attachments
+      ALLE_SERVER_MINIO_USE_SSL: "false"
     volumes:
       - server_data:/app/data
     restart: unless-stopped
@@ -40,7 +45,27 @@ services:
       retries: 3
       start_period: 40s
 
+  minio:
+    image: minio/minio:latest
+    container_name: alle-minio
+    ports:
+      - "9000:9000"      # API
+      - "9001:9001"      # Console
+    environment:
+      MINIO_ROOT_USER: alle_access
+      MINIO_ROOT_PASSWORD: alle_secret
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   server_node_modules:
   server_data:
   client_node_modules:
+  minio_data:

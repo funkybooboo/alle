@@ -1,4 +1,27 @@
-use async_graphql::{InputObject, SimpleObject};
+use async_graphql::{Enum, InputObject, SimpleObject};
+
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
+pub enum Theme {
+    Light,
+    Dark,
+}
+
+impl Theme {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Theme::Light => "light",
+            Theme::Dark => "dark",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "light" => Some(Theme::Light),
+            "dark" => Some(Theme::Dark),
+            _ => None,
+        }
+    }
+}
 
 #[derive(SimpleObject, Clone)]
 pub struct Settings {
@@ -11,6 +34,7 @@ pub struct Settings {
     pub auto_column_counts: String,      // JSON string
     pub drawer_height: i32,
     pub drawer_is_open: bool,
+    pub theme: Theme,
 }
 
 impl From<super::entity::Model> for Settings {
@@ -25,6 +49,7 @@ impl From<super::entity::Model> for Settings {
             auto_column_counts: model.auto_column_counts,
             drawer_height: model.drawer_height,
             drawer_is_open: model.drawer_is_open,
+            theme: Theme::from_str(&model.theme).unwrap_or(Theme::Light),
         }
     }
 }
@@ -39,4 +64,5 @@ pub struct UpdateSettingsInput {
     pub auto_column_counts: Option<String>,
     pub drawer_height: Option<i32>,
     pub drawer_is_open: Option<bool>,
+    pub theme: Option<Theme>,
 }

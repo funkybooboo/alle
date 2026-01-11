@@ -1,37 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn } from 'storybook/test';
+import type { Meta, StoryObj } from '@storybook/react';
+import { fn } from '@storybook/test';
+
 import { Navbar } from './Navbar';
 
 const meta = {
-  title: 'Components/Navbar/Navbar',
+  title: 'Components/Navbar',
   component: Navbar,
   parameters: {
     layout: 'fullscreen',
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    currentDate: {
-      control: 'date',
-      description: 'Current date displayed in the navbar',
-    },
-    onNavigateToday: {
-      action: 'navigate to today',
-    },
-    onNavigatePrevDay: {
-      action: 'navigate previous day',
-    },
-    onNavigateNextDay: {
-      action: 'navigate next day',
-    },
-    onNavigatePrevWeek: {
-      action: 'navigate previous week',
-    },
-    onNavigateNextWeek: {
-      action: 'navigate next week',
-    },
-    onSearchToggle: {
-      action: 'search toggled',
-    },
   },
   args: {
     onNavigateToday: fn(),
@@ -40,13 +16,27 @@ const meta = {
     onNavigatePrevWeek: fn(),
     onNavigateNextWeek: fn(),
     onSearchToggle: fn(),
+    onCalendarToggle: fn(),
+  },
+  argTypes: {
+    onNavigateToday: { action: 'onNavigateToday clicked' },
+    onNavigatePrevDay: { action: 'onNavigatePrevDay clicked' },
+    onNavigateNextDay: { action: 'onNavigateNextDay clicked' },
+    onNavigatePrevWeek: { action: 'onNavigatePrevWeek clicked' },
+    onNavigateNextWeek: { action: 'onNavigateNextWeek clicked' },
+    onSearchToggle: { action: 'onSearchToggle clicked' },
+    onCalendarToggle: { action: 'onCalendarToggle clicked' },
   },
 } satisfies Meta<typeof Navbar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    currentDate: new Date(),
+  },
+};
 
 export const WithCurrentDate: Story = {
   args: {

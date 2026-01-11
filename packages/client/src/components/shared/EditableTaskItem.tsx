@@ -13,7 +13,6 @@ export interface EditableTaskItemProps {
 }
 
 const EditableTaskItemComponent = ({
-  id,
   text,
   completed,
   onToggle,
@@ -52,14 +51,14 @@ const EditableTaskItemComponent = ({
   return (
     <div
       data-testid={testId}
-      className={`group flex items-center gap-2 py-2 px-3 hover:bg-gray-50 transition-colors ${className}`}
+      className={`group flex items-center gap-2 py-2 px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${className}`}
     >
       {/* Checkbox */}
       <input
         type="checkbox"
         checked={completed}
         onChange={handleToggle}
-        className="flex-shrink-0 w-5 h-5 border-2 border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer"
+        className="flex-shrink-0 w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
         aria-label={completed ? 'Mark as incomplete' : 'Mark as complete'}
       />
 
@@ -71,29 +70,35 @@ const EditableTaskItemComponent = ({
           onChange={(e) => setEditText(e.target.value)}
           onBlur={handleEdit}
           onKeyDown={handleKeyDown}
-          className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           autoFocus
+          aria-label="Edit task text"
         />
       ) : (
-        <div
+        <button
+          type="button"
           onClick={() => setIsEditing(true)}
-          className={`flex-1 text-left text-sm px-2 py-1 rounded hover:bg-gray-100 transition-colors cursor-pointer ${
-            completed ? 'line-through text-gray-400' : ''
+          className={`flex-1 text-left text-sm px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors cursor-pointer ${
+            completed ? 'line-through text-gray-400 dark:text-gray-500' : ''
           }`}
+          aria-label={`Edit task: ${text}`}
         >
           <MarkdownText>{text}</MarkdownText>
-        </div>
+        </button>
       )}
 
-      {/* Delete Button */}
+      {/* Delete Button - Visible on hover or focus */}
       <button
         type="button"
         data-testid={testId ? `${testId}-delete-button` : undefined}
         onClick={handleDelete}
-        className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+        className="flex-shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
         aria-label="Delete task"
       >
-        <span className="material-symbols-outlined text-sm text-red-600">
+        <span
+          className="material-symbols-outlined text-sm text-red-600 dark:text-red-400"
+          aria-hidden="true"
+        >
           close
         </span>
       </button>

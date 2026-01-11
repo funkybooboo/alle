@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TaskItem } from '../calendar/task-item/TaskItem';
+import { PanelModal } from '../shared/PanelModal';
 import type { SearchPanelProps } from './SearchPanel.types';
 
 export const SearchPanel = ({
@@ -10,6 +11,17 @@ export const SearchPanel = ({
   onClose,
 }: SearchPanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   // Filter and group tasks by date
   const searchResults = useMemo(() => {
@@ -69,18 +81,14 @@ export const SearchPanel = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Search Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3">
-        <button
-          onClick={onClose}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Close search"
-        >
-          <span className="material-symbols-outlined">close</span>
-        </button>
-        <div className="flex-1 relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+    <PanelModal
+      onClose={onClose}
+      headerContent={
+        <div className="relative">
+          <span
+            className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            aria-hidden="true"
+          >
             search
           </span>
           <input
@@ -90,24 +98,57 @@ export const SearchPanel = ({
             placeholder="Search todos..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             autoFocus
+            aria-label="Search todos"
           />
         </div>
-      </div>
-
-      {/* Search Results */}
-      <div className="flex-1 overflow-y-auto">
+      }
+      footer={
+        searchQuery.trim() && searchResults.length > 0 ? (
+          <div
+            className="text-sm text-gray-600"
+            role="status"
+            aria-live="polite"
+          >
+            Found{' '}
+            {searchResults.reduce((acc, [, tasks]) => acc + tasks.length, 0)}{' '}
+            todo
+            {searchResults.reduce((acc, [, tasks]) => acc + tasks.length, 0) !==
+            1
+              ? 's'
+              : ''}{' '}
+            across {searchResults.length} date
+            {searchResults.length !== 1 ? 's' : ''}
+          </div>
+        ) : undefined
+      }
+    >
+      <div
+        className="h-full overflow-y-auto"
+        role="region"
+        aria-label="Search results"
+      >
         {!searchQuery.trim() ? (
-          <div className="px-4 py-8 text-center text-gray-400 text-sm">
+          <div
+            className="px-4 py-8 text-center text-gray-400 text-sm"
+            role="status"
+          >
             Start typing to search todos across all dates
           </div>
         ) : searchResults.length === 0 ? (
-          <div className="px-4 py-8 text-center text-gray-400 text-sm">
+          <div
+            className="px-4 py-8 text-center text-gray-400 text-sm"
+            role="status"
+            aria-live="polite"
+          >
             No todos found matching "{searchQuery}"
           </div>
         ) : (
-          <div>
+          <ul className="list-none p-0 m-0">
             {searchResults.map(([dateString, dateTasks]) => (
-              <div key={dateString} className="border-b border-gray-100 last:border-b-0">
+              <li
+                key={dateString}
+                className="border-b border-gray-100 last:border-b-0"
+              >
                 {/* Date Header */}
                 <div className="px-4 py-2 bg-gray-50 sticky top-0">
                   <h3 className="text-sm font-semibold text-gray-600">
@@ -115,31 +156,23 @@ export const SearchPanel = ({
                   </h3>
                 </div>
                 {/* Tasks for this date */}
-                <div>
+                <ul className="list-none p-0 m-0">
                   {dateTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onToggle={onToggleTask}
-                      onDelete={onDeleteTask}
-                      onEdit={onEditTask}
-                    />
+                    <li key={task.id}>
+                      <TaskItem
+                        task={task}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
+                      />
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
-
-      {/* Results count */}
-      {searchQuery.trim() && searchResults.length > 0 && (
-        <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 text-sm text-gray-600">
-          Found {searchResults.reduce((acc, [, tasks]) => acc + tasks.length, 0)} todo
-          {searchResults.reduce((acc, [, tasks]) => acc + tasks.length, 0) !== 1 ? 's' : ''} across{' '}
-          {searchResults.length} date{searchResults.length !== 1 ? 's' : ''}
-        </div>
-      )}
-    </div>
+    </PanelModal>
   );
 };

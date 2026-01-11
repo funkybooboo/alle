@@ -1,80 +1,74 @@
+import { IconButton } from '../shared/IconButton';
 import type { ColumnControlsProps } from './ColumnControls.types';
 
 export const ColumnControls = ({
   numDays,
   isAutoMode,
+  theme,
   onDecrease,
   onIncrease,
   onToggleAuto,
+  onToggleTheme,
   onOpenSettings,
   onOpenHelp,
   onOpenTrash,
 }: ColumnControlsProps) => {
   return (
-    <div className="h-10 border-t border-gray-200 bg-gray-50 flex items-center justify-between px-4">
-      {/* Settings button on the left */}
-      <button
-        onClick={onOpenSettings}
-        className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700"
-        aria-label="Open settings"
-      >
-        <span className="material-symbols-outlined text-sm">settings</span>
-        <span className="text-sm font-medium">Settings</span>
-      </button>
+    <div className="h-10 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-between px-4">
+      {/* Settings and theme buttons on the left */}
+      <div className="flex items-center gap-2">
+        <IconButton
+          icon="settings"
+          onClick={onOpenSettings}
+          label="Settings (Alt+,)"
+        />
+        <IconButton
+          icon={theme === 'LIGHT' ? 'light_mode' : 'dark_mode'}
+          onClick={onToggleTheme}
+          label={
+            theme === 'LIGHT'
+              ? 'Switch to dark mode (Alt+Shift+D)'
+              : 'Switch to light mode (Alt+Shift+D)'
+          }
+        />
+      </div>
 
       {/* Column controls in the center */}
       <div className="flex items-center gap-2">
-      <button
-        onClick={onDecrease}
-        disabled={numDays <= 1}
-        className="px-3 py-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Decrease columns"
-      >
-        <span className="material-symbols-outlined text-sm">remove</span>
-      </button>
+        <IconButton
+          icon="remove"
+          onClick={onDecrease}
+          disabled={numDays <= 1}
+          label="Decrease columns ([)"
+        />
 
-      <span className="text-sm text-gray-700 font-medium min-w-[80px] text-center">
-        {numDays} {numDays === 1 ? 'column' : 'columns'}
-      </span>
+        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium min-w-[80px] text-center">
+          {numDays} {numDays === 1 ? 'column' : 'columns'}
+        </span>
 
-      <button
-        onClick={onIncrease}
-        className="px-3 py-1 rounded hover:bg-gray-200 transition-colors"
-        aria-label="Increase columns"
-      >
-        <span className="material-symbols-outlined text-sm">add</span>
-      </button>
+        <IconButton icon="add" onClick={onIncrease} label="Increase columns (])" />
 
-      <button
-        onClick={onToggleAuto}
-        className={`ml-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
-          isAutoMode
-            ? 'bg-blue-500 text-white hover:bg-blue-600'
-            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-        }`}
-        aria-label={isAutoMode ? 'Auto mode enabled' : 'Enable auto mode'}
-      >
-        Auto
-      </button>
+        <button
+          onClick={onToggleAuto}
+          className={`ml-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
+            isAutoMode
+              ? 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
+              : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+          }`}
+          aria-label={
+            isAutoMode ? 'Auto mode enabled (Alt+A)' : 'Enable auto mode (Alt+A)'
+          }
+          aria-pressed={isAutoMode}
+          title={isAutoMode ? 'Auto mode enabled (Alt+A)' : 'Enable auto mode (Alt+A)'}
+        >
+          Auto
+        </button>
       </div>
 
       {/* Help and Trash buttons on the right */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={onOpenHelp}
-          className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700"
-          aria-label="Help"
-          title="Help (Ctrl+K)"
-        >
-          <span className="material-symbols-outlined text-sm">help</span>
-        </button>
-        <button
-          onClick={onOpenTrash}
-          className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700"
-          aria-label="Trash"
-        >
-          <span className="material-symbols-outlined text-sm">delete</span>
-        </button>
+        <IconButton icon="help" onClick={onOpenHelp} label="Help (?)" />
+        <IconButton icon="delete" onClick={onOpenTrash} label="Trash (Alt+T)" />
       </div>
     </div>
   );

@@ -5,10 +5,13 @@ use crate::domains::someday::{
 use crate::domains::tasks::{TaskMutations, TaskQueries};
 use crate::domains::trash::{TrashMutations, TrashQueries};
 use crate::infrastructure::context::AppContext;
-use async_graphql::{EmptySubscription, MergedObject, Schema};
+use async_graphql::{MergedObject, Schema, Subscription};
+use futures_util::Stream;
 use std::sync::Arc;
+use std::time::Duration;
+use tokio_stream::StreamExt;
 
-pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
+pub type AppSchema = Schema<QueryRoot, MutationRoot, SubscriptionRoot>;
 
 /// Root query combining all entity queries
 ///
@@ -40,12 +43,23 @@ pub struct MutationRoot(
     TrashMutations,
 );
 
+#[derive(Default)]
+pub struct SubscriptionRoot;
+
+#[Subscription]
+impl SubscriptionRoot {
+    async fn system_notification(&self) -> impl Stream<Item = String> {
+        tokio_stream::wrappers::IntervalStream::new(tokio::time::interval(Duration::from_secs(30)))
+            .map(|_| "System check: Connection active".to_string())
+    }
+}
+
 /// Create the GraphQL schema with the given AppContext
 pub fn create_schema(ctx: Arc<AppContext>) -> AppSchema {
     Schema::build(
         QueryRoot::default(),
         MutationRoot::default(),
-        EmptySubscription,
+        SubscriptionRoot::default(),
     )
     .data(ctx)
     .finish()

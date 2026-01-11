@@ -1,10 +1,16 @@
 use alle_server::{graphql, infrastructure, AppContext};
-use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use async_graphql::http::{playground_source, ALL_WEBSOCKET_PROTOCOLS, GraphQLPlaygroundConfig};
+use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
+use axum::{
+    extract::{ws::WebSocketUpgrade, Extension},
+    response::{Html, IntoResponse},
+    routing::get,
+    Router,
+};
 use sea_orm_migration::MigratorTrait;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -29,7 +35,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app_context = Arc::new(AppContext::new(db));
 
     // Create GraphQL schema
-    let graphql_schema = graphql::create_schema(Arc::clone(&app_context));
+    let schema = graphql::create_schema(Arc::clone(&app_context));
+
+    // Setup CORS
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
+    // Build the router
+    let app = Router::new()
+        .route("/graphql", get(graphql_playground).post(graphql_handler))
+        .route("/ws", get(graphql_subscription))
+        .layer(Extension(schema))
+        .layer(cors);
 
     // Start HTTP server
     let addr: SocketAddr = config.server.address().parse().map_err(|e| {
@@ -39,11 +58,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             e
         )
     })?;
-    let make_svc = make_service_fn(move |_conn| {
-        let schema = graphql_schema.clone();
-        async move { Ok::<_, hyper::Error>(service_fn(move |req| route_request(req, schema.clone()))) }
-    });
-    let server = Server::bind(&addr).serve(make_svc);
 
     println!("Server starting...");
     println!("Environment: {:?}", config.server.environment);
@@ -51,125 +65,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("Server listening on http://{}", addr);
     println!("GraphQL playground: http://{}/graphql", addr);
 
-    server.await?;
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    axum::serve(listener, app).await?;
+
     Ok(())
 }
 
-async fn route_request(
-    req: Request<Body>,
-    schema: graphql::AppSchema,
-) -> Result<Response<Body>, hyper::Error> {
-    let path = req.uri().path();
-
-    // Handle CORS preflight requests
-    if req.method() == Method::OPTIONS {
-        return match Response::builder()
-            .status(StatusCode::OK)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            .header("Access-Control-Allow-Headers", "Content-Type")
-            .body(Body::empty())
-        {
-            Ok(response) => Ok(response),
-            Err(e) => {
-                eprintln!("Failed to build CORS response: {}", e);
-                // This should never fail as we're using minimal headers
-                Ok(Response::new(Body::empty()))
-            }
-        };
-    }
-
-    match (req.method(), path) {
-        (&Method::POST, "/graphql") => handle_graphql(req, schema).await,
-        (&Method::GET, "/graphql") => {
-            // GraphQL Playground
-            let html = playground_source(GraphQLPlaygroundConfig::new("/graphql"));
-            match Response::builder()
-                .header("content-type", "text/html")
-                .header("Access-Control-Allow-Origin", "*")
-                .body(Body::from(html))
-            {
-                Ok(response) => Ok(response),
-                Err(e) => {
-                    eprintln!("Failed to build GraphQL playground response: {}", e);
-                    // Fallback to a basic response
-                    Ok(Response::new(Body::from(
-                        "Error loading GraphQL playground",
-                    )))
-                }
-            }
-        }
-        _ => {
-            match Response::builder()
-                .status(404)
-                .header("Access-Control-Allow-Origin", "*")
-                .body(Body::from("Not Found - Use /graphql endpoint"))
-            {
-                Ok(response) => Ok(response),
-                Err(e) => {
-                    eprintln!("Failed to build 404 response: {}", e);
-                    // Fallback to a basic 404 response
-                    Ok(Response::new(Body::from("Not Found")))
-                }
-            }
-        }
-    }
+async fn graphql_playground() -> impl IntoResponse {
+    Html(playground_source(
+        GraphQLPlaygroundConfig::new("/graphql").subscription_endpoint("/ws"),
+    ))
 }
 
-async fn handle_graphql(
-    req: Request<Body>,
-    schema: graphql::AppSchema,
-) -> Result<Response<Body>, hyper::Error> {
-    let body_bytes = hyper::body::to_bytes(req.into_body()).await?;
-    let graphql_request: async_graphql::Request = match serde_json::from_slice(&body_bytes) {
-        Ok(req) => req,
-        Err(e) => {
-            return match Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(Body::from(format!("Invalid GraphQL request: {}", e)))
-            {
-                Ok(response) => Ok(response),
-                Err(err) => {
-                    eprintln!("Failed to build error response: {}", err);
-                    // Fallback to a basic error response
-                    Ok(Response::new(Body::from("Bad Request")))
-                }
-            };
-        }
-    };
+async fn graphql_handler(
+    schema: Extension<graphql::AppSchema>,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
+    schema.execute(req.into_inner()).await.into()
+}
 
-    let graphql_response = schema.execute(graphql_request).await;
-    let json = match serde_json::to_string(&graphql_response) {
-        Ok(json) => json,
-        Err(e) => {
-            eprintln!("Failed to serialize GraphQL response: {}", e);
-            return match Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(Body::from(format!("Failed to serialize response: {}", e)))
-            {
-                Ok(response) => Ok(response),
-                Err(err) => {
-                    eprintln!("Failed to build error response: {}", err);
-                    // Fallback to a basic error response
-                    Ok(Response::new(Body::from("Internal Server Error")))
-                }
-            };
-        }
-    };
-
-    match Response::builder()
-        .status(StatusCode::OK)
-        .header("content-type", "application/json")
-        .header("Access-Control-Allow-Origin", "*")
-        .body(Body::from(json))
-    {
-        Ok(response) => Ok(response),
-        Err(e) => {
-            eprintln!("Failed to build GraphQL response: {}", e);
-            // Fallback to a basic error response without body
-            Ok(Response::new(Body::from("Internal Server Error")))
-        }
-    }
+async fn graphql_subscription(
+    schema: Extension<graphql::AppSchema>,
+    protocol: GraphQLProtocol,
+    upgrade: WebSocketUpgrade,
+) -> impl IntoResponse {
+    upgrade
+        .protocols(ALL_WEBSOCKET_PROTOCOLS)
+        .on_upgrade(move |stream| {
+            GraphQLWebSocket::new(stream, schema.0, protocol)
+                .serve()
+        })
 }
 
 #[cfg(test)]

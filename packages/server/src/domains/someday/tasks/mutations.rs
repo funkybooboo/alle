@@ -17,7 +17,12 @@ impl SomedayTasksMutations {
         let app_ctx = ctx.data::<Arc<AppContext>>()?;
         let task = app_ctx
             .someday_tasks_repository
-            .create(input.list_id, input.title, input.description, input.position)
+            .create(
+                input.list_id,
+                input.title,
+                input.description,
+                input.position,
+            )
             .await
             .map_err(|e| Error::new(format!("Database error: {}", e)))?;
         Ok(SomedayTask::from(task))

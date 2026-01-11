@@ -10,7 +10,14 @@ pub struct Model {
     pub id: i32,
     pub title: String,
     pub completed: bool,
-    pub date: DateTimeUtc,
+    // Context fields - flexible for calendar or someday
+    pub date: Option<DateTimeUtc>,         // NULL for someday tasks
+    pub list_id: Option<i32>,              // NULL for calendar tasks
+    pub position: Option<i32>,             // NULL for calendar tasks
+    // Enhanced metadata
+    pub notes: Option<String>,
+    pub color: Option<String>,
+    // Timestamps
     pub created_at: DateTimeUtc,
     pub updated_at: DateTimeUtc,
 }

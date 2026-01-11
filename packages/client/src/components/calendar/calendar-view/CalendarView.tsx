@@ -2,11 +2,6 @@ import { useMemo } from 'react';
 import { DayColumn } from '../day-column/DayColumn';
 import type { CalendarViewProps } from './CalendarView.types';
 
-export interface CalendarViewPropsExtended extends CalendarViewProps {
-  onNavigatePrev?: () => void;
-  onNavigateNext?: () => void;
-}
-
 export const CalendarView = ({
   tasks,
   onAddTask,
@@ -15,11 +10,8 @@ export const CalendarView = ({
   onEditTask,
   startDate = new Date(),
   numDays = 7,
-  columnMinWidth = 300,
-  onNavigatePrev,
-  onNavigateNext,
   className = '',
-}: CalendarViewPropsExtended) => {
+}: CalendarViewProps) => {
   // Generate array of dates starting from startDate
   const dates = useMemo(() => {
     const result: Date[] = [];
@@ -47,23 +39,10 @@ export const CalendarView = ({
   }, [tasks]);
 
   return (
-    <div data-testid="calendar-view" className={`relative h-full w-full ${className}`}>
-      {/* Left arrow overlay */}
-      <button
-        onClick={onNavigatePrev}
-        className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-300 hover:text-gray-600 hover:bg-gray-50/50 transition-all z-10 opacity-0 hover:opacity-100"
-      >
-        <span className="material-symbols-outlined text-xl">chevron_left</span>
-      </button>
-
-      {/* Right arrow overlay */}
-      <button
-        onClick={onNavigateNext}
-        className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-300 hover:text-gray-600 hover:bg-gray-50/50 transition-all z-10 opacity-0 hover:opacity-100"
-      >
-        <span className="material-symbols-outlined text-xl">chevron_right</span>
-      </button>
-
+    <div
+      data-testid="calendar-view"
+      className={`relative h-full w-full ${className}`}
+    >
       {/* Calendar grid */}
       <div
         className="grid h-full w-full"

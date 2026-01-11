@@ -2,7 +2,9 @@ use sea_orm_migration::prelude::{
     DbErr, DeriveIden, DeriveMigrationName, ForeignKey, ForeignKeyAction, MigrationTrait,
     SchemaManager, Table,
 };
-use sea_orm_migration::schema::{boolean, integer, pk_auto, string, text, timestamp_with_time_zone};
+use sea_orm_migration::schema::{
+    boolean, integer, pk_auto, string, text, timestamp_with_time_zone,
+};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;

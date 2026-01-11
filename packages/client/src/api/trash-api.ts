@@ -1,9 +1,6 @@
-import { gql, GraphQLClient } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { graphqlClient } from './graphql-client';
 import type { TrashItem, CreateTrashInput } from '../types/trash.types';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/graphql';
-
-const client = new GraphQLClient(API_URL);
 
 export const trashAPI = {
   getAllTrash: async (): Promise<TrashItem[]> => {
@@ -22,7 +19,7 @@ export const trashAPI = {
       }
     `;
 
-    const data = await client.request<{ trash: TrashItem[] }>(query);
+    const data = await graphqlClient.request<{ trash: TrashItem[] }>(query);
     return data.trash;
   },
 
@@ -42,7 +39,10 @@ export const trashAPI = {
       }
     `;
 
-    const data = await client.request<{ createTrashItem: TrashItem }>(mutation, { input });
+    const data = await graphqlClient.request<{ createTrashItem: TrashItem }>(
+      mutation,
+      { input }
+    );
     return data.createTrashItem;
   },
 
@@ -53,7 +53,12 @@ export const trashAPI = {
       }
     `;
 
-    const data = await client.request<{ deleteTrashItem: boolean }>(mutation, { id });
+    const data = await graphqlClient.request<{ deleteTrashItem: boolean }>(
+      mutation,
+      {
+        id,
+      }
+    );
     return data.deleteTrashItem;
   },
 
@@ -64,7 +69,9 @@ export const trashAPI = {
       }
     `;
 
-    const data = await client.request<{ cleanOldTrash: boolean }>(mutation);
+    const data = await graphqlClient.request<{ cleanOldTrash: boolean }>(
+      mutation
+    );
     return data.cleanOldTrash;
   },
 };

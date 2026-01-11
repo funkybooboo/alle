@@ -27,6 +27,7 @@ impl SettingsMutations {
                 input.auto_column_counts,
                 input.drawer_height,
                 input.drawer_is_open,
+                input.theme.map(|t| t.as_str().to_string()),
             )
             .await
             .map_err(|e| Error::new(format!("Database error: {}", e)))?;

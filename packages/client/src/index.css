@@ -1,5 +1,10 @@
+@import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic.min.css');
 @import 'tailwindcss';
 @import './styles/theme/theme.css';
+
+@theme {
+  --color-mode: class;
+}
 
 @keyframes fadeIn {
   from {
@@ -19,4 +24,10 @@
   to {
     opacity: 0;
   }
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
 }

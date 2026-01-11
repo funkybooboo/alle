@@ -24,8 +24,8 @@ impl SomedayListsRepository {
         let list = ActiveModel {
             name: ActiveValue::Set(name),
             position: ActiveValue::Set(position),
-            created_at: ActiveValue::Set(now.into()),
-            updated_at: ActiveValue::Set(now.into()),
+            created_at: ActiveValue::Set(now),
+            updated_at: ActiveValue::Set(now),
             ..Default::default()
         };
         list.insert(&self.db).await
@@ -52,7 +52,7 @@ impl SomedayListsRepository {
             list.position = ActiveValue::Set(position);
         }
 
-        list.updated_at = ActiveValue::Set(chrono::Utc::now().into());
+        list.updated_at = ActiveValue::Set(chrono::Utc::now());
         list.update(&self.db).await
     }
 

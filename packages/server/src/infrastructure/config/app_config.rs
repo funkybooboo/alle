@@ -1,4 +1,4 @@
-use super::{CorsConfig, DatabaseConfig, SecurityConfig, ServerConfig};
+use super::{CorsConfig, DatabaseConfig, MinioConfig, SecurityConfig, ServerConfig};
 
 /// Main application configuration
 #[derive(Debug, Clone)]
@@ -7,6 +7,7 @@ pub struct AppConfig {
     pub server: ServerConfig,
     pub cors: CorsConfig,
     pub security: SecurityConfig,
+    pub minio: MinioConfig,
 }
 
 impl AppConfig {
@@ -17,6 +18,7 @@ impl AppConfig {
             server: ServerConfig::from_env()?,
             cors: CorsConfig::from_env()?,
             security: SecurityConfig::from_env()?,
+            minio: MinioConfig::from_env()?,
         })
     }
 

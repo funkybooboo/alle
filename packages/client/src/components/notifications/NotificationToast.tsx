@@ -70,9 +70,7 @@ export const NotificationToast = ({
       }`}
       style={{ minWidth: '300px', maxWidth: '400px' }}
     >
-      <span className="material-symbols-outlined text-2xl">
-        {getIcon()}
-      </span>
+      <span className="material-symbols-outlined text-2xl">{getIcon()}</span>
       <span className="flex-1 text-sm font-medium">{notification.message}</span>
       <button
         onClick={handleDismiss}

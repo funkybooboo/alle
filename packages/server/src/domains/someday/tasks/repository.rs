@@ -46,8 +46,8 @@ impl SomedayTasksRepository {
             description: ActiveValue::Set(description),
             completed: ActiveValue::Set(false),
             position: ActiveValue::Set(position),
-            created_at: ActiveValue::Set(now.into()),
-            updated_at: ActiveValue::Set(now.into()),
+            created_at: ActiveValue::Set(now),
+            updated_at: ActiveValue::Set(now),
             ..Default::default()
         };
         task.insert(&self.db).await
@@ -86,7 +86,7 @@ impl SomedayTasksRepository {
             task.list_id = ActiveValue::Set(list_id);
         }
 
-        task.updated_at = ActiveValue::Set(chrono::Utc::now().into());
+        task.updated_at = ActiveValue::Set(chrono::Utc::now());
         task.update(&self.db).await
     }
 
@@ -100,7 +100,7 @@ impl SomedayTasksRepository {
         let mut task: ActiveModel = task.into();
         let current_completed = task.completed.clone().unwrap();
         task.completed = ActiveValue::Set(!current_completed);
-        task.updated_at = ActiveValue::Set(chrono::Utc::now().into());
+        task.updated_at = ActiveValue::Set(chrono::Utc::now());
         task.update(&self.db).await
     }
 

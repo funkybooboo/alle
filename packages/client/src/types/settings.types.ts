@@ -1,3 +1,41 @@
+export type Theme = 'LIGHT' | 'DARK';
+
+export interface KeyboardShortcuts {
+  navigatePrevDay: string;
+  navigateNextDay: string;
+  navigatePrevWeek: string;
+  navigateNextWeek: string;
+  navigateToday: string;
+  toggleSearch: string;
+  toggleSettings: string;
+  toggleTrash: string;
+  toggleCalendar: string;
+  toggleHelp: string;
+  decreaseColumns: string;
+  increaseColumns: string;
+  toggleAutoMode: string;
+  toggleTheme: string;
+  closePanel: string;
+}
+
+export const DEFAULT_SHORTCUTS: KeyboardShortcuts = {
+  navigatePrevDay: 'ArrowLeft',
+  navigateNextDay: 'ArrowRight',
+  navigatePrevWeek: 'Shift+ArrowLeft',
+  navigateNextWeek: 'Shift+ArrowRight',
+  navigateToday: 'Home',
+  toggleSearch: ',',
+  toggleSettings: 'Alt+,',
+  toggleTrash: 'Alt+t',
+  toggleCalendar: 'Alt+c',
+  toggleHelp: '?',
+  decreaseColumns: '[',
+  increaseColumns: ']',
+  toggleAutoMode: 'Alt+a',
+  toggleTheme: 'Alt+Shift+d',
+  closePanel: 'Escape',
+};
+
 export interface UserSettings {
   id?: string;
   columnMinWidth: number; // Minimum pixel width for columns
@@ -19,6 +57,10 @@ export interface UserSettings {
   };
   drawerHeight: number; // Height of the someday drawer in pixels
   drawerIsOpen: boolean; // Whether the someday drawer is open
+  theme: Theme; // Light or dark mode
+  keyboardShortcuts: KeyboardShortcuts; // Custom keyboard shortcuts
+  fontSize: 'small' | 'medium' | 'large';
+  fontType: 'sans' | 'serif' | 'mono' | 'opendyslexic';
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -41,4 +83,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   },
   drawerHeight: 300,
   drawerIsOpen: true,
+  theme: 'DARK',
+  keyboardShortcuts: DEFAULT_SHORTCUTS,
+  fontSize: 'medium',
+  fontType: 'sans',
 };

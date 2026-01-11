@@ -12,10 +12,15 @@ impl TaskRepository {
         Self { db }
     }
 
+    /// Create a new task (calendar or someday)
     pub async fn create(
         &self,
         title: String,
-        date: chrono::DateTime<chrono::Utc>,
+        date: Option<chrono::DateTime<chrono::Utc>>,
+        list_id: Option<i32>,
+        position: Option<i32>,
+        notes: Option<String>,
+        color: Option<String>,
     ) -> Result<entity::Model, DbErr> {
         let now = chrono::Utc::now();
 
@@ -23,6 +28,10 @@ impl TaskRepository {
             title: Set(title),
             completed: Set(false),
             date: Set(date),
+            list_id: Set(list_id),
+            position: Set(position),
+            notes: Set(notes),
+            color: Set(color),
             created_at: Set(now),
             updated_at: Set(now),
             ..Default::default()
@@ -39,12 +48,17 @@ impl TaskRepository {
         entity::Entity::find_by_id(id).one(&self.db).await
     }
 
+    /// Update a task with any combination of fields
     pub async fn update(
         &self,
         id: i32,
         title: Option<String>,
         completed: Option<bool>,
-        date: Option<chrono::DateTime<chrono::Utc>>,
+        date: Option<Option<chrono::DateTime<chrono::Utc>>>,
+        list_id: Option<Option<i32>>,
+        position: Option<Option<i32>>,
+        notes: Option<Option<String>>,
+        color: Option<Option<String>>,
     ) -> Result<entity::Model, DbErr> {
         let task_to_update = entity::Entity::find_by_id(id)
             .one(&self.db)
@@ -63,6 +77,22 @@ impl TaskRepository {
 
         if let Some(new_date) = date {
             task_active.date = Set(new_date);
+        }
+
+        if let Some(new_list_id) = list_id {
+            task_active.list_id = Set(new_list_id);
+        }
+
+        if let Some(new_position) = position {
+            task_active.position = Set(new_position);
+        }
+
+        if let Some(new_notes) = notes {
+            task_active.notes = Set(new_notes);
+        }
+
+        if let Some(new_color) = color {
+            task_active.color = Set(new_color);
         }
 
         task_active.updated_at = Set(chrono::Utc::now());
