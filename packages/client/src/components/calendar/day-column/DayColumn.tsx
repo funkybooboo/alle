@@ -10,6 +10,7 @@ export const DayColumn = ({
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  onViewTask,
   className = '',
 }: DayColumnProps) => {
   const formatDate = (date: Date) => {
@@ -45,6 +46,7 @@ export const DayColumn = ({
         onToggleTask={onToggleTask}
         onDeleteTask={onDeleteTask}
         onEditTask={onEditTask}
+        onViewTask={onViewTask}
         onAddTask={onAddTask}
         inputPlaceholder="Add a task..."
         isHighlighted={false}

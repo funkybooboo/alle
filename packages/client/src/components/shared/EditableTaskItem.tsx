@@ -8,6 +8,7 @@ export interface EditableTaskItemProps {
   onToggle?: () => void;
   onDelete?: () => void;
   onEdit?: (newText: string) => void;
+  onView?: () => void;
   className?: string;
   testId?: string;
 }
@@ -18,6 +19,7 @@ const EditableTaskItemComponent = ({
   onToggle,
   onDelete,
   onEdit,
+  onView,
   className = '',
   testId,
 }: EditableTaskItemProps) => {
@@ -84,6 +86,24 @@ const EditableTaskItemComponent = ({
           aria-label={`Edit task: ${text}`}
         >
           <MarkdownText>{text}</MarkdownText>
+        </button>
+      )}
+
+      {/* View Button - Visible on hover or focus */}
+      {onView && (
+        <button
+          type="button"
+          data-testid={testId ? `${testId}-view-button` : undefined}
+          onClick={onView}
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded"
+          aria-label="View task details"
+        >
+          <span
+            className="material-symbols-outlined text-sm text-blue-600 dark:text-blue-400"
+            aria-hidden="true"
+          >
+            info
+          </span>
         </button>
       )}
 

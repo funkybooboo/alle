@@ -11,6 +11,7 @@ export interface ColumnProps<
     onToggle?: (id: T['id']) => void;
     onDelete?: (id: T['id']) => void;
     onEdit?: (id: T['id'], ...args: EditArgs) => void;
+    onView?: (id: T['id']) => void;
   }>;
   TaskInputComponent: React.ComponentType<{
     onAdd: (text: string) => void;
@@ -19,6 +20,7 @@ export interface ColumnProps<
   onToggleTask?: (id: T['id']) => void;
   onDeleteTask?: (id: T['id']) => void;
   onEditTask?: (id: T['id'], ...args: EditArgs) => void;
+  onViewTask?: (id: T['id']) => void;
   onAddTask?: (text: string) => void;
   inputPlaceholder?: string;
   isHighlighted?: boolean;
@@ -36,6 +38,7 @@ export function Column<
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  onViewTask,
   onAddTask,
   inputPlaceholder = 'Add a task...',
   isHighlighted = false,
@@ -64,6 +67,7 @@ export function Column<
               onToggle={onToggleTask}
               onDelete={onDeleteTask}
               onEdit={onEditTask}
+              onView={onViewTask}
             />
           ))}
           {/* Task Input - inline with tasks */}

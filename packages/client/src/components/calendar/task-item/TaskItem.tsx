@@ -6,6 +6,7 @@ export const TaskItem = ({
   onToggle,
   onDelete,
   onEdit,
+  onView,
   className = '',
 }: TaskItemProps) => {
   return (
@@ -16,6 +17,7 @@ export const TaskItem = ({
       onToggle={() => onToggle?.(task.id)}
       onDelete={() => onDelete?.(task.id)}
       onEdit={(newText) => onEdit?.(task.id, newText)}
+      onView={onView ? () => onView(task.id) : undefined}
       className={className}
       testId="task-item"
     />

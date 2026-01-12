@@ -10,5 +10,6 @@ export interface TaskItemProps {
   onToggle?: (taskId: string) => void;
   onDelete?: (taskId: string) => void;
   onEdit?: (taskId: string, newText: string) => void;
+  onView?: (taskId: string) => void;
   className?: string;
 }

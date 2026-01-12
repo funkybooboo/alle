@@ -7,5 +7,6 @@ export interface DayColumnProps {
   onToggleTask?: (taskId: string) => void;
   onDeleteTask?: (taskId: string) => void;
   onEditTask?: (taskId: string, newText: string) => void;
+  onViewTask?: (taskId: string) => void;
   className?: string;
 }

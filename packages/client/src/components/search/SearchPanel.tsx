@@ -8,6 +8,7 @@ export const SearchPanel = ({
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  onViewTask,
   onClose,
 }: SearchPanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -164,6 +165,7 @@ export const SearchPanel = ({
                         onToggle={onToggleTask}
                         onDelete={onDeleteTask}
                         onEdit={onEditTask}
+                        onView={onViewTask}
                       />
                     </li>
                   ))}

@@ -6,6 +6,7 @@ export interface CalendarViewProps {
   onToggleTask?: (taskId: string) => void;
   onDeleteTask?: (taskId: string) => void;
   onEditTask?: (taskId: string, newText: string) => void;
+  onViewTask?: (taskId: string) => void;
   startDate?: Date;
   numDays?: number;
   columnMinWidth?: number;

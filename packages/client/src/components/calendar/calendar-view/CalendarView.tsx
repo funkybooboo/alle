@@ -8,6 +8,7 @@ export const CalendarView = ({
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  onViewTask,
   startDate = new Date(),
   numDays = 7,
   className = '',
@@ -63,6 +64,7 @@ export const CalendarView = ({
               onToggleTask={onToggleTask}
               onDeleteTask={onDeleteTask}
               onEditTask={onEditTask}
+              onViewTask={onViewTask}
             />
           );
         })}

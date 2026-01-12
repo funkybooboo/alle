@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from '../components/navbar/Navbar';
 import { CalendarView } from '../components/calendar/calendar-view/CalendarView';
 import { SearchPanel } from '../components/search/SearchPanel';
@@ -10,6 +10,7 @@ import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { ColumnControls } from '../components/column-controls/ColumnControls';
 import { NotificationContainer } from '../components/notifications/NotificationContainer';
 import { SideNavControls } from '../components/navigation/SideNavControls';
+import TaskDetailModal from '../components/task-detail/TaskDetailModal';
 import { useNotifications } from '../hooks/useNotifications';
 import { useServerConnection } from '../hooks/useServerConnection';
 import { useHomeState } from '../hooks/home/useHomeState';
@@ -51,6 +52,21 @@ export const Home = () => {
   } = useHomeState();
 
   const { notifications, dismissNotification } = useNotifications();
+
+  // Task detail modal state
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
+
+  // Handler for viewing task details
+  const handleViewTask = (taskId: string) => {
+    setSelectedTaskId(parseInt(taskId, 10));
+    setIsTaskDetailOpen(true);
+  };
+
+  const handleCloseTaskDetail = () => {
+    setIsTaskDetailOpen(false);
+    setSelectedTaskId(null);
+  };
 
   // Initialize server connection monitoring
   useServerConnection();
@@ -200,6 +216,7 @@ export const Home = () => {
                   onToggleTask={handleToggleTask}
                   onDeleteTask={handleDeleteTask}
                   onEditTask={handleEditTask}
+                  onViewTask={handleViewTask}
                   onClose={() => setIsSearchOpen(false)}
                 />
               )}
@@ -237,6 +254,7 @@ export const Home = () => {
               onToggleTask={handleToggleTask}
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}
+              onViewTask={handleViewTask}
               startDate={currentDate}
               numDays={numDays}
             />
@@ -273,6 +291,13 @@ export const Home = () => {
         notifications={notifications}
         onDismiss={dismissNotification}
       />
+      {selectedTaskId && (
+        <TaskDetailModal
+          taskId={selectedTaskId}
+          isOpen={isTaskDetailOpen}
+          onClose={handleCloseTaskDetail}
+        />
+      )}
     </div>
   );
 };

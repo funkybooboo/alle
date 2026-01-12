@@ -5,5 +5,6 @@ export interface SearchPanelProps {
   onToggleTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onViewTask?: (taskId: string) => void;
   onClose: () => void;
 }
