@@ -10,6 +10,7 @@ mod m20260111_000001_add_theme_to_settings;
 mod m20260112_000001_create_unified_tasks;
 mod m20260112_000002_migrate_tasks_data;
 mod m20260112_000003_finalize_unified_tasks;
+mod m20260112_000004_recreate_tasks_unified;
 
 pub struct Migrator;
 
@@ -27,6 +28,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260112_000001_create_unified_tasks::Migration),
             Box::new(m20260112_000002_migrate_tasks_data::Migration),
             Box::new(m20260112_000003_finalize_unified_tasks::Migration),
+            Box::new(m20260112_000004_recreate_tasks_unified::Migration),
         ]
     }
 }

@@ -74,31 +74,36 @@ impl MigrationTrait for Migration {
         ))
         .await?;
 
-        // Update sequence for tasks_unified to continue from max ID
-        let new_max_sql = "SELECT COALESCE(MAX(id), 0) + 1 FROM tasks_unified";
-        let new_max_result = db
-            .query_one(Statement::from_string(
+        // Update sequence for tasks_unified to continue from max ID (PostgreSQL only)
+        // SQLite handles AUTOINCREMENT automatically
+        use sea_orm_migration::sea_orm::DatabaseBackend;
+
+        if matches!(manager.get_database_backend(), DatabaseBackend::Postgres) {
+            let new_max_sql = "SELECT COALESCE(MAX(id), 0) + 1 FROM tasks_unified";
+            let new_max_result = db
+                .query_one(Statement::from_string(
+                    manager.get_database_backend(),
+                    new_max_sql.to_string(),
+                ))
+                .await?;
+
+            let new_max: i32 = if let Some(row) = new_max_result {
+                row.try_get("", "?column?").unwrap_or(1)
+            } else {
+                1
+            };
+
+            let seq_sql = format!(
+                "ALTER SEQUENCE tasks_unified_id_seq RESTART WITH {}",
+                new_max
+            );
+
+            db.execute(Statement::from_string(
                 manager.get_database_backend(),
-                new_max_sql.to_string(),
+                seq_sql,
             ))
             .await?;
-
-        let new_max: i32 = if let Some(row) = new_max_result {
-            row.try_get("", "?column?").unwrap_or(1)
-        } else {
-            1
-        };
-
-        let seq_sql = format!(
-            "ALTER SEQUENCE tasks_unified_id_seq RESTART WITH {}",
-            new_max
-        );
-
-        db.execute(Statement::from_string(
-            manager.get_database_backend(),
-            seq_sql,
-        ))
-        .await?;
+        }
 
         Ok(())
     }
@@ -107,7 +112,8 @@ impl MigrationTrait for Migration {
         let db = manager.get_connection();
 
         // Clear the unified table (data will be preserved in original tables)
-        let sql = "TRUNCATE TABLE tasks_unified CASCADE";
+        // Use DELETE for SQLite compatibility (TRUNCATE with CASCADE is PostgreSQL-specific)
+        let sql = "DELETE FROM tasks_unified";
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),

@@ -1,10 +1,10 @@
-use alle_server::{graphql, infrastructure, AppContext};
+use alle_server::{api, graphql, infrastructure, AppContext};
 use async_graphql::http::{playground_source, ALL_WEBSOCKET_PROTOCOLS, GraphQLPlaygroundConfig};
 use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
 use axum::{
     extract::{ws::WebSocketUpgrade, Extension},
     response::{Html, IntoResponse},
-    routing::get,
+    routing::{get, post},
     Router,
 };
 use sea_orm_migration::MigratorTrait;
@@ -31,11 +31,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     infrastructure::Migrator::up(&db, None).await?;
     println!("Migrations completed successfully");
 
+    // Initialize MinIO client
+    println!("Initializing MinIO client...");
+    let minio_client = infrastructure::storage::minio_client::MinioClient::new(config.minio)
+        .await
+        .map_err(|e| format!("Failed to initialize MinIO client: {}", e))?;
+    println!("MinIO client initialized successfully");
+
     // Initialize application context with dependency injection
-    let app_context = Arc::new(AppContext::new(db));
+    let app_context = Arc::new(AppContext::new(db, minio_client));
 
     // Create GraphQL schema
     let schema = graphql::create_schema(Arc::clone(&app_context));
+
+    // Create upload state for REST endpoints
+    let upload_state = Arc::new(api::rest::UploadState {
+        minio_client: Arc::clone(&app_context.minio_client),
+        attachment_repository: Arc::clone(&app_context.task_attachments_repository),
+    });
 
     // Setup CORS
     let cors = CorsLayer::new()
@@ -47,7 +60,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app = Router::new()
         .route("/graphql", get(graphql_playground).post(graphql_handler))
         .route("/ws", get(graphql_subscription))
+        .route("/api/upload", post(api::rest::upload_file))
         .layer(Extension(schema))
+        .with_state(upload_state)
         .layer(cors);
 
     // Start HTTP server

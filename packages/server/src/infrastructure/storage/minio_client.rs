@@ -9,7 +9,6 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct MinioClient {
     bucket: Arc<Bucket>,
-    bucket_name: String,
 }
 
 impl MinioClient {
@@ -31,22 +30,25 @@ impl MinioClient {
         };
 
         // Create bucket
-        let bucket = Bucket::new(
+        let mut bucket = Bucket::new(
             &config.bucket,
             region,
             credentials,
         )?;
 
         // Create bucket if it doesn't exist
-        let bucket = if config.use_ssl {
+        bucket = if config.use_ssl {
             bucket.with_path_style()
         } else {
             bucket
         };
 
+        // Note: Bucket must be created manually in MinIO console or via mc client
+        // Example: mc mb minio/alle-attachments
+        println!("Using MinIO bucket: {}", config.bucket);
+
         Ok(Self {
             bucket: Arc::new(*bucket),
-            bucket_name: config.bucket.clone(),
         })
     }
 

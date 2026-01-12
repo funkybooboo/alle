@@ -1,6 +1,11 @@
 import { gql } from 'graphql-request';
 import { graphqlClient } from './graphql-client';
-import type { Task } from '../components/calendar/task-item/TaskItem.types';
+import type {
+  Task,
+  CreateTaskInput,
+  UpdateTaskInput,
+  TaskWithMetadata,
+} from '../types/task.types';
 
 // GraphQL Queries
 const GET_ALL_TASKS = gql`
@@ -10,6 +15,27 @@ const GET_ALL_TASKS = gql`
       title
       completed
       date
+      listId
+      position
+      notes
+      color
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const GET_TASK_BY_ID = gql`
+  query GetTaskById($id: Int!) {
+    task(id: $id) {
+      id
+      title
+      completed
+      date
+      listId
+      position
+      notes
+      color
       createdAt
       updatedAt
     }
@@ -17,12 +43,16 @@ const GET_ALL_TASKS = gql`
 `;
 
 const CREATE_TASK = gql`
-  mutation CreateTask($title: String!, $date: String!) {
-    createTask(input: { title: $title, date: $date }) {
+  mutation CreateTask($input: CreateTaskInput!) {
+    createTask(input: $input) {
       id
       title
       completed
       date
+      listId
+      position
+      notes
+      color
       createdAt
       updatedAt
     }
@@ -30,20 +60,16 @@ const CREATE_TASK = gql`
 `;
 
 const UPDATE_TASK = gql`
-  mutation UpdateTask(
-    $id: Int!
-    $title: String
-    $completed: Boolean
-    $date: String
-  ) {
-    updateTask(
-      id: $id
-      input: { title: $title, completed: $completed, date: $date }
-    ) {
+  mutation UpdateTask($id: Int!, $input: UpdateTaskInput!) {
+    updateTask(id: $id, input: $input) {
       id
       title
       completed
       date
+      listId
+      position
+      notes
+      color
       createdAt
       updatedAt
     }
@@ -61,7 +87,11 @@ interface GraphQLTask {
   id: number;
   title: string;
   completed: boolean;
-  date: string;
+  date?: string | null;
+  listId?: number | null;
+  position?: number | null;
+  notes?: string | null;
+  color?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,9 +99,15 @@ interface GraphQLTask {
 // Convert GraphQL task to frontend Task type
 const toTask = (gqlTask: GraphQLTask): Task => ({
   id: String(gqlTask.id),
-  text: gqlTask.title,
+  title: gqlTask.title,
   completed: gqlTask.completed,
-  date: new Date(gqlTask.date),
+  date: gqlTask.date ? new Date(gqlTask.date) : null,
+  listId: gqlTask.listId ?? null,
+  position: gqlTask.position ?? null,
+  notes: gqlTask.notes ?? null,
+  color: gqlTask.color ?? null,
+  createdAt: gqlTask.createdAt,
+  updatedAt: gqlTask.updatedAt,
 });
 
 // API functions
@@ -83,40 +119,58 @@ export const taskAPI = {
     return data.tasks.map(toTask);
   },
 
-  async createTask(text: string, date: Date): Promise<Task> {
+  async getTaskById(id: number): Promise<Task> {
+    const data = await graphqlClient.request<{ task: GraphQLTask }>(
+      GET_TASK_BY_ID,
+      { id }
+    );
+    return toTask(data.task);
+  },
+
+  async createTask(input: CreateTaskInput): Promise<Task> {
     const data = await graphqlClient.request<{ createTask: GraphQLTask }>(
       CREATE_TASK,
-      {
-        title: text,
-        date: date.toISOString(),
-      }
+      { input }
     );
     return toTask(data.createTask);
   },
 
-  async updateTask(
-    id: string,
-    updates: { text?: string; completed?: boolean; date?: Date }
-  ): Promise<Task> {
+  async updateTask(id: number, input: UpdateTaskInput): Promise<Task> {
     const data = await graphqlClient.request<{ updateTask: GraphQLTask }>(
       UPDATE_TASK,
-      {
-        id: parseInt(id, 10),
-        title: updates.text,
-        completed: updates.completed,
-        date: updates.date?.toISOString(),
-      }
+      { id, input }
     );
     return toTask(data.updateTask);
   },
 
-  async deleteTask(id: string): Promise<boolean> {
+  async deleteTask(id: number): Promise<boolean> {
     const data = await graphqlClient.request<{ deleteTask: boolean }>(
       DELETE_TASK,
-      {
-        id: parseInt(id, 10),
-      }
+      { id }
     );
     return data.deleteTask;
+  },
+
+  // Legacy compatibility - convert old API calls to new format
+  async createTaskLegacy(text: string, date: Date): Promise<Task> {
+    return this.createTask({
+      title: text,
+      date: date.toISOString(),
+    });
+  },
+
+  async updateTaskLegacy(
+    id: string,
+    updates: { text?: string; completed?: boolean; date?: Date }
+  ): Promise<Task> {
+    return this.updateTask(parseInt(id, 10), {
+      title: updates.text,
+      completed: updates.completed,
+      date: updates.date?.toISOString(),
+    });
+  },
+
+  async deleteTaskLegacy(id: string): Promise<boolean> {
+    return this.deleteTask(parseInt(id, 10));
   },
 };

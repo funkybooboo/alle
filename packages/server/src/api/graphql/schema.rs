@@ -1,7 +1,12 @@
+use crate::domains::color_presets::{ColorPresetMutation, ColorPresetQuery};
 use crate::domains::settings::{SettingsMutations, SettingsQueries};
 use crate::domains::someday::{
     SomedayListsMutations, SomedayListsQueries, SomedayTasksMutations, SomedayTasksQueries,
 };
+use crate::domains::tag_presets::{TagPresetMutation, TagPresetQuery};
+use crate::domains::task_attachments::{TaskAttachmentMutation, TaskAttachmentQuery};
+use crate::domains::task_links::{TaskLinkMutation, TaskLinkQuery};
+use crate::domains::task_tags::{TaskTagMutation, TaskTagQuery};
 use crate::domains::tasks::{TaskMutations, TaskQueries};
 use crate::domains::trash::{TrashMutations, TrashQueries};
 use crate::infrastructure::context::AppContext;
@@ -26,6 +31,11 @@ pub struct QueryRoot(
     SomedayListsQueries,
     SomedayTasksQueries,
     TrashQueries,
+    TaskTagQuery,
+    TaskLinkQuery,
+    TaskAttachmentQuery,
+    TagPresetQuery,
+    ColorPresetQuery,
 );
 
 /// Root mutation combining all entity mutations
@@ -41,6 +51,11 @@ pub struct MutationRoot(
     SomedayListsMutations,
     SomedayTasksMutations,
     TrashMutations,
+    TaskTagMutation,
+    TaskLinkMutation,
+    TaskAttachmentMutation,
+    TagPresetMutation,
+    ColorPresetMutation,
 );
 
 #[derive(Default)]
