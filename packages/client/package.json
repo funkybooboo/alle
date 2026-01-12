@@ -17,6 +17,8 @@
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
     "test:e2e:headed": "cypress run --headed",
+    "test:api": "bru run bruno-tests --env Local",
+    "test:api:docker": "bru run bruno-tests --env Docker",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
