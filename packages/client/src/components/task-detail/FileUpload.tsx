@@ -163,7 +163,7 @@ export default function FileUpload({
         {attachments.map((attachment) => (
           <div
             key={attachment.id}
-            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <span className="text-2xl">{getFileIcon(attachment.mimeType)}</span>

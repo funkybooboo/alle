@@ -32,7 +32,7 @@ export const SearchPanel = ({
 
     const query = searchQuery.toLowerCase();
     const filteredTasks = tasks.filter((task) =>
-      task.text.toLowerCase().includes(query)
+      task.title.toLowerCase().includes(query)
     );
 
     // Group by date
@@ -83,30 +83,12 @@ export const SearchPanel = ({
 
   return (
     <PanelModal
+      title="Search Tasks"
       onClose={onClose}
-      headerContent={
-        <div className="relative">
-          <span
-            className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            aria-hidden="true"
-          >
-            search
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search todos..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            autoFocus
-            aria-label="Search todos"
-          />
-        </div>
-      }
       footer={
         searchQuery.trim() && searchResults.length > 0 ? (
           <div
-            className="text-sm text-gray-600"
+            className="text-sm text-gray-600 dark:text-gray-400"
             role="status"
             aria-live="polite"
           >
@@ -128,6 +110,29 @@ export const SearchPanel = ({
         role="region"
         aria-label="Search results"
       >
+        {/* Search Input */}
+        <div className="sticky top-0 bg-white dark:bg-[#1a1a1a] p-4 border-b border-gray-200 dark:border-[#2a2a2a] z-10">
+          <div className="relative">
+            <span
+              className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            >
+              search
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search todos..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              autoFocus
+              aria-label="Search todos"
+            />
+          </div>
+        </div>
+
+        {/* Search Results */}
+        <div className="p-4">
         {!searchQuery.trim() ? (
           <div
             className="px-4 py-8 text-center text-gray-400 text-sm"
@@ -148,11 +153,11 @@ export const SearchPanel = ({
             {searchResults.map(([dateString, dateTasks]) => (
               <li
                 key={dateString}
-                className="border-b border-gray-100 last:border-b-0"
+                className="border-b border-gray-100 dark:border-[#2a2a2a] last:border-b-0"
               >
                 {/* Date Header */}
-                <div className="px-4 py-2 bg-gray-50 sticky top-0">
-                  <h3 className="text-sm font-semibold text-gray-600">
+                <div className="px-4 py-2 bg-gray-50 dark:bg-[#1a1a1a] sticky top-0">
+                  <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                     {formatDate(dateString)}
                   </h3>
                 </div>
@@ -174,6 +179,7 @@ export const SearchPanel = ({
             ))}
           </ul>
         )}
+        </div>
       </div>
     </PanelModal>
   );

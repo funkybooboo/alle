@@ -12,8 +12,6 @@ const GET_SETTINGS = gql`
       todayShowsPrevious
       singleArrowDays
       doubleArrowDays
-      autoColumnBreakpoints
-      autoColumnCounts
       drawerHeight
       drawerIsOpen
       theme
@@ -27,8 +25,6 @@ const UPDATE_SETTINGS = gql`
     $todayShowsPrevious: Boolean
     $singleArrowDays: Int
     $doubleArrowDays: Int
-    $autoColumnBreakpoints: JSON
-    $autoColumnCounts: JSON
     $drawerHeight: Int
     $drawerIsOpen: Boolean
     $theme: Theme
@@ -39,8 +35,6 @@ const UPDATE_SETTINGS = gql`
         todayShowsPrevious: $todayShowsPrevious
         singleArrowDays: $singleArrowDays
         doubleArrowDays: $doubleArrowDays
-        autoColumnBreakpoints: $autoColumnBreakpoints
-        autoColumnCounts: $autoColumnCounts
         drawerHeight: $drawerHeight
         drawerIsOpen: $drawerIsOpen
         theme: $theme
@@ -51,8 +45,6 @@ const UPDATE_SETTINGS = gql`
       todayShowsPrevious
       singleArrowDays
       doubleArrowDays
-      autoColumnBreakpoints
-      autoColumnCounts
       drawerHeight
       drawerIsOpen
       theme
@@ -67,8 +59,6 @@ interface GraphQLSettings {
   todayShowsPrevious: boolean;
   singleArrowDays: number;
   doubleArrowDays: number;
-  autoColumnBreakpoints: string | object;
-  autoColumnCounts: string | object;
   drawerHeight: number;
   drawerIsOpen: boolean;
   theme: 'LIGHT' | 'DARK';
@@ -76,16 +66,9 @@ interface GraphQLSettings {
 
 // Convert GraphQL settings to frontend UserSettings type
 const toSettings = (gqlSettings: GraphQLSettings): UserSettings => {
-  // Parse JSON fields if they're strings
-  const breakpoints =
-    typeof gqlSettings.autoColumnBreakpoints === 'string'
-      ? JSON.parse(gqlSettings.autoColumnBreakpoints)
-      : gqlSettings.autoColumnBreakpoints;
-
-  const counts =
-    typeof gqlSettings.autoColumnCounts === 'string'
-      ? JSON.parse(gqlSettings.autoColumnCounts)
-      : gqlSettings.autoColumnCounts;
+  // Use default values for autoColumn settings
+  const breakpoints = DEFAULT_SETTINGS.autoColumnBreakpoints;
+  const counts = DEFAULT_SETTINGS.autoColumnCounts;
 
   // Load visual settings from localStorage
   const storedFontSize = localStorage.getItem('alle_fontSize') as
@@ -164,8 +147,6 @@ export const settingsAPI = {
       todayShowsPrevious: settings.todayShowsPrevious,
       singleArrowDays: settings.singleArrowDays,
       doubleArrowDays: settings.doubleArrowDays,
-      autoColumnBreakpoints: settings.autoColumnBreakpoints,
-      autoColumnCounts: settings.autoColumnCounts,
       drawerHeight: settings.drawerHeight,
       drawerIsOpen: settings.drawerIsOpen,
       theme: settings.theme,

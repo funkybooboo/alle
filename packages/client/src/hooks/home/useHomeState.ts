@@ -149,9 +149,12 @@ export const useHomeState = () => {
 
   // Tasks
   const handleAddTask = useCallback(
-    async (date: Date, text: string) => {
+    async (date: Date, title: string) => {
       try {
-        const newTask = await taskAPI.createTask(text, date);
+        const newTask = await taskAPI.createTask({
+          title,
+          date: date.toISOString(),
+        });
         setTasks((prev) => [...prev, newTask]);
         success('Task created');
       } catch (err) {
@@ -169,7 +172,7 @@ export const useHomeState = () => {
       if (!task) return;
 
       try {
-        const updatedTask = await taskAPI.updateTask(taskId, {
+        const updatedTask = await taskAPI.updateTask(parseInt(taskId, 10), {
           completed: !task.completed,
         });
         setTasks((prev) =>
@@ -191,16 +194,16 @@ export const useHomeState = () => {
       try {
         const trashItem = await trashAPI.createTrashItem({
           taskId: task.id,
-          taskText: task.text,
+          taskText: task.title,
           taskDate:
             typeof task.date === 'string'
               ? task.date
-              : (task.date as Date).toISOString(),
+              : task.date ? (task.date as Date).toISOString() : new Date().toISOString(),
           taskCompleted: task.completed,
           taskType: 'calendar',
         });
         setTrash((prev) => [...prev, trashItem]);
-        await taskAPI.deleteTask(taskId);
+        await taskAPI.deleteTask(parseInt(taskId, 10));
         setTasks((prev) => prev.filter((t) => t.id !== taskId));
         success('Task moved to trash');
       } catch (err) {
@@ -212,9 +215,9 @@ export const useHomeState = () => {
   );
 
   const handleEditTask = useCallback(
-    async (taskId: string, newText: string) => {
+    async (taskId: string, newTitle: string) => {
       try {
-        const updatedTask = await taskAPI.updateTask(taskId, { text: newText });
+        const updatedTask = await taskAPI.updateTask(parseInt(taskId, 10), { title: newTitle });
         setTasks((prev) =>
           prev.map((t) => (t.id === taskId ? updatedTask : t))
         );

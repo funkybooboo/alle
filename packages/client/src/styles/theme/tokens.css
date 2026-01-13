@@ -69,3 +69,25 @@
     Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-size-base: 16px;
 }
+
+/* Dark Mode Theme */
+.dark {
+  /* Surface Colors */
+  --color-surface: #000000; /* true black */
+  --color-surface-hover: #1a1a1a; /* very dark gray */
+  --color-surface-active: #2a2a2a; /* dark gray */
+
+  /* Text Colors */
+  --color-text-primary: #ffffff; /* white */
+  --color-text-secondary: #d1d5db; /* gray-300 */
+  --color-text-tertiary: #9ca3af; /* gray-400 */
+  --color-text-on-primary: white;
+
+  /* Border Colors */
+  --color-border: #2a2a2a; /* dark gray */
+  --color-border-hover: #3a3a3a; /* slightly lighter */
+
+  /* Component-Specific Colors */
+  --color-navbar-bg: #000000; /* true black */
+  --color-navbar-border: #2a2a2a; /* dark gray */
+}

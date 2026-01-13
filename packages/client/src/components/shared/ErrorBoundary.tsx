@@ -33,21 +33,21 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div
-          className="h-screen w-screen flex items-center justify-center bg-gray-50"
+          className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-black"
           role="alert"
           aria-live="assertive"
         >
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="max-w-md w-full bg-white dark:bg-[#1a1a1a] rounded-lg shadow-lg p-8 text-center">
             <span
               className="material-symbols-outlined text-6xl text-red-500 mb-4"
               aria-hidden="true"
             >
               error
             </span>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Oops! Something went wrong
             </h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <button
@@ -57,10 +57,10 @@ export class ErrorBoundary extends Component<Props, State> {
               Reload Application
             </button>
             <details className="mt-6 text-left">
-              <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+              <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300">
                 Technical Details
               </summary>
-              <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto">
+              <pre className="mt-2 p-4 bg-gray-100 dark:bg-gray-700 rounded text-xs overflow-auto text-gray-900 dark:text-white">
                 {this.state.error?.stack}
               </pre>
             </details>

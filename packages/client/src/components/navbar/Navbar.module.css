@@ -4,8 +4,8 @@
 }
 
 :global(.dark) .navbar {
-  background-color: rgb(31 41 55);
-  border-bottom: 1px solid rgb(55 65 81);
+  background-color: #000000;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .today {

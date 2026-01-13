@@ -89,7 +89,7 @@ export default function LinksManager({
         {links.map((link) => (
           <div
             key={link.id}
-            className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded"
+            className="p-3 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded"
           >
             {editingId === link.id ? (
               // Edit mode
@@ -180,7 +180,7 @@ export default function LinksManager({
               onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
               placeholder="https://example.com"
               autoFocus
-              className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="text"
@@ -188,7 +188,7 @@ export default function LinksManager({
               onChange={(e) => setNewTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
               placeholder="Link title (optional)"
-              className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex gap-2">
               <button

@@ -150,12 +150,12 @@ export default function TagInput({
           onFocus={() => inputValue && setShowSuggestions(suggestions.length > 0)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           placeholder="Add a tag..."
-          className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         {/* Suggestions dropdown */}
         {showSuggestions && (
-          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg max-h-40 overflow-y-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded shadow-lg max-h-40 overflow-y-auto">
             {suggestions.map((suggestion, index) => (
               <button
                 key={suggestion}

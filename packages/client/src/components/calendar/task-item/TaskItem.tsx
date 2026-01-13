@@ -12,11 +12,11 @@ export const TaskItem = ({
   return (
     <EditableTaskItem
       id={task.id}
-      text={task.text}
+      text={task.title}
       completed={task.completed}
       onToggle={() => onToggle?.(task.id)}
       onDelete={() => onDelete?.(task.id)}
-      onEdit={(newText) => onEdit?.(task.id, newText)}
+      onEdit={(newTitle) => onEdit?.(task.id, newTitle)}
       onView={onView ? () => onView(task.id) : undefined}
       className={className}
       testId="task-item"

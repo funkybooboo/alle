@@ -9,7 +9,6 @@ import { HelpPanel } from '../components/help/HelpPanel';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { ColumnControls } from '../components/column-controls/ColumnControls';
 import { NotificationContainer } from '../components/notifications/NotificationContainer';
-import { SideNavControls } from '../components/navigation/SideNavControls';
 import TaskDetailModal from '../components/task-detail/TaskDetailModal';
 import { useNotifications } from '../hooks/useNotifications';
 import { useServerConnection } from '../hooks/useServerConnection';
@@ -186,7 +185,7 @@ export const Home = () => {
   ]);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-white dark:bg-black text-gray-900 dark:text-white">
       <Navbar
         currentDate={currentDate}
         onNavigateToday={handleNavigateToday}
@@ -197,8 +196,8 @@ export const Home = () => {
         onSearchToggle={() => setIsSearchOpen((prev) => !prev)}
         onCalendarToggle={() => setIsCalendarOpen((prev) => !prev)}
       />
-      <div className="flex-1 overflow-hidden w-full flex flex-col">
-        <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden w-full flex flex-col bg-white dark:bg-black">
+        <div className="flex-1 overflow-hidden bg-white dark:bg-black">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full gap-4">
               <LoadingSpinner size="lg" />
@@ -266,26 +265,18 @@ export const Home = () => {
         !isSettingsOpen &&
         !isTrashOpen &&
         !isHelpOpen && (
-          <>
-            <ColumnControls
-              numDays={numDays}
-              isAutoMode={isAutoMode}
-              theme={settings.theme}
-              onDecrease={handleDecreaseColumns}
-              onIncrease={handleIncreaseColumns}
-              onToggleAuto={() => setIsAutoMode((prev: boolean) => !prev)}
-              onToggleTheme={handleToggleTheme}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onOpenHelp={() => setIsHelpOpen(true)}
-              onOpenTrash={() => setIsTrashOpen((prev) => !prev)}
-            />
-            <SideNavControls
-              onNavigatePrevDay={() => navigateDate(-settings.singleArrowDays)}
-              onNavigateNextDay={() => navigateDate(settings.singleArrowDays)}
-              onNavigatePrevWeek={() => navigateDate(-settings.doubleArrowDays)}
-              onNavigateNextWeek={() => navigateDate(settings.doubleArrowDays)}
-            />
-          </>
+          <ColumnControls
+            numDays={numDays}
+            isAutoMode={isAutoMode}
+            theme={settings.theme}
+            onDecrease={handleDecreaseColumns}
+            onIncrease={handleIncreaseColumns}
+            onToggleAuto={() => setIsAutoMode((prev: boolean) => !prev)}
+            onToggleTheme={handleToggleTheme}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onOpenHelp={() => setIsHelpOpen(true)}
+            onOpenTrash={() => setIsTrashOpen((prev) => !prev)}
+          />
         )}
       <NotificationContainer
         notifications={notifications}

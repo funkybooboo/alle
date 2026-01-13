@@ -56,8 +56,8 @@ export const CalendarDropdown = ({
           onSelectDate(date);
           onClose();
         }}
-        className={`p-2 text-sm rounded hover:bg-blue-100 transition-colors ${
-          isToday ? 'font-bold text-blue-600' : ''
+        className={`p-2 text-sm rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors text-gray-900 dark:text-white ${
+          isToday ? 'font-bold text-blue-600 dark:text-blue-400' : ''
         } ${isSelected ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}`}
       >
         {day}
@@ -83,7 +83,7 @@ export const CalendarDropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50"
+      className="absolute right-0 top-full mt-2 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4 z-50"
       style={{ width: '280px' }}
     >
       <div className="flex items-center justify-between mb-4">
@@ -96,14 +96,14 @@ export const CalendarDropdown = ({
               setSelectedMonth(selectedMonth - 1);
             }
           }}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-white"
         >
           <span className="material-symbols-outlined text-xl">
             chevron_left
           </span>
         </button>
 
-        <span className="font-semibold">
+        <span className="font-semibold text-gray-900 dark:text-white">
           {monthNames[selectedMonth]} {selectedYear}
         </span>
 
@@ -116,7 +116,7 @@ export const CalendarDropdown = ({
               setSelectedMonth(selectedMonth + 1);
             }
           }}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-white"
         >
           <span className="material-symbols-outlined text-xl">
             chevron_right
@@ -128,7 +128,7 @@ export const CalendarDropdown = ({
         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
           <div
             key={day}
-            className="text-xs text-gray-500 text-center font-medium p-2"
+            className="text-xs text-gray-500 dark:text-gray-400 text-center font-medium p-2"
           >
             {day}
           </div>

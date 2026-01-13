@@ -4,7 +4,6 @@ import type {
   Task,
   CreateTaskInput,
   UpdateTaskInput,
-  TaskWithMetadata,
 } from '../types/task.types';
 
 // GraphQL Queries
@@ -149,28 +148,5 @@ export const taskAPI = {
       { id }
     );
     return data.deleteTask;
-  },
-
-  // Legacy compatibility - convert old API calls to new format
-  async createTaskLegacy(text: string, date: Date): Promise<Task> {
-    return this.createTask({
-      title: text,
-      date: date.toISOString(),
-    });
-  },
-
-  async updateTaskLegacy(
-    id: string,
-    updates: { text?: string; completed?: boolean; date?: Date }
-  ): Promise<Task> {
-    return this.updateTask(parseInt(id, 10), {
-      title: updates.text,
-      completed: updates.completed,
-      date: updates.date?.toISOString(),
-    });
-  },
-
-  async deleteTaskLegacy(id: string): Promise<boolean> {
-    return this.deleteTask(parseInt(id, 10));
   },
 };

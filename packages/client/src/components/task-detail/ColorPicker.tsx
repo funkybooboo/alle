@@ -104,7 +104,7 @@ export default function ColorPicker({
 
       {/* Custom color input */}
       {showCustomInput && (
-        <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+        <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-[#1a1a1a] rounded border border-gray-300 dark:border-gray-600">
           <input
             type="color"
             value={customColor}

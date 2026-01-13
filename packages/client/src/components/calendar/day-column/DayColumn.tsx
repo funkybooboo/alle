@@ -28,7 +28,7 @@ export const DayColumn = ({
   const header = (
     <h2
       className={`text-sm font-semibold ${
-        isToday ? 'text-blue-600' : 'text-gray-800'
+        isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
       }`}
       data-testid="day-header"
     >

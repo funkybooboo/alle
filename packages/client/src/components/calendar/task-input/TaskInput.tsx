@@ -30,7 +30,7 @@ export const TaskInput = ({
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full px-2 py-1 border-b border-gray-200 focus:border-blue-500 focus:outline-none transition-colors placeholder-gray-400 text-sm"
+        className="w-full px-2 py-1 border-b border-gray-200 dark:border-[#2a2a2a] focus:border-blue-500 focus:outline-none transition-colors placeholder-gray-400 dark:placeholder-gray-600 text-sm bg-transparent text-gray-900 dark:text-white"
         aria-label={placeholder}
       />
     </form>

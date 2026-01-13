@@ -46,14 +46,14 @@ export function Column<
 }: ColumnProps<T, EditArgs>) {
   return (
     <div
-      className={`flex flex-col border-r border-gray-200 dark:border-gray-700 ${
+      className={`flex flex-col border-r border-gray-200 dark:border-[#2a2a2a] ${
         isHighlighted
-          ? 'bg-blue-50 dark:bg-gray-800'
-          : 'bg-white dark:bg-gray-900'
+          ? 'bg-blue-50 dark:bg-[#1a1a1a]'
+          : 'bg-white dark:bg-black'
       } ${className}`}
     >
       {/* Header */}
-      <div className="px-4 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="px-4 py-1.5 border-b border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#1a1a1a]">
         {header}
       </div>
 

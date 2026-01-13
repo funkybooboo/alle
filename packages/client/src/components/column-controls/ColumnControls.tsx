@@ -14,7 +14,7 @@ export const ColumnControls = ({
   onOpenTrash,
 }: ColumnControlsProps) => {
   return (
-    <div className="h-10 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-between px-4">
+    <div className="h-10 border-t border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-between px-4">
       {/* Settings and theme buttons on the left */}
       <div className="flex items-center gap-2">
         <IconButton
@@ -42,7 +42,7 @@ export const ColumnControls = ({
           label="Decrease columns ([)"
         />
 
-        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium min-w-[80px] text-center">
+        <span className="text-sm text-gray-700 dark:text-white font-medium min-w-[80px] text-center">
           {numDays} {numDays === 1 ? 'column' : 'columns'}
         </span>
 
@@ -53,7 +53,7 @@ export const ColumnControls = ({
           className={`ml-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
             isAutoMode
               ? 'bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700'
-              : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+              : 'bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-[#3a3a3a] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'
           }`}
           aria-label={
             isAutoMode ? 'Auto mode enabled (Alt+A)' : 'Enable auto mode (Alt+A)'

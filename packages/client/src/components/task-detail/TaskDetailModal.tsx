@@ -4,8 +4,8 @@ import { taskAPI } from '../../api/task-api';
 import { taskTagAPI } from '../../api/task-tag-api';
 import { taskLinkAPI } from '../../api/task-link-api';
 import { taskAttachmentAPI } from '../../api/task-attachment-api';
-import PanelModal from '../shared/PanelModal';
-import LoadingSpinner from '../shared/LoadingSpinner';
+import { PanelModal } from '../shared/PanelModal';
+import { LoadingSpinner } from '../shared/LoadingSpinner';
 import MarkdownEditor from '../markdown/MarkdownEditor';
 import ColorPicker from './ColorPicker';
 import TagInput from './TagInput';
@@ -181,7 +181,7 @@ export default function TaskDetailModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700" />
+        <div className="border-t border-gray-200 dark:border-[#2a2a2a]" />
 
         {/* Color Picker */}
         <ColorPicker
@@ -190,7 +190,7 @@ export default function TaskDetailModal({
         />
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700" />
+        <div className="border-t border-gray-200 dark:border-[#2a2a2a]" />
 
         {/* Tags */}
         <div>
@@ -203,7 +203,7 @@ export default function TaskDetailModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700" />
+        <div className="border-t border-gray-200 dark:border-[#2a2a2a]" />
 
         {/* Notes */}
         <div>
@@ -216,7 +216,7 @@ export default function TaskDetailModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700" />
+        <div className="border-t border-gray-200 dark:border-[#2a2a2a]" />
 
         {/* Links */}
         <div>
@@ -229,7 +229,7 @@ export default function TaskDetailModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700" />
+        <div className="border-t border-gray-200 dark:border-[#2a2a2a]" />
 
         {/* Attachments */}
         <div>
@@ -242,7 +242,7 @@ export default function TaskDetailModal({
         </div>
 
         {/* Metadata Footer */}
-        <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4 space-y-1">
+        <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-[#2a2a2a] pt-4 space-y-1">
           <div>Created: {new Date(task.createdAt).toLocaleString()}</div>
           <div>Updated: {new Date(task.updatedAt).toLocaleString()}</div>
         </div>

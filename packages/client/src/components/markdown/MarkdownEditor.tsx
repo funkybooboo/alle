@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import MarkdownText from '../shared/MarkdownText';
+import { MarkdownText } from '../shared/MarkdownText';
 
 interface MarkdownEditorProps {
   value: string;
@@ -31,11 +31,6 @@ export default function MarkdownEditor({
     }
   };
 
-  // Handle focus - enter edit mode
-  const handleFocus = () => {
-    setIsEditing(true);
-  };
-
   // Handle value change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLocalValue(e.target.value);
@@ -54,12 +49,12 @@ export default function MarkdownEditor({
             onBlur={handleBlur}
             placeholder={placeholder}
             autoFocus
-            className="w-full h-full min-h-[300px] p-4 font-mono text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-full min-h-[300px] p-4 font-mono text-sm bg-gray-50 dark:bg-black border border-gray-300 dark:border-gray-600 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Right: Live Preview */}
-        <div className="flex-1 p-4 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 overflow-y-auto">
+        <div className="flex-1 p-4 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-[#1a1a1a] overflow-y-auto">
           <div className="prose dark:prose-invert max-w-none">
             {localValue ? (
               <MarkdownText>{localValue}</MarkdownText>
@@ -76,7 +71,7 @@ export default function MarkdownEditor({
   return (
     <div
       onClick={() => setIsEditing(true)}
-      className={`cursor-text p-4 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition-colors min-h-[200px] ${className}`}
+      className={`cursor-text p-4 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-[#1a1a1a] hover:border-blue-400 dark:hover:border-blue-500 transition-colors min-h-[200px] ${className}`}
     >
       <div className="prose dark:prose-invert max-w-none">
         {value ? (

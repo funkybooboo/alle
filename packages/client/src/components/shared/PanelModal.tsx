@@ -22,20 +22,20 @@ export const PanelModal = ({
 }: PanelModalProps) => {
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900 ${className}`}
+      className={`fixed inset-0 z-50 flex flex-col bg-white dark:bg-black ${className}`}
       data-testid={testId}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
       {/* Header / Top Bar */}
-      <div className="flex-shrink-0 flex items-center px-4 py-1 h-10 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+      <div className="flex-shrink-0 flex items-center px-4 py-1 h-10 border-b border-gray-200 dark:border-[#2a2a2a] bg-gray-50/50 dark:bg-[#1a1a1a]/50">
         {/* Left Section: Title or Header Content */}
         <div className="flex-1 flex flex-row items-center gap-4 min-w-0">
           {headerContent ? (
             <div className="w-full">{headerContent}</div>
           ) : (
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
               {title}
             </h2>
           )}
@@ -61,7 +61,7 @@ export const PanelModal = ({
 
       {/* Footer */}
       {footer && (
-        <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200">
+        <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-[#2a2a2a]">
           {footer}
         </div>
       )}
