@@ -1,7 +1,0 @@
-{
-  "name": "Client Container",
-  "dockerComposeFile": "../../docker-compose.yml",
-  "service": "client",
-  "shutdownAction": "none",
-  "workspaceFolder": "/app"
-}
