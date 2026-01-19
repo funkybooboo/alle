@@ -12,13 +12,16 @@
  */
 
 import { EnvConfigProvider } from './adapters/config/EnvConfigProvider'
+import { BunHttpServer } from './adapters/http/BunHttpServer'
 import type { ConfigProvider } from '@alle/shared'
+import type { HttpServer } from './adapters/http/HttpServer'
 
 /**
  * Dependency injection container
  */
 export class Container {
   private _config: ConfigProvider | null = null
+  private _httpServer: HttpServer | null = null
 
   /**
    * Get the configuration provider
@@ -29,6 +32,18 @@ export class Container {
       this._config = new EnvConfigProvider()
     }
     return this._config
+  }
+
+  /**
+   * Get the HTTP server
+   * Lazy-initializes on first access with CORS settings from config
+   */
+  get httpServer(): HttpServer {
+    if (!this._httpServer) {
+      const corsOrigin = this.config.get('CORS_ORIGIN', '*')
+      this._httpServer = new BunHttpServer({ corsOrigin })
+    }
+    return this._httpServer
   }
 }
 

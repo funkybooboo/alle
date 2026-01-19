@@ -31,6 +31,9 @@
         "@alle/shared": "workspace:*",
         "@types/bun": "latest",
       },
+      "devDependencies": {
+        "typescript": "^5.9.3",
+      },
     },
     "packages/shared": {
       "name": "@alle/shared",

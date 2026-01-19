@@ -12,13 +12,16 @@
  */
 
 import { ViteConfigProvider } from './adapters/config/ViteConfigProvider'
+import { FetchHttpClient } from './adapters/http/FetchHttpClient'
 import type { ConfigProvider } from '@alle/shared'
+import type { HttpClient } from './adapters/http/HttpClient'
 
 /**
  * Dependency injection container
  */
 export class Container {
   private _config: ConfigProvider | null = null
+  private _httpClient: HttpClient | null = null
 
   /**
    * Get the configuration provider
@@ -29,6 +32,18 @@ export class Container {
       this._config = new ViteConfigProvider()
     }
     return this._config
+  }
+
+  /**
+   * Get the HTTP client
+   * Lazy-initializes on first access with API URL from config
+   */
+  get httpClient(): HttpClient {
+    if (!this._httpClient) {
+      const apiUrl = this.config.get('VITE_API_URL', 'http://localhost:4000')
+      this._httpClient = new FetchHttpClient(apiUrl)
+    }
+    return this._httpClient
   }
 }
 
