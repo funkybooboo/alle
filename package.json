@@ -1,0 +1,18 @@
+{
+  "name": "alle",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "predev": "bun run kill-ports",
+    "dev": "concurrently -n server,client -c blue,green \"bun run server\" \"bun run client\"",
+    "client": "bun --cwd packages/client dev",
+    "server": "bun --cwd packages/server dev",
+    "kill-ports": "kill $(lsof -ti:3000,4000) 2>/dev/null || true"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

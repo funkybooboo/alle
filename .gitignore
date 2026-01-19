@@ -8,7 +8,8 @@
 *.log
 *.logs
 
-# Ignore environment files
+# Ignore environment files (.env files contain local config and secrets)
+# Keep .env.example files as templates
 .env
 .env.*
 .*.env
@@ -45,15 +46,19 @@ dist/
 build/
 out/
 bin/
+*.tsbuildinfo
+
+# Vite cache
+.vite/
+*.local
 
 # Dependency directories
 node_modules/
 
-# Lock files (keep these in subprojects, not root)
+# Lock files (keep bun.lockb for reproducible builds)
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-bun.lockb
 Cargo.lock
 
 CLAUDE.md
