@@ -1,0 +1,26 @@
+meta {
+  name: Get Todo - Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/todos/999999
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("should return 404 Not Found", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("should return error message", function() {
+    expect(res.getBody().error).to.be.an("object");
+    expect(res.getBody().error.message).to.include("not found");
+  });
+}

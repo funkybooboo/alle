@@ -60,8 +60,37 @@ export class BunHttpServer implements HttpServer {
           return new Response(null, { headers: this.config.corsHeaders })
         }
 
-        // Find matching route
-        const handler = this.routes.get(key)
+        // Find matching route (exact match first, then pattern match)
+        let handler = this.routes.get(key)
+
+        // If no exact match, try pattern matching for routes with path parameters
+        if (!handler) {
+          for (const [routeKey, routeHandler] of this.routes.entries()) {
+            // Check if this is a parameterized route (METHOD:path format where path contains :param)
+            const colonIndex = routeKey.indexOf(':')
+            if (colonIndex > 0) {
+              const routeMethod = routeKey.substring(0, colonIndex)
+              const routePath = routeKey.substring(colonIndex + 1)
+
+              // Only check routes with matching method
+              if (routeMethod !== req.method) continue
+
+              // Check if route path contains parameter syntax (e.g., :id)
+              if (routePath.includes(':')) {
+                // Convert route pattern to regex
+                // e.g., "/api/todos/:id" -> /^\/api\/todos\/([^/]+)$/
+                const pattern = routePath.replace(/:[^/]+/g, '([^/]+)')
+                const regex = new RegExp(`^${pattern}$`)
+
+                if (regex.test(url.pathname)) {
+                  handler = routeHandler
+                  break
+                }
+              }
+            }
+          }
+        }
+
         if (!handler) {
           return new Response('Not Found', {
             status: 404,

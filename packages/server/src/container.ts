@@ -13,7 +13,9 @@
 
 import { EnvConfigProvider } from './adapters/config/EnvConfigProvider'
 import { BunHttpServer } from './adapters/http/BunHttpServer'
-import type { ConfigProvider } from '@alle/shared'
+import { InMemoryTodoRepository } from './adapters/data/InMemoryTodoRepository'
+import { ConsoleLogger } from './adapters/logging/ConsoleLogger'
+import { FetchHttpClient, type ConfigProvider, type HttpClient, type TodoRepository, type Logger } from '@alle/shared'
 import type { HttpServer } from './adapters/http/HttpServer'
 
 /**
@@ -22,6 +24,9 @@ import type { HttpServer } from './adapters/http/HttpServer'
 export class Container {
   private _config: ConfigProvider | null = null
   private _httpServer: HttpServer | null = null
+  private _httpClient: HttpClient | null = null
+  private _todoRepository: TodoRepository | null = null
+  private _logger: Logger | null = null
 
   /**
    * Get the configuration provider
@@ -35,7 +40,7 @@ export class Container {
   }
 
   /**
-   * Get the HTTP server
+   * Get the HTTP server (for receiving requests)
    * Lazy-initializes on first access with CORS settings from config
    */
   get httpServer(): HttpServer {
@@ -44,6 +49,39 @@ export class Container {
       this._httpServer = new BunHttpServer({ corsOrigin })
     }
     return this._httpServer
+  }
+
+  /**
+   * Get the HTTP client (for making outbound requests to external services)
+   * Lazy-initializes on first access
+   */
+  get httpClient(): HttpClient {
+    if (!this._httpClient) {
+      this._httpClient = new FetchHttpClient()
+    }
+    return this._httpClient
+  }
+
+  /**
+   * Get the todo repository (for data persistence)
+   * Lazy-initializes on first access
+   */
+  get todoRepository(): TodoRepository {
+    if (!this._todoRepository) {
+      this._todoRepository = new InMemoryTodoRepository()
+    }
+    return this._todoRepository
+  }
+
+  /**
+   * Get the logger (for application logging)
+   * Lazy-initializes on first access
+   */
+  get logger(): Logger {
+    if (!this._logger) {
+      this._logger = new ConsoleLogger()
+    }
+    return this._logger
   }
 }
 

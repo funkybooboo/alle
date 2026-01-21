@@ -1,340 +1,231 @@
 # Server Adapters
 
-This directory contains adapter implementations that wrap external dependencies, following the **Dependency Inversion Principle**. By depending on interfaces instead of concrete implementations, we can easily swap underlying technologies without changing business logic.
+This directory contains all external dependency adapters for the server. Following the **Adapter Pattern** and **Dependency Inversion Principle**, these abstractions make it trivial to swap implementations without changing business logic.
 
 ## Why Adapters?
 
-**Problem:** Hard-coupling to specific libraries makes code rigid and hard to test.
+**Problem**: Hard dependencies couple your code to specific libraries:
+- Can't switch from Bun → Node.js without rewriting everything
+- Can't test without real databases/HTTP calls
+- Can't change logging from console → Sentry without touching every file
 
+**Solution**: Depend on interfaces, not implementations:
+- Business logic imports `Logger`, not `ConsoleLogger`
+- Routes use `TodoRepository`, not `InMemoryTodoRepository`
+- All adapters wired in one place: `container.ts`
+
+## Available Adapters
+
+### 1. Config Provider
+
+**Interface**: `ConfigProvider` (shared)
+**Implementation**: `EnvConfigProvider`
+**Location**: `config/EnvConfigProvider.ts`
+
+Wraps `process.env` for type-safe configuration access.
+
+**Usage**:
 ```typescript
-// ❌ Tightly coupled to Bun
-const server = Bun.serve({
-  port: 4000,
-  fetch(req) { /* routes mixed with server setup */ }
-})
+import { container } from './container'
+
+const port = container.config.getNumber('PORT', 4000)
+const nodeEnv = container.config.get('NODE_ENV', 'development')
 ```
 
-**Solution:** Depend on interfaces, inject implementations.
-
-```typescript
-// ✅ Depends on HttpServer interface
-const server = container.httpServer
-server.route('GET', '/api/health', handler)
-```
-
-Now we can swap Bun → Node.js/Express/Fastify by changing **one line** in the container.
+**Alternative Implementations**:
+- `FileConfigProvider` - Load from JSON/YAML files
+- `VaultConfigProvider` - Load from HashiCorp Vault
+- `RemoteConfigProvider` - Load from config service
 
 ---
 
-## Adapters Overview
+### 2. HTTP Server
 
-### 1. Config Adapter
+**Interface**: `HttpServer` (server-only)
+**Implementation**: `BunHttpServer`
+**Location**: `http/BunHttpServer.ts`
 
-**Purpose:** Abstract environment variable access
+Wraps Bun's `serve()` for receiving HTTP requests.
 
-**Interface:** `ConfigProvider` (from `@alle/shared`)
+**Features**:
+- Route-based architecture (no giant fetch handler)
+- Built-in CORS handling
+- Path parameter support (`/api/todos/:id`)
+- Type-safe request/response abstractions
 
-**Implementation:** `EnvConfigProvider` - wraps `process.env`
-
-**Why:** Makes the server runtime-agnostic. Could swap to file-based config, database config, etc.
-
-**Usage:**
+**Usage**:
 ```typescript
-import { container } from '../container'
-
-const port = container.config.getNumber('PORT', 4000)
-const corsOrigin = container.config.get('CORS_ORIGIN', '*')
-```
-
-### 2. HTTP Server Adapter
-
-**Purpose:** Abstract HTTP server implementation
-
-**Interface:** `HttpServer` - provides `route()`, `start()`, `stop()` methods
-
-**Implementation:** `BunHttpServer` - wraps `Bun.serve()`
-
-**Why:** Makes it trivial to switch runtimes (Bun → Node.js → Deno) without touching route handlers.
-
-**Usage:**
-```typescript
-import { container } from '../container'
-import type { HttpRequest, HttpResponse } from './adapters/http/types'
+import { container } from './container'
 
 const server = container.httpServer
 
-server.route('GET', '/api/todos', async (req: HttpRequest): Promise<HttpResponse> => {
-  return {
-    status: 200,
-    headers: {},
-    body: { todos: [] }
-  }
+server.route('GET', '/api/todos/:id', async (req) => {
+  return { status: 200, headers: {}, body: { data: todos } }
 })
 
 await server.start(4000)
 ```
 
----
-
-## Directory Structure
-
-```
-adapters/
-├── config/
-│   └── EnvConfigProvider.ts        # Wraps process.env
-├── http/
-│   ├── HttpServer.ts                # Interface
-│   ├── BunHttpServer.ts             # Bun implementation
-│   └── types.ts                     # HttpRequest/HttpResponse types
-└── README.md                        # This file
-```
+**Alternative Implementations**:
+- `ExpressHttpServer` - Use Express.js
+- `FastifyHttpServer` - Use Fastify
+- `NodeHttpServer` - Use native Node.js http
 
 ---
 
-## Adding Alternative Implementations
+### 3. HTTP Client
 
-### Example: Switch from Bun to Express
+**Interface**: `HttpClient` (shared)
+**Implementation**: `BunHttpClient`
+**Location**: `http/BunHttpClient.ts`
 
-**Step 1:** Create `ExpressHttpServer.ts`
+Wraps fetch for making OUTBOUND HTTP requests to external services (Stripe, Auth0, etc.)
 
+**Usage**:
 ```typescript
-import express, { Express, Request, Response } from 'express'
-import { HttpServer, HttpServerConfig } from './HttpServer'
-import { HttpRequest, HttpResponse, RouteHandler } from './types'
+import { container } from './container'
 
-export class ExpressHttpServer implements HttpServer {
-  private app: Express
-  private server: ReturnType<typeof this.app.listen> | null = null
-  private config: HttpServerConfig
+const client = container.httpClient
 
-  constructor(config: HttpServerConfig = {}) {
-    this.app = express()
-    this.config = config
-
-    // Setup CORS middleware
-    this.app.use((req, res, next) => {
-      const corsHeaders = this.config.corsHeaders || {}
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        res.setHeader(key, value)
-      })
-      if (req.method === 'OPTIONS') {
-        res.sendStatus(204)
-        return
-      }
-      next()
-    })
-
-    this.app.use(express.json())
-  }
-
-  route(method: string, path: string, handler: RouteHandler): void {
-    const expressHandler = async (req: Request, res: Response) => {
-      const httpReq: HttpRequest = {
-        method: req.method,
-        url: req.url,
-        headers: req.headers as Record<string, string>,
-        json: async () => req.body,
-        text: async () => JSON.stringify(req.body),
-      }
-
-      const response = await handler(httpReq)
-
-      res.status(response.status)
-      Object.entries(response.headers).forEach(([key, value]) => {
-        res.setHeader(key, value)
-      })
-
-      if (typeof response.body === 'object' && response.body !== null) {
-        res.json(response.body)
-      } else {
-        res.send(response.body)
-      }
-    }
-
-    switch (method.toUpperCase()) {
-      case 'GET': this.app.get(path, expressHandler); break
-      case 'POST': this.app.post(path, expressHandler); break
-      case 'PUT': this.app.put(path, expressHandler); break
-      case 'DELETE': this.app.delete(path, expressHandler); break
-    }
-  }
-
-  async start(port: number): Promise<void> {
-    return new Promise((resolve) => {
-      this.server = this.app.listen(port, () => resolve())
-    })
-  }
-
-  async stop(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.server) {
-        this.server.close((err) => err ? reject(err) : resolve())
-      } else {
-        resolve()
-      }
-    })
-  }
-
-  getPort(): number | null {
-    const address = this.server?.address()
-    return typeof address === 'object' && address ? address.port : null
-  }
-}
-```
-
-**Step 2:** Install Express
-
-```bash
-cd packages/server
-bun add express
-bun add -d @types/express
-```
-
-**Step 3:** Update Container (ONE LINE!)
-
-```typescript
-// packages/server/src/container.ts
-
-import { ExpressHttpServer } from './adapters/http/ExpressHttpServer'  // Change import
-
-get httpServer(): HttpServer {
-  if (!this._httpServer) {
-    const corsOrigin = this.config.get('CORS_ORIGIN', '*')
-    // Change this ONE line:
-    this._httpServer = new ExpressHttpServer({ corsOrigin })  // ✅ Done!
-  }
-  return this._httpServer
-}
-```
-
-**Step 4:** No other changes needed!
-
-All your route handlers in `index.ts` work identically. The business logic doesn't know or care what HTTP server is running underneath.
-
----
-
-## Testing Strategy
-
-### Unit Tests
-
-Mock the adapters to test business logic in isolation:
-
-```typescript
-import { describe, it, expect, beforeEach } from 'bun:test'
-import type { ConfigProvider } from '@alle/shared'
-
-class MockConfigProvider implements ConfigProvider {
-  private values = new Map<string, string>()
-
-  constructor(initialValues: Record<string, string> = {}) {
-    Object.entries(initialValues).forEach(([k, v]) => {
-      this.values.set(k, v)
-    })
-  }
-
-  get(key: string, defaultValue?: string): string {
-    return this.values.get(key) ?? defaultValue ?? ''
-  }
-
-  getNumber(key: string, defaultValue?: number): number {
-    return Number(this.get(key, defaultValue?.toString()))
-  }
-
-  getBoolean(key: string, defaultValue?: boolean): boolean {
-    const value = this.get(key, defaultValue?.toString())
-    return value === 'true' || value === '1'
-  }
-
-  has(key: string): boolean {
-    return this.values.has(key)
-  }
-}
-
-describe('Config usage', () => {
-  it('should load port from config', () => {
-    const config = new MockConfigProvider({ PORT: '3000' })
-    expect(config.getNumber('PORT')).toBe(3000)
-  })
+const response = await client.post('https://api.stripe.com/v1/charges', {
+  amount: 1000,
+  currency: 'usd',
+}, {
+  headers: { 'Authorization': `Bearer ${key}` }
 })
 ```
 
-### Integration Tests
+**Alternative Implementations**:
+- `AxiosHttpClient` - Use axios library
+- `KyHttpClient` - Use ky library
+- `RetryHttpClient` - Wrapper with retry logic
 
-Use real adapters with test configuration:
+---
 
+### 4. Todo Repository
+
+**Interface**: `TodoRepository` (shared)
+**Implementation**: `InMemoryTodoRepository`
+**Location**: `data/InMemoryTodoRepository.ts`
+
+Abstracts todo data persistence.
+
+**Usage**:
 ```typescript
-import { BunHttpServer } from './adapters/http/BunHttpServer'
+import { container } from './container'
 
-describe('HTTP Server', () => {
-  it('should handle routes', async () => {
-    const server = new BunHttpServer()
+const repo = container.todoRepository
 
-    server.route('GET', '/test', async () => ({
-      status: 200,
-      headers: {},
-      body: 'test response'
-    }))
-
-    await server.start(0) // 0 = random port
-    const port = server.getPort()!
-
-    const response = await fetch(`http://localhost:${port}/test`)
-    expect(await response.text()).toBe('test response')
-
-    await server.stop()
-  })
-})
+const todo = await repo.create({ text: 'Buy milk', date: '2026-01-20' })
+const todos = await repo.findAll()
+await repo.update(todo.id, { completed: true })
+await repo.delete(todo.id)
 ```
 
----
-
-## Benefits Achieved
-
-✅ **Easy to swap implementations** - Change Bun → Express in one line
-✅ **Easy to test** - Mock adapters for unit tests
-✅ **Easy to configure** - Swap config sources without touching business logic
-✅ **No vendor lock-in** - Not married to any specific runtime or library
-✅ **Clean separation** - Business logic (routes) separate from infrastructure (server)
+**Alternative Implementations**:
+- `PostgresTodoRepository` - Use PostgreSQL database
+- `MongoTodoRepository` - Use MongoDB
+- `RedisTodoRepository` - Use Redis for fast in-memory with persistence
 
 ---
 
-## Current Limitations
+### 5. Logger
 
-### Route Matching
+**Interface**: `Logger` (shared)
+**Implementation**: `ConsoleLogger`
+**Location**: `logging/ConsoleLogger.ts`
 
-The current `BunHttpServer` uses simple string matching (`"METHOD:path"`). This works for:
-- ✅ Static routes: `/api/health`, `/api/todos`
-- ❌ Dynamic routes: `/api/todos/:id`
+Wraps `console.*` for consistent logging.
 
-**When you need path parameters, you have two options:**
+**Usage**:
+```typescript
+import { container } from './container'
 
-1. **Add path parameter parsing** to `BunHttpServer`:
-   ```typescript
-   // Use a library like path-to-regexp or URLPattern
-   import { match } from 'path-to-regexp'
-   ```
+const logger = container.logger
 
-2. **Use an existing router library** like `find-my-way` or switch to Express (which has built-in routing).
+logger.info('Server started', { port: 4000 })
+logger.warn('Rate limit approaching', { remaining: 10 })
+logger.error('Database connection failed', error, { host: 'localhost' })
+logger.debug('Request received', { method: 'GET', path: '/api/todos' })
+```
 
-### Middleware
+**Features**:
+- Structured logging with context
+- Log level filtering (debug/info/warn/error)
+- Automatic timestamp formatting
+- Error stack traces
 
-There's no general middleware system yet. CORS is built into the server config, but if you need request/response interceptors:
+**Alternative Implementations**:
+- `SentryLogger` - Send errors to Sentry
+- `DatadogLogger` - Send logs to Datadog
+- `FileLogger` - Write logs to files
+- `JSONLogger` - Output as JSON for log aggregators
+
+---
+
+## Container-Based Dependency Injection
+
+All adapters are wired in `container.ts`:
 
 ```typescript
-interface HttpServer {
-  use(middleware: Middleware): void  // Add this method
-  route(method: string, path: string, handler: RouteHandler): void
+export class Container {
+  private _config: ConfigProvider | null = null
+  private _httpServer: HttpServer | null = null
+  private _httpClient: HttpClient | null = null
+  private _todoRepository: TodoRepository | null = null
+  private _logger: Logger | null = null
+
+  get config(): ConfigProvider {
+    if (!this._config) {
+      this._config = new EnvConfigProvider()
+    }
+    return this._config
+  }
+
+  // ... other getters with lazy initialization
 }
 
-type Middleware = (req: HttpRequest, next: () => Promise<HttpResponse>) => Promise<HttpResponse>
+export const container = new Container()
 ```
 
-This is **intentionally left out** until you need it - don't over-engineer!
+**Benefits**:
+- **Single source of truth**: All dependencies in one place
+- **Lazy initialization**: Only create what you need
+- **Easy testing**: Mock entire container or individual dependencies
+- **Zero coupling**: Business logic never imports concrete classes
 
 ---
 
-## Key Principle
+## Key Principles
 
-> "Depend on abstractions, not concretions"
+1. **Depend on Interfaces**: Never import concrete adapter classes in business logic
+2. **Single Responsibility**: Each adapter wraps ONE external dependency
+3. **Open/Closed**: Easy to add new implementations without changing existing code
+4. **Liskov Substitution**: Any implementation of an interface should work identically
+5. **Dependency Inversion**: High-level code doesn't depend on low-level details
 
-Your route handlers depend on `HttpRequest` and `HttpResponse` types, not on Bun's `Request` or Express's `req`/`res` objects. This makes them portable across any runtime.
+## Summary
+
+**Before Adapters** (Hard Dependencies):
+```typescript
+// Coupled to Bun
+const server = Bun.serve({ ... })
+
+// Coupled to console
+console.log('Server started')
+
+// Coupled to Map
+const todos = new Map<string, Todo>()
+```
+
+**After Adapters** (Loose Coupling):
+```typescript
+// Depends on interface
+const server = container.httpServer
+const logger = container.logger
+const repo = container.todoRepository
+
+// Swap implementations by changing ONE line in container.ts
+```
+
+This pattern makes the codebase **maintainable**, **testable**, and **flexible** as requirements evolve.

@@ -1,0 +1,32 @@
+meta {
+  name: Get Todo by ID
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/todos/{{todoId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.id: eq {{todoId}}
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the todo", function() {
+    const todo = res.getBody().data;
+    expect(todo.id).to.be.a("string");
+    expect(todo.text).to.be.a("string");
+    expect(todo.completed).to.be.a("boolean");
+    expect(todo.date).to.be.a("string");
+    expect(todo.createdAt).to.be.a("string");
+    expect(todo.updatedAt).to.be.a("string");
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Get All Todos
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/todos
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isArray
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return an array", function() {
+    expect(Array.isArray(res.getBody().data)).to.be.true;
+  });
+}

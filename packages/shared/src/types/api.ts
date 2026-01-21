@@ -16,9 +16,7 @@ export interface ApiResponse<T> {
  * API error response
  */
 export interface ApiError {
-  error: string
   message: string
-  statusCode: number
 }
 
 /**

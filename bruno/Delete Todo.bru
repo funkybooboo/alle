@@ -1,0 +1,26 @@
+meta {
+  name: Delete Todo
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}{{apiPrefix}}/todos/{{todoId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.success: eq true
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return success true", function() {
+    expect(res.getBody().data.success).to.equal(true);
+  });
+}

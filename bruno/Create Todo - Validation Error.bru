@@ -1,0 +1,33 @@
+meta {
+  name: Create Todo - Validation Error
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}{{apiPrefix}}/todos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "",
+    "date": "2026-01-20"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("should return 400 Bad Request", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("should return validation error", function() {
+    expect(res.getBody().error).to.be.an("object");
+    expect(res.getBody().error.message).to.be.a("string");
+  });
+}

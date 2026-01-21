@@ -12,9 +12,8 @@
  */
 
 import { ViteConfigProvider } from './adapters/config/ViteConfigProvider'
-import { FetchHttpClient } from './adapters/http/FetchHttpClient'
-import type { ConfigProvider } from '@alle/shared'
-import type { HttpClient } from './adapters/http/HttpClient'
+import { ConsoleLogger } from './adapters/logging/ConsoleLogger'
+import { FetchHttpClient, type ConfigProvider, type HttpClient, type Logger } from '@alle/shared'
 
 /**
  * Dependency injection container
@@ -22,6 +21,7 @@ import type { HttpClient } from './adapters/http/HttpClient'
 export class Container {
   private _config: ConfigProvider | null = null
   private _httpClient: HttpClient | null = null
+  private _logger: Logger | null = null
 
   /**
    * Get the configuration provider
@@ -44,6 +44,17 @@ export class Container {
       this._httpClient = new FetchHttpClient(apiUrl)
     }
     return this._httpClient
+  }
+
+  /**
+   * Get the logger (for application logging)
+   * Lazy-initializes on first access
+   */
+  get logger(): Logger {
+    if (!this._logger) {
+      this._logger = new ConsoleLogger()
+    }
+    return this._logger
   }
 }
 

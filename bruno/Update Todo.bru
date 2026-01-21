@@ -1,0 +1,40 @@
+meta {
+  name: Update Todo
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}{{apiPrefix}}/todos/{{todoId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "completed": true,
+    "text": "Buy groceries - Updated"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.completed: eq true
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should update the todo", function() {
+    const todo = res.getBody().data;
+    expect(todo.completed).to.equal(true);
+    expect(todo.text).to.equal("Buy groceries - Updated");
+  });
+
+  test("should update updatedAt timestamp", function() {
+    const todo = res.getBody().data;
+    expect(new Date(todo.updatedAt).getTime()).to.be.greaterThan(new Date(todo.createdAt).getTime());
+  });
+}

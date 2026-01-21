@@ -2,8 +2,12 @@
  * HTTP Client abstraction interface
  *
  * Provides a runtime-agnostic way to make HTTP requests.
- * This allows the client to swap implementations (fetch, axios, etc.)
- * without changing any business logic.
+ * This interface is used by BOTH client and server:
+ * - Client: makes requests to the backend API
+ * - Server: makes requests to external services (Stripe, Auth0, etc.)
+ *
+ * By sharing this interface, both can swap implementations
+ * (fetch, axios, etc.) without changing business logic.
  */
 
 /**
@@ -21,7 +25,7 @@ export interface RequestOptions {
 export interface HttpClient {
   /**
    * Make a GET request
-   * @param url - The URL to request (relative to base URL)
+   * @param url - The URL to request (can be relative or absolute)
    * @param options - Optional request options
    * @returns Promise that resolves to the parsed response data
    * @throws HttpClientError if the request fails or returns non-2xx status
@@ -30,7 +34,7 @@ export interface HttpClient {
 
   /**
    * Make a POST request
-   * @param url - The URL to request (relative to base URL)
+   * @param url - The URL to request (can be relative or absolute)
    * @param body - The request body (will be JSON stringified)
    * @param options - Optional request options
    * @returns Promise that resolves to the parsed response data
@@ -40,7 +44,7 @@ export interface HttpClient {
 
   /**
    * Make a PUT request
-   * @param url - The URL to request (relative to base URL)
+   * @param url - The URL to request (can be relative or absolute)
    * @param body - The request body (will be JSON stringified)
    * @param options - Optional request options
    * @returns Promise that resolves to the parsed response data
@@ -50,7 +54,7 @@ export interface HttpClient {
 
   /**
    * Make a DELETE request
-   * @param url - The URL to request (relative to base URL)
+   * @param url - The URL to request (can be relative or absolute)
    * @param options - Optional request options
    * @returns Promise that resolves to the parsed response data
    * @throws HttpClientError if the request fails or returns non-2xx status
