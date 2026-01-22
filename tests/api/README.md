@@ -1,6 +1,6 @@
 # Alle API Tests (Bruno)
 
-This directory contains API tests for the Alle todo application using [Bruno](https://www.usebruno.com/), an open-source API testing tool.
+This directory contains API tests for the Alle task application using [Bruno](https://www.usebruno.com/), an open-source API testing tool.
 
 ## Why Bruno?
 
@@ -65,13 +65,13 @@ Tests should be run in sequence (seq numbers indicate order):
 6. **Update Todo** - Modify the todo
 7. **Get Todo - Not Found** - Verify 404 errors
 8. **Delete Todo** - Remove the test todo
-9. **Get Todos by Date** - Filter todos by date
+9. **Get Todos by Date** - Filter tasks by date
 
 ### Variables
 
 - `baseUrl`: Server base URL (from environment)
 - `apiPrefix`: API route prefix (`/api`)
-- `todoId`: Stored after creating a todo (used in subsequent tests)
+- `taskId`: Stored after creating a todo (used in subsequent tests)
 
 ## Writing New Tests
 

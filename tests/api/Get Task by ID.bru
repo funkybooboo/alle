@@ -1,0 +1,32 @@
+meta {
+  name: Get Task by ID
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/tasks/{{taskId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.id: eq {{taskId}}
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the task", function() {
+    const task = res.getBody().data;
+    expect(task.id).to.be.a("string");
+    expect(task.text).to.be.a("string");
+    expect(task.completed).to.be.a("boolean");
+    expect(task.date).to.be.a("string");
+    expect(task.createdAt).to.be.a("string");
+    expect(task.updatedAt).to.be.a("string");
+  });
+}

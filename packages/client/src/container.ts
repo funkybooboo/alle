@@ -12,8 +12,16 @@
  */
 
 import { ViteConfigProvider } from './adapters/config/ViteConfigProvider'
-import { ConsoleLogger } from './adapters/logging/ConsoleLogger'
-import { FetchHttpClient, type ConfigProvider, type HttpClient, type Logger } from '@alle/shared'
+import {
+  ConsoleLogger,
+  FetchHttpClient,
+  LogLevel,
+  NativeDateProvider,
+  type ConfigProvider,
+  type DateProvider,
+  type HttpClient,
+  type Logger,
+} from '@alle/shared'
 
 /**
  * Dependency injection container
@@ -22,6 +30,7 @@ export class Container {
   private _config: ConfigProvider | null = null
   private _httpClient: HttpClient | null = null
   private _logger: Logger | null = null
+  private _dateProvider: DateProvider | null = null
 
   /**
    * Get the configuration provider
@@ -48,13 +57,27 @@ export class Container {
 
   /**
    * Get the logger (for application logging)
-   * Lazy-initializes on first access
+   * Lazy-initializes on first access with log level from config
    */
   get logger(): Logger {
     if (!this._logger) {
-      this._logger = new ConsoleLogger()
+      // Determine log level from config (not environment directly)
+      const isDev = this.config.getBoolean('DEV', false)
+      const logLevel = isDev ? LogLevel.DEBUG : LogLevel.INFO
+      this._logger = new ConsoleLogger(logLevel)
     }
     return this._logger
+  }
+
+  /**
+   * Get the date provider (for date/time operations)
+   * Lazy-initializes on first access
+   */
+  get dateProvider(): DateProvider {
+    if (!this._dateProvider) {
+      this._dateProvider = new NativeDateProvider()
+    }
+    return this._dateProvider
   }
 }
 

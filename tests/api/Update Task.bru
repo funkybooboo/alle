@@ -1,11 +1,11 @@
 meta {
-  name: Update Todo
+  name: Update Task
   type: http
   seq: 6
 }
 
 put {
-  url: {{baseUrl}}{{apiPrefix}}/todos/{{todoId}}
+  url: {{baseUrl}}{{apiPrefix}}/tasks/{{taskId}}
   body: json
   auth: none
 }
@@ -27,14 +27,14 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
 
-  test("should update the todo", function() {
-    const todo = res.getBody().data;
-    expect(todo.completed).to.equal(true);
-    expect(todo.text).to.equal("Buy groceries - Updated");
+  test("should update the task", function() {
+    const task = res.getBody().data;
+    expect(task.completed).to.equal(true);
+    expect(task.text).to.equal("Buy groceries - Updated");
   });
 
   test("should update updatedAt timestamp", function() {
-    const todo = res.getBody().data;
-    expect(new Date(todo.updatedAt).getTime()).to.be.greaterThan(new Date(todo.createdAt).getTime());
+    const task = res.getBody().data;
+    expect(new Date(task.updatedAt).getTime()).to.be.greaterThan(new Date(task.createdAt).getTime());
   });
 }

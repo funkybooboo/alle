@@ -13,10 +13,19 @@
 
 import { EnvConfigProvider } from './adapters/config/EnvConfigProvider'
 import { BunHttpServer } from './adapters/http/BunHttpServer'
-import { InMemoryTodoRepository } from './adapters/data/InMemoryTodoRepository'
-import { ConsoleLogger } from './adapters/logging/ConsoleLogger'
-import { FetchHttpClient, type ConfigProvider, type HttpClient, type TodoRepository, type Logger } from '@alle/shared'
+import { InMemoryTaskRepository } from './adapters/data/InMemoryTaskRepository'
+import {
+  ConsoleLogger,
+  FetchHttpClient,
+  LogLevel,
+  NativeDateProvider,
+  type ConfigProvider,
+  type DateProvider,
+  type HttpClient,
+  type Logger,
+} from '@alle/shared'
 import type { HttpServer } from './adapters/http/HttpServer'
+import type { TaskRepository } from './adapters/data/TaskRepository'
 
 /**
  * Dependency injection container
@@ -25,8 +34,9 @@ export class Container {
   private _config: ConfigProvider | null = null
   private _httpServer: HttpServer | null = null
   private _httpClient: HttpClient | null = null
-  private _todoRepository: TodoRepository | null = null
+  private _taskRepository: TaskRepository | null = null
   private _logger: Logger | null = null
+  private _dateProvider: DateProvider | null = null
 
   /**
    * Get the configuration provider
@@ -63,25 +73,39 @@ export class Container {
   }
 
   /**
-   * Get the todo repository (for data persistence)
-   * Lazy-initializes on first access
+   * Get the task repository (for data persistence)
+   * Lazy-initializes on first access with injected date provider
    */
-  get todoRepository(): TodoRepository {
-    if (!this._todoRepository) {
-      this._todoRepository = new InMemoryTodoRepository()
+  get taskRepository(): TaskRepository {
+    if (!this._taskRepository) {
+      this._taskRepository = new InMemoryTaskRepository(this.dateProvider)
     }
-    return this._todoRepository
+    return this._taskRepository
   }
 
   /**
    * Get the logger (for application logging)
-   * Lazy-initializes on first access
+   * Lazy-initializes on first access with log level from config
    */
   get logger(): Logger {
     if (!this._logger) {
-      this._logger = new ConsoleLogger()
+      // Determine log level from config (not environment directly)
+      const env = this.config.get('NODE_ENV', 'development')
+      const logLevel = env === 'production' ? LogLevel.INFO : LogLevel.DEBUG
+      this._logger = new ConsoleLogger(logLevel)
     }
     return this._logger
+  }
+
+  /**
+   * Get the date provider (for date/time operations)
+   * Lazy-initializes on first access
+   */
+  get dateProvider(): DateProvider {
+    if (!this._dateProvider) {
+      this._dateProvider = new NativeDateProvider()
+    }
+    return this._dateProvider
   }
 }
 

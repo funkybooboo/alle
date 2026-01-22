@@ -1,5 +1,5 @@
 /**
- * Alle Todo App - API Server
+ * Alle Task App - API Server
  *
  * Now using adapter pattern for HTTP server abstraction.
  * This makes it trivial to swap from Bun → Node.js/Express/Fastify
@@ -11,9 +11,9 @@
 import {
   API_ROUTES,
   type ApiResponse,
-  type CreateTodoInput,
-  type UpdateTodoInput,
-  TODO_CONSTRAINTS,
+  type CreateTaskInput,
+  type UpdateTaskInput,
+  TASK_CONSTRAINTS,
   BadRequestError,
 } from '@alle/shared'
 import { container } from './container'
@@ -25,7 +25,7 @@ const PORT = container.config.getNumber('PORT', 4000)
 
 // Get dependencies from container
 const server = container.httpServer
-const todoRepo = container.todoRepository
+const taskRepo = container.taskRepository
 const logger = container.logger
 
 /**
@@ -44,9 +44,9 @@ function withErrorHandling(handler: RouteHandlerFn): RouteHandlerFn {
   }
 }
 
-// Extract ID from URL path like /api/todos/123
+// Extract ID from URL path like /api/tasks/123
 function extractIdFromPath(url: string): string | null {
-  const match = url.match(/\/api\/todos\/([^/?]+)/)
+  const match = url.match(/\/api\/tasks\/([^/?]+)/)
   return match ? match[1] : null
 }
 
@@ -94,66 +94,66 @@ server.route('GET', API_ROUTES.HEALTH, async (): Promise<HttpResponse> => {
 })
 
 /**
- * Todo CRUD Routes
+ * Task CRUD Routes
  */
 
-// GET /api/todos - Get all todos (optionally filtered by date)
-server.route('GET', API_ROUTES.TODOS, withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
+// GET /api/tasks - Get all tasks (optionally filtered by date)
+server.route('GET', API_ROUTES.TASKS, withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
   const date = getQueryParam(req.url, 'date')
-  const todos = date ? await todoRepo.findByDate(date) : await todoRepo.findAll()
-  return successResponse(todos)
+  const tasks = date ? await taskRepo.findByDate(date) : await taskRepo.findAll()
+  return successResponse(tasks)
 }))
 
-// POST /api/todos - Create a new todo
-server.route('POST', API_ROUTES.TODOS, withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
-  const input = await req.json<CreateTodoInput>()
+// POST /api/tasks - Create a new task
+server.route('POST', API_ROUTES.TASKS, withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
+  const input = await req.json<CreateTaskInput>()
 
   // Validate input
   if (!input.text || typeof input.text !== 'string') {
     throw validationError('Text is required')
   }
 
-  if (input.text.length < TODO_CONSTRAINTS.MIN_TEXT_LENGTH) {
-    throw validationError(`Text must be at least ${TODO_CONSTRAINTS.MIN_TEXT_LENGTH} character`)
+  if (input.text.length < TASK_CONSTRAINTS.MIN_TEXT_LENGTH) {
+    throw validationError(`Text must be at least ${TASK_CONSTRAINTS.MIN_TEXT_LENGTH} character`)
   }
 
-  if (input.text.length > TODO_CONSTRAINTS.MAX_TEXT_LENGTH) {
-    throw validationError(`Text must not exceed ${TODO_CONSTRAINTS.MAX_TEXT_LENGTH} characters`)
+  if (input.text.length > TASK_CONSTRAINTS.MAX_TEXT_LENGTH) {
+    throw validationError(`Text must not exceed ${TASK_CONSTRAINTS.MAX_TEXT_LENGTH} characters`)
   }
 
   if (!input.date || typeof input.date !== 'string') {
     throw validationError('Date is required (ISO 8601 format)')
   }
 
-  // Create the todo
-  const todo = await todoRepo.create(input)
+  // Create the task
+  const task = await taskRepo.create(input)
 
-  return successResponse(todo, 201)
+  return successResponse(task, 201)
 }))
 
-// GET /api/todos/:id - Get a single todo by ID
-server.route('GET', '/api/todos/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
+// GET /api/tasks/:id - Get a single task by ID
+server.route('GET', '/api/tasks/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
   const id = extractIdFromPath(req.url)
   if (!id) {
-    throw new BadRequestError('Invalid todo ID')
+    throw new BadRequestError('Invalid task ID')
   }
 
-  const todo = await todoRepo.findById(id)
-  if (!todo) {
-    throw notFoundError('Todo', id)
+  const task = await taskRepo.findById(id)
+  if (!task) {
+    throw notFoundError('Task', id)
   }
 
-  return successResponse(todo)
+  return successResponse(task)
 }))
 
-// PUT /api/todos/:id - Update a todo
-server.route('PUT', '/api/todos/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
+// PUT /api/tasks/:id - Update a task
+server.route('PUT', '/api/tasks/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
   const id = extractIdFromPath(req.url)
   if (!id) {
-    throw new BadRequestError('Invalid todo ID')
+    throw new BadRequestError('Invalid task ID')
   }
 
-  const input = await req.json<UpdateTodoInput>()
+  const input = await req.json<UpdateTaskInput>()
 
   // Validate input
   if (input.text !== undefined) {
@@ -161,12 +161,12 @@ server.route('PUT', '/api/todos/:id', withErrorHandling(async (req: HttpRequest)
       throw validationError('Text must be a string')
     }
 
-    if (input.text.length < TODO_CONSTRAINTS.MIN_TEXT_LENGTH) {
-      throw validationError(`Text must be at least ${TODO_CONSTRAINTS.MIN_TEXT_LENGTH} character`)
+    if (input.text.length < TASK_CONSTRAINTS.MIN_TEXT_LENGTH) {
+      throw validationError(`Text must be at least ${TASK_CONSTRAINTS.MIN_TEXT_LENGTH} character`)
     }
 
-    if (input.text.length > TODO_CONSTRAINTS.MAX_TEXT_LENGTH) {
-      throw validationError(`Text must not exceed ${TODO_CONSTRAINTS.MAX_TEXT_LENGTH} characters`)
+    if (input.text.length > TASK_CONSTRAINTS.MAX_TEXT_LENGTH) {
+      throw validationError(`Text must not exceed ${TASK_CONSTRAINTS.MAX_TEXT_LENGTH} characters`)
     }
   }
 
@@ -178,25 +178,25 @@ server.route('PUT', '/api/todos/:id', withErrorHandling(async (req: HttpRequest)
     throw validationError('Date must be a string (ISO 8601 format)')
   }
 
-  // Update the todo
-  const todo = await todoRepo.update(id, input)
-  if (!todo) {
-    throw notFoundError('Todo', id)
+  // Update the task
+  const task = await taskRepo.update(id, input)
+  if (!task) {
+    throw notFoundError('Task', id)
   }
 
-  return successResponse(todo)
+  return successResponse(task)
 }))
 
-// DELETE /api/todos/:id - Delete a todo
-server.route('DELETE', '/api/todos/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
+// DELETE /api/tasks/:id - Delete a task
+server.route('DELETE', '/api/tasks/:id', withErrorHandling(async (req: HttpRequest): Promise<HttpResponse> => {
   const id = extractIdFromPath(req.url)
   if (!id) {
-    throw new BadRequestError('Invalid todo ID')
+    throw new BadRequestError('Invalid task ID')
   }
 
-  const deleted = await todoRepo.delete(id)
+  const deleted = await taskRepo.delete(id)
   if (!deleted) {
-    throw notFoundError('Todo', id)
+    throw notFoundError('Task', id)
   }
 
   return successResponse({ success: true })

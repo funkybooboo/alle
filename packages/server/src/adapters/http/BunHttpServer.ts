@@ -78,7 +78,7 @@ export class BunHttpServer implements HttpServer {
               // Check if route path contains parameter syntax (e.g., :id)
               if (routePath.includes(':')) {
                 // Convert route pattern to regex
-                // e.g., "/api/todos/:id" -> /^\/api\/todos\/([^/]+)$/
+                // e.g., "/api/tasks/:id" -> /^\/api\/tasks\/([^/]+)$/
                 const pattern = routePath.replace(/:[^/]+/g, '([^/]+)')
                 const regex = new RegExp(`^${pattern}$`)
 

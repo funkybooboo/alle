@@ -1,13 +1,17 @@
 meta {
-  name: Get All Todos
+  name: Get Tasks by Date
   type: http
-  seq: 2
+  seq: 9
 }
 
 get {
-  url: {{baseUrl}}{{apiPrefix}}/todos
+  url: {{baseUrl}}{{apiPrefix}}/tasks?date=2026-01-20
   body: none
   auth: none
+}
+
+params:query {
+  date: 2026-01-20
 }
 
 assert {
@@ -22,5 +26,12 @@ tests {
 
   test("should return an array", function() {
     expect(Array.isArray(res.getBody().data)).to.be.true;
+  });
+
+  test("all tasks should have matching date", function() {
+    const tasks = res.getBody().data;
+    tasks.forEach(task => {
+      expect(task.date).to.equal("2026-01-20");
+    });
   });
 }

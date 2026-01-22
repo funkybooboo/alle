@@ -11,7 +11,7 @@ This directory contains all external dependency adapters for the server. Followi
 
 **Solution**: Depend on interfaces, not implementations:
 - Business logic imports `Logger`, not `ConsoleLogger`
-- Routes use `TodoRepository`, not `InMemoryTodoRepository`
+- Routes use `TaskRepository`, not `InMemoryTaskRepository`
 - All adapters wired in one place: `container.ts`
 
 ## Available Adapters
@@ -50,7 +50,7 @@ Wraps Bun's `serve()` for receiving HTTP requests.
 **Features**:
 - Route-based architecture (no giant fetch handler)
 - Built-in CORS handling
-- Path parameter support (`/api/todos/:id`)
+- Path parameter support (`/api/tasks/:id`)
 - Type-safe request/response abstractions
 
 **Usage**:
@@ -59,8 +59,8 @@ import { container } from './container'
 
 const server = container.httpServer
 
-server.route('GET', '/api/todos/:id', async (req) => {
-  return { status: 200, headers: {}, body: { data: todos } }
+server.route('GET', '/api/tasks/:id', async (req) => {
+  return { status: 200, headers: {}, body: { data: tasks } }
 })
 
 await server.start(4000)
@@ -104,28 +104,28 @@ const response = await client.post('https://api.stripe.com/v1/charges', {
 
 ### 4. Todo Repository
 
-**Interface**: `TodoRepository` (shared)
-**Implementation**: `InMemoryTodoRepository`
-**Location**: `data/InMemoryTodoRepository.ts`
+**Interface**: `TaskRepository` (shared)
+**Implementation**: `InMemoryTaskRepository`
+**Location**: `data/InMemoryTaskRepository.ts`
 
-Abstracts todo data persistence.
+Abstracts task data persistence.
 
 **Usage**:
 ```typescript
 import { container } from './container'
 
-const repo = container.todoRepository
+const repo = container.taskRepository
 
 const todo = await repo.create({ text: 'Buy milk', date: '2026-01-20' })
-const todos = await repo.findAll()
+const tasks = await repo.findAll()
 await repo.update(todo.id, { completed: true })
 await repo.delete(todo.id)
 ```
 
 **Alternative Implementations**:
-- `PostgresTodoRepository` - Use PostgreSQL database
-- `MongoTodoRepository` - Use MongoDB
-- `RedisTodoRepository` - Use Redis for fast in-memory with persistence
+- `PostgresTaskRepository` - Use PostgreSQL database
+- `MongoTaskRepository` - Use MongoDB
+- `RedisTaskRepository` - Use Redis for fast in-memory with persistence
 
 ---
 
@@ -146,7 +146,7 @@ const logger = container.logger
 logger.info('Server started', { port: 4000 })
 logger.warn('Rate limit approaching', { remaining: 10 })
 logger.error('Database connection failed', error, { host: 'localhost' })
-logger.debug('Request received', { method: 'GET', path: '/api/todos' })
+logger.debug('Request received', { method: 'GET', path: '/api/tasks' })
 ```
 
 **Features**:
@@ -172,7 +172,7 @@ export class Container {
   private _config: ConfigProvider | null = null
   private _httpServer: HttpServer | null = null
   private _httpClient: HttpClient | null = null
-  private _todoRepository: TodoRepository | null = null
+  private _taskRepository: TaskRepository | null = null
   private _logger: Logger | null = null
 
   get config(): ConfigProvider {
@@ -215,7 +215,7 @@ const server = Bun.serve({ ... })
 console.log('Server started')
 
 // Coupled to Map
-const todos = new Map<string, Todo>()
+const tasks = new Map<string, Todo>()
 ```
 
 **After Adapters** (Loose Coupling):
@@ -223,7 +223,7 @@ const todos = new Map<string, Todo>()
 // Depends on interface
 const server = container.httpServer
 const logger = container.logger
-const repo = container.todoRepository
+const repo = container.taskRepository
 
 // Swap implementations by changing ONE line in container.ts
 ```

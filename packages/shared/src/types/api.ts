@@ -2,7 +2,7 @@
  * API Request and Response types
  */
 
-import { Todo, CreateTodoInput, UpdateTodoInput } from './todo'
+import { Task, CreateTaskInput, UpdateTaskInput } from './task'
 
 /**
  * Standard API response wrapper
@@ -20,33 +20,33 @@ export interface ApiError {
 }
 
 /**
- * Todo API endpoints
+ * Task API endpoints
  */
-export interface TodoApi {
-  // GET /api/todos
-  listTodos: {
-    response: ApiResponse<Todo[]>
+export interface TaskApi {
+  // GET /api/tasks
+  listTasks: {
+    response: ApiResponse<Task[]>
   }
 
-  // GET /api/todos/:id
-  getTodo: {
-    response: ApiResponse<Todo>
+  // GET /api/tasks/:id
+  getTask: {
+    response: ApiResponse<Task>
   }
 
-  // POST /api/todos
-  createTodo: {
-    request: CreateTodoInput
-    response: ApiResponse<Todo>
+  // POST /api/tasks
+  createTask: {
+    request: CreateTaskInput
+    response: ApiResponse<Task>
   }
 
-  // PUT /api/todos/:id
-  updateTodo: {
-    request: UpdateTodoInput
-    response: ApiResponse<Todo>
+  // PUT /api/tasks/:id
+  updateTask: {
+    request: UpdateTaskInput
+    response: ApiResponse<Task>
   }
 
-  // DELETE /api/todos/:id
-  deleteTodo: {
+  // DELETE /api/tasks/:id
+  deleteTask: {
     response: ApiResponse<{ id: string }>
   }
 }

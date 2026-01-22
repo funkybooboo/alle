@@ -1,0 +1,15 @@
+- setup formatter
+- setup linter
+- setup typechecker
+- document pholosophy
+- ensure security
+- ensure validation
+- ensure error handling
+- dockerize app
+- setup tests
+  - bruno
+  - playwright
+- automate running tests
+- document running tests
+- optimize and parallize where we can and where it is easy
+

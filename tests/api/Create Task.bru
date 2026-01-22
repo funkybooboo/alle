@@ -1,0 +1,45 @@
+meta {
+  name: Create Task
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}{{apiPrefix}}/tasks
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Buy groceries",
+    "date": "2026-01-20"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.text: eq Buy groceries
+  res.body.data.date: eq 2026-01-20
+  res.body.data.completed: eq false
+}
+
+tests {
+  test("should return 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return created task", function() {
+    const task = res.getBody().data;
+    expect(task.text).to.equal("Buy groceries");
+    expect(task.date).to.equal("2026-01-20");
+    expect(task.completed).to.equal(false);
+    expect(task.id).to.be.a("string");
+    expect(task.createdAt).to.be.a("string");
+    expect(task.updatedAt).to.be.a("string");
+  });
+
+  test("should save task ID for later tests", function() {
+    bru.setVar("taskId", res.getBody().data.id);
+  });
+}

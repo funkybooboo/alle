@@ -18,7 +18,7 @@ fetch('http://localhost:4000/api/health')
 ```typescript
 // ✅ Depends on HttpClient interface
 container.httpClient
-  .get<ApiResponse<Todo[]>>('/api/todos')
+  .get<ApiResponse<Todo[]>>('/api/tasks')
   .then(data => setTodos(data.data))
 ```
 
@@ -69,17 +69,17 @@ import { container } from '../container'
 import type { ApiResponse, Todo } from '@alle/shared'
 
 // Type-safe GET request
-const todos = await container.httpClient.get<ApiResponse<Todo[]>>('/api/todos')
+const tasks = await container.httpClient.get<ApiResponse<Todo[]>>('/api/tasks')
 
 // Type-safe POST request
 const newTodo = await container.httpClient.post<ApiResponse<Todo>>(
-  '/api/todos',
+  '/api/tasks',
   { text: 'Buy milk', date: '2024-01-15' }
 )
 
 // Error handling
 try {
-  await container.httpClient.delete(`/api/todos/${id}`)
+  await container.httpClient.delete(`/api/tasks/${id}`)
 } catch (error) {
   if (error instanceof HttpClientError) {
     console.error(`HTTP ${error.statusCode}: ${error.statusText}`)
@@ -319,10 +319,10 @@ class MockHttpClient implements HttpClient {
   // Implement other methods...
 }
 
-describe('TodoList component', () => {
-  it('should fetch and display todos', async () => {
+describe('TaskList component', () => {
+  it('should fetch and display tasks', async () => {
     const mockClient = new MockHttpClient()
-    mockClient.mockGet('/api/todos', { data: [{ id: '1', text: 'Test' }] })
+    mockClient.mockGet('/api/tasks', { data: [{ id: '1', text: 'Test' }] })
 
     // Inject mock into container for testing
     // Then test component...
@@ -363,11 +363,11 @@ describe('HTTP Client', () => {
 ### Before (Direct fetch)
 
 ```typescript
-function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([])
+function TaskList() {
+  const [tasks, setTodos] = useState<Todo[]>([])
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/todos')
+    fetch('http://localhost:4000/api/tasks')
       .then(res => {
         if (!res.ok) throw new Error('Failed')
         return res.json()
@@ -376,7 +376,7 @@ function TodoList() {
       .catch(err => console.error(err))
   }, [])
 
-  return <div>{/* render todos */}</div>
+  return <div>{/* render tasks */}</div>
 }
 ```
 
@@ -392,17 +392,17 @@ function TodoList() {
 import { container } from './container'
 import type { ApiResponse, Todo } from '@alle/shared'
 
-function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([])
+function TaskList() {
+  const [tasks, setTodos] = useState<Todo[]>([])
 
   useEffect(() => {
     container.httpClient
-      .get<ApiResponse<Todo[]>>('/api/todos')
+      .get<ApiResponse<Todo[]>>('/api/tasks')
       .then(response => setTodos(response.data))
       .catch(err => console.error(err))
   }, [])
 
-  return <div>{/* render todos */}</div>
+  return <div>{/* render tasks */}</div>
 }
 ```
 
@@ -497,14 +497,14 @@ Your components depend on `HttpClient` interface, not on `fetch` or `axios` dire
 2. **Use type parameters** - Preserve type safety through the abstraction
    ```typescript
    // ✅ Type-safe response
-   const todos = await client.get<ApiResponse<Todo[]>>('/api/todos')
-   // todos.data is Todo[] - TypeScript knows!
+   const tasks = await client.get<ApiResponse<Todo[]>>('/api/tasks')
+   // tasks.data is Todo[] - TypeScript knows!
    ```
 
 3. **Handle errors consistently** - Catch `HttpClientError` for HTTP-specific errors
    ```typescript
    try {
-     await client.delete(`/api/todos/${id}`)
+     await client.delete(`/api/tasks/${id}`)
    } catch (error) {
      if (error instanceof HttpClientError) {
        if (error.statusCode === 404) {

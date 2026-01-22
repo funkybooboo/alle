@@ -38,7 +38,7 @@ function App() {
       flexDirection: 'column',
       gap: '1rem'
     }}>
-      <h1>Alle - Todo App</h1>
+      <h1>Alle - Task App</h1>
       <p>{message}</p>
     </div>
   )

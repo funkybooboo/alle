@@ -1,13 +1,17 @@
 import { LogLevel, type Logger, type LogContext } from './Logger'
 
-export abstract class ConsoleLoggerBase implements Logger {
+/**
+ * Console-based logger implementation
+ *
+ * Outputs log messages to the console with timestamps and context.
+ * Log level is configured via constructor parameter.
+ */
+export class ConsoleLogger implements Logger {
   protected minLevel: LogLevel
 
-  constructor(minLevel?: LogLevel) {
-    this.minLevel = minLevel || this.getDefaultLogLevel()
+  constructor(minLevel: LogLevel = LogLevel.INFO) {
+    this.minLevel = minLevel
   }
-
-  protected abstract getDefaultLogLevel(): LogLevel
 
   private shouldLog(level: LogLevel): boolean {
     const levels: LogLevel[] = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR]

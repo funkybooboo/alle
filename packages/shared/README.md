@@ -1,121 +1,243 @@
 # @alle/shared
 
-Shared TypeScript types, constants, and utilities for the Alle todo application.
+Runtime-agnostic code used by **BOTH** client and server packages.
 
 ## Purpose
 
-This package ensures type-safe communication between the client and server by providing:
-- A single source of truth for data types
-- Shared API contracts
-- Common validation rules and constants
+This package contains the shared foundation that ensures type safety and consistency across the full stack. Code here must work in both browser (client) and Bun (server) runtimes.
 
 ## What's Included
 
-### Types
+### Types (`src/types/`)
+Data models and API contracts:
+- `Todo`, `CreateTaskInput`, `UpdateTaskInput` - Core task types
+- `ApiResponse<T>`, `ApiError` - Standard API response wrappers
+- `TaskApi` - Type-safe API endpoint definitions
 
-**`Todo`** - Core todo data type
-```typescript
-interface Todo {
-  id: string
-  text: string
-  completed: boolean
-  date: string
-  createdAt: string
-  updatedAt: string
-}
+### Adapter Interfaces (`src/adapters/`)
+Runtime-agnostic contracts implemented differently per environment:
+
+**Config** (`adapters/config/`)
+- `ConfigProvider` - Interface for runtime-agnostic config access
+- `ConfigError` - Config-related errors
+- **Implementations:**
+  - `ViteConfigProvider` (client) - reads `import.meta.env`
+  - `EnvConfigProvider` (server) - reads `process.env`
+
+**HTTP Client** (`adapters/http/`)
+- `HttpClient` - Interface for HTTP operations
+- `FetchHttpClient` - Universal implementation (fetch API works in both runtimes)
+- `HttpClientError` - HTTP client errors
+- `RequestOptions` - HTTP request configuration
+
+**Logging** (`adapters/logging/`)
+- `Logger` - Interface defining logging contract
+- `LogLevel` - Log level enum (Debug, Info, Warn, Error)
+- `ConsoleLoggerBase` - Base class with common logging logic
+- **Implementations:**
+  - `ConsoleLogger` (client) - uses `import.meta.env.DEV`
+  - `ConsoleLogger` (server) - uses `process.env.NODE_ENV`
+
+### Constants (`src/constants.ts`)
+App-wide constants that must stay in sync:
+- `API_ROUTES` - Centralized route definitions
+- `TASK_CONSTRAINTS` - Validation rules (text length limits, etc.)
+
+### Date Adapter (`src/adapters/date/`)
+Date and time operations using ISO 8601 format:
+- `DateProvider` - Interface for date/time operations (15 methods)
+- `NativeDateProvider` - Universal implementation using native JavaScript Date
+- `DateProviderError` - Date provider errors
+
+### Errors (`src/errors/AppError.ts`)
+Custom error classes with HTTP status codes:
+- `AppError` (base class)
+- `ValidationError` (400)
+- `NotFoundError` (404)
+- `UnauthorizedError` (401)
+- `ForbiddenError` (403)
+- `ConflictError` (409)
+- `BadRequestError` (400)
+- `InternalServerError` (500)
+
+## Organization Rules
+
+### ✅ What SHOULD Go in Shared
+
+1. **Types used by both client and server**
+   ```typescript
+   // ✅ YES - Client displays tasks, server persists them
+   export interface Todo {
+     id: string
+     text: string
+     completed: boolean
+   }
+   ```
+
+2. **Interfaces implemented differently per runtime**
+   ```typescript
+   // ✅ YES - Client and server need config access, but source differs
+   export interface ConfigProvider {
+     get(key: string, defaultValue?: string): string
+   }
+   ```
+
+3. **Universal implementations**
+   ```typescript
+   // ✅ YES - fetch() exists in both browser and Bun
+   export class FetchHttpClient implements HttpClient {
+     async get(url: string) { /* ... */ }
+   }
+   ```
+
+4. **API contracts**
+   ```typescript
+   // ✅ YES - Client and server must agree on API shape
+   export interface ApiResponse<T> {
+     data: T
+     error?: string
+   }
+   ```
+
+5. **Constants that must stay in sync**
+   ```typescript
+   // ✅ YES - Client and server must use same routes
+   export const API_ROUTES = {
+     TASKS: '/api/tasks',
+     HEALTH: '/api/health'
+   }
+   ```
+
+6. **Pure utility functions**
+   ```typescript
+   // ✅ YES - Date formatting needed by both sides
+   export function formatDate(date: string): string { /* ... */ }
+   ```
+
+### ❌ What should NOT Go in Shared
+
+1. **Server-only concerns**
+   ```typescript
+   // ❌ NO - Only server needs data persistence patterns
+   export interface TaskRepository {
+     findAll(): Promise<Todo[]>
+   }
+   // → Move to packages/server/
+   ```
+
+2. **Client-only code**
+   ```typescript
+   // ❌ NO - React is client-only
+   export function TaskList() {
+     return <div>...</div>
+   }
+   // → Move to packages/client/
+   ```
+
+3. **Runtime-specific implementations**
+   ```typescript
+   // ❌ NO - process.env is Node/Bun specific
+   export class EnvConfigProvider {
+     get(key: string) {
+       return process.env[key]
+     }
+   }
+   // → Move to packages/server/
+   ```
+
+4. **Code used in only one place**
+   ```typescript
+   // ❌ NO - If only server uses it, keep it there
+   export function serverOnlyHelper() { /* ... */ }
+   // → Move to appropriate package
+   ```
+
+## Decision Tree
+
+When creating new code, ask yourself:
+
+```
+Does the CLIENT need this code?
+├─ NO → Put in server/ package
+└─ YES
+   └─ Does the SERVER also need it?
+      ├─ NO → Put in client/ package
+      └─ YES → Put in shared/ package
 ```
 
-**`CreateTodoInput`** - Input for creating todos
+**Examples:**
+- `Todo` type → Client displays, server persists → **shared/**
+- `TaskRepository` interface → Only server persists → **server/**
+- `TaskList` component → Only client renders → **client/**
+- `API_ROUTES` constants → Both need same routes → **shared/**
+
+## Import Guidelines
+
+### In Client
 ```typescript
-type CreateTodoInput = Pick<Todo, 'text' | 'date'>
+import { type Todo, API_ROUTES, type Logger } from '@alle/shared'
 ```
 
-**`UpdateTodoInput`** - Input for updating todos
+### In Server
 ```typescript
-type UpdateTodoInput = Partial<Pick<Todo, 'text' | 'completed' | 'date'>>
+import { type Todo, type DateProvider, ValidationError } from '@alle/shared'
 ```
 
-**`ApiResponse<T>`** - Standard API response wrapper
-```typescript
-interface ApiResponse<T> {
-  data: T
-  message?: string
-}
-```
+### Never Import
+- Client should NOT import server code
+- Server should NOT import client code
+- Shared should NOT import from client or server
 
-**`ApiError`** - API error response
-```typescript
-interface ApiError {
-  error: string
-  message: string
-  statusCode: number
-}
-```
+## Best Practices
 
-### Constants
+1. **Keep it lean** - Only add to shared if truly needed by both sides
+2. **No side effects** - Shared code should be pure and predictable
+3. **Runtime-agnostic** - No browser-only or Node-only APIs
+4. **Type-first** - Prefer interfaces and types over implementations
+5. **Document why** - If placement is unclear, add a comment explaining
 
-**`API_ROUTES`** - Centralized API route definitions
-```typescript
-{
-  TODOS: '/api/todos',
-  TODO_BY_ID: (id: string) => `/api/todos/${id}`,
-  HEALTH: '/api/health'
-}
-```
+## When to Move Code
 
-**`TODO_CONSTRAINTS`** - Validation rules
-```typescript
-{
-  MAX_TEXT_LENGTH: 500,
-  MIN_TEXT_LENGTH: 1
-}
-```
+**From shared to server:**
+- Client stops using it (example: TaskRepository)
+- Code becomes server-specific
 
-## Usage
+**From shared to client:**
+- Server stops using it
+- Code becomes client-specific
 
-Import types and constants from the shared package:
+**From client/server to shared:**
+- Other side starts needing it
+- Want to ensure consistency across stack
 
-```typescript
-// In client (React)
-import { type Todo, API_ROUTES } from '@alle/shared'
-
-const fetchTodos = async () => {
-  const response = await fetch(`${API_URL}${API_ROUTES.TODOS}`)
-  const data: ApiResponse<Todo[]> = await response.json()
-  return data.data
-}
-```
-
-```typescript
-// In server (Bun)
-import { type Todo, type ApiResponse, API_ROUTES } from '@alle/shared'
-
-if (url.pathname === API_ROUTES.TODOS) {
-  const todos: Todo[] = await db.getTodos()
-  const response: ApiResponse<Todo[]> = { data: todos }
-  return Response.json(response)
-}
-```
-
-## Guidelines
-
-### DO ✅
-- Add types used by both client and server
-- Add pure utility functions (no side effects)
-- Add constants that must stay in sync
-- Keep types minimal and focused
-
-### DON'T ❌
-- Add React components
-- Add server-only code (database, middleware)
-- Add client-only code (hooks, context)
-- Add code that's only used in one place
-
-## Development
+## Package Scripts
 
 ```bash
-# Type check the shared package
-bun run type-check
+# In root
+bun install        # Install dependencies
+bun run dev        # Start client and server
 ```
 
-The shared package requires no build step - Bun and Vite consume TypeScript directly.
+## Dependencies
+
+- **Dev only**: TypeScript
+- **Runtime**: None (pure TypeScript)
+
+## Exports
+
+All public APIs are exported through `src/index.ts`. Import from the package root:
+
+```typescript
+// ✅ DO
+import { Todo, API_ROUTES } from '@alle/shared'
+
+// ❌ DON'T
+import { Todo } from '@alle/shared/src/types/todo'
+```
+
+## Future Considerations
+
+- **Validation schemas** - Consider Zod for shared validation rules
+- **Type-safe API client** - Type-safe wrapper around HttpClient
+- **Environment-specific builds** - Tree-shaking for unused code
+- **Runtime-agnostic server** - If supporting multiple server runtimes

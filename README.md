@@ -1,6 +1,6 @@
 # Alle
 
-A modern todo application inspired by TeuxDeux, built with React and Bun.
+A modern task application inspired by TeuxDeux, built with React and Bun.
 
 ## Tech Stack
 
@@ -27,7 +27,7 @@ alle/
 │   │       └── index.ts
 │   └── shared/          # Shared types and utilities
 │       └── src/
-│           ├── types/   # Todo, API types
+│           ├── types/   # Task, API types
 │           ├── constants.ts
 │           └── index.ts
 ├── package.json         # Root workspace config
@@ -121,22 +121,53 @@ bun run kill-ports
 - Clean startup/shutdown with automatic port cleanup
 - Color-coded console output (server: blue, client: green)
 
+## Architecture
+
+### Adapter Pattern
+
+This project uses the **adapter pattern** throughout, enabling easy swapping of implementations:
+
+- **ConfigProvider** - Abstract config access (implementations: ViteConfigProvider, EnvConfigProvider)
+- **HttpClient** - Abstract HTTP operations (implementation: FetchHttpClient)
+- **Logger** - Abstract logging (implementations: ConsoleLogger for client/server)
+- **HttpServer** - Abstract server interface (implementation: BunHttpServer)
+- **TaskRepository** - Abstract data persistence (implementation: InMemoryTaskRepository)
+
+**Benefits:**
+- Swap implementations with one line change in container.ts
+- Easy testing with mock implementations
+- Runtime-agnostic code (Bun → Node, browser → React Native)
+- Clear separation of concerns
+
+### Dependency Injection
+
+Both client and server use a container pattern for dependency injection:
+
+```typescript
+// packages/client/src/container.ts
+export const container = new Container()
+const httpClient = container.httpClient // Lazy-initialized
+
+// packages/server/src/container.ts
+export const container = new Container()
+const taskRepo = container.taskRepository // Swap InMemory → Postgres here
+```
+
 ## Shared Package (`@alle/shared`)
 
-The shared package contains types, constants, and utilities used by both client and server, ensuring type safety across the full stack.
+The shared package contains **runtime-agnostic code** used by **BOTH** client and server.
 
 **What's included:**
-- `Todo` - Core todo type
-- `CreateTodoInput`, `UpdateTodoInput` - Input types for mutations
-- `ApiResponse<T>`, `ApiError` - Standard API response wrappers
-- `TodoApi` - Type-safe API endpoint definitions
-- `API_ROUTES` - Centralized route constants
-- `TODO_CONSTRAINTS` - Validation rules
+- **Types**: `Todo`, `CreateTaskInput`, `UpdateTaskInput`, `ApiResponse`, `ApiError`
+- **Interfaces**: `ConfigProvider`, `HttpClient`, `Logger`, `DateProvider`
+- **Implementations**: `ConsoleLogger`, `FetchHttpClient`, `NativeDateProvider`
+- **Constants**: `API_ROUTES`, `TASK_CONSTRAINTS`
+- **Errors**: `AppError`, `ValidationError`, `NotFoundError`, etc.
 
 **Usage example:**
 ```typescript
 // In client or server
-import { type Todo, API_ROUTES, TODO_CONSTRAINTS } from '@alle/shared'
+import { type Todo, API_ROUTES, TASK_CONSTRAINTS } from '@alle/shared'
 
 const todo: Todo = { /* ... */ }
 fetch(`${API_URL}${API_ROUTES.HEALTH}`)
@@ -148,17 +179,61 @@ fetch(`${API_URL}${API_ROUTES.HEALTH}`)
 - Refactoring is safe and easy
 - Zero runtime overhead (types are erased at build time)
 
+**Organization Principle:** "Does the **client** need it?"
+
+```
+┌─────────────────────────────────────┐
+│   New Code/File Created            │
+└─────────────────────────────────────┘
+                 │
+                 ▼
+    ┌────────────────────────────┐
+    │ Does client need it?       │
+    └────────────────────────────┘
+           /              \
+         Yes              No
+          │                │
+          ▼                ▼
+    ┌──────────┐    ┌──────────────┐
+    │ Does     │    │ Put in       │
+    │ server   │    │ SERVER       │
+    │ need it? │    │ package      │
+    └──────────┘    └──────────────┘
+      /      \
+    Yes      No
+     │        │
+     ▼        ▼
+  ┌─────┐  ┌────────┐
+  │ Put │  │ Put in │
+  │ in  │  │ CLIENT │
+  │ SHD │  │ package│
+  └─────┘  └────────┘
+```
+
 **What should go in shared:**
 - ✅ Types used by both client and server
+- ✅ Interfaces implemented differently per runtime
+- ✅ Universal implementations (works in both browser and Bun)
 - ✅ API request/response interfaces
 - ✅ Constants that must stay in sync
-- ✅ Pure utility functions (no side effects)
+- ✅ Pure utility functions with no runtime dependencies
 
 **What should NOT go in shared:**
 - ❌ React components or hooks
-- ❌ Server-only code (database, middleware)
-- ❌ Client-only code (UI state, context)
+- ❌ Server-only concerns (repositories, database, Bun-specific code)
+- ❌ Client-only code (UI state, React context)
 - ❌ Code used in only one place
+
+**Examples:**
+- ✅ `ConfigProvider` (interface) → shared (both client and server need config)
+- ✅ `ViteConfigProvider` (implementation) → client (Vite-specific)
+- ✅ `EnvConfigProvider` (implementation) → server (process.env-specific)
+- ❌ `TaskRepository` (interface) → server (only server needs data persistence)
+
+For detailed package-specific guidelines, see:
+- `packages/shared/README.md`
+- `packages/server/README.md`
+- `packages/client/README.md`
 
 ## 12-Factor App Compliance
 
@@ -181,7 +256,7 @@ The application is designed to be easily containerized:
 
 ## Next Steps
 
-- [ ] Implement todo CRUD operations
+- [ ] Implement task CRUD operations
 - [ ] Add database integration
 - [ ] Create Docker configuration
 - [ ] Add authentication
