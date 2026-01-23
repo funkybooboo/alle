@@ -1,0 +1,76 @@
+- document pholosophy
+  - coding standards
+  - git branch strategy
+  - branch and commit conventions
+  - other conventions
+  - how to test
+  - how to document
+  - interfaces and dependancy injection
+  - 12 factor app
+  - things should look good and feel good
+  - file structure
+  - seperation of conserns
+  - shared library
+  - worker services
+  - security
+  - minimal 3rd party packages and services
+  - close for modifition, open for extention
+  - design patterns
+  - datastructures and algorithms
+  - parrilization
+  - immuteabilty
+  - composition over inheritance
+  - never nester
+  - well documented apis
+  - convention over configuration
+  - link to documetation inside the repo or to the internet
+  - kiss
+  - diy
+  - make only what you need but with grace
+  - leave the campsite cleaner then you found it
+  - function vs oop vs ...
+  - POJS - plain old javascript (but we are using typescript)
+  - pure functions
+  - wrap libraies and frameworks
+  - wrap implemtations
+  - seperatie business logic from other
+  - stateless services
+  - etc...
+- other language support
+  - american english
+  - german
+  - leave open for easy extention
+  - have dropdown menu
+- ensure security
+  - http headers
+  - middleware
+  - codeing standards
+  - securtity scanners
+  - SALA
+- ensure validation
+  - validate all user input heavily
+  - trust nothing
+  - assume the worst
+- dockerize app
+  - support prod mode and dev mode
+  - make a plan about handling env vars
+- user stories
+  - write user stories, have tests for each
+  - bruno
+- ensure error handling
+  - ensure proper error handling and proper error messages
+- mvp
+- setup tests
+  - playwright
+- automate running tests
+  - it should be easy to run tests, startup whatever services you need to run the tests automatically
+- document running tests
+  - document how to run tests
+- optimize and parallize where we can and where it is easy
+- ci
+  - ensure high coding standards and safety
+  - track todos
+- cd 
+  - make it easy to deploy to hosting provider
+  - research hosting providers
+

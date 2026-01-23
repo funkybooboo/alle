@@ -11,19 +11,19 @@
  * Wraps the native request object to provide a consistent interface
  */
 export interface HttpRequest {
-  method: string
-  url: string
-  headers: Record<string, string>
+    method: string;
+    url: string;
+    headers: Record<string, string>;
 
-  /**
-   * Parse the request body as JSON
-   */
-  json<T>(): Promise<T>
+    /**
+     * Parse the request body as JSON
+     */
+    json<T>(): Promise<T>;
 
-  /**
-   * Get the request body as text
-   */
-  text(): Promise<string>
+    /**
+     * Get the request body as text
+     */
+    text(): Promise<string>;
 }
 
 /**
@@ -31,15 +31,13 @@ export interface HttpRequest {
  * Represents the response to send back to the client
  */
 export interface HttpResponse {
-  status: number
-  headers: Record<string, string>
-  body: string | object | null
+    status: number;
+    headers: Record<string, string>;
+    body: string | object | null;
 }
 
 /**
  * Route handler function type
  * Handles an HTTP request and returns a response
  */
-export type RouteHandler = (
-  req: HttpRequest
-) => Promise<HttpResponse> | HttpResponse
+export type RouteHandler = (req: HttpRequest) => Promise<HttpResponse> | HttpResponse;

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { API_ROUTES, type ApiResponse } from '@alle/shared'
-import { container } from './container'
+import { API_ROUTES, type ApiResponse } from '@alle/shared';
+import { useEffect, useState } from 'react';
+import { container } from './container';
 
 /**
  * Main App component
@@ -13,35 +13,37 @@ import { container } from './container'
  * by changing one line in the container.
  */
 function App() {
-  const [message, setMessage] = useState<string>('Loading...')
+    const [message, setMessage] = useState<string>('Loading...');
 
-  // Fetch message from server on component mount using HTTP client adapter
-  useEffect(() => {
-    const httpClient = container.httpClient
+    // Fetch message from server on component mount using HTTP client adapter
+    useEffect(() => {
+        const httpClient = container.httpClient;
 
-    // Type-safe health endpoint fetch
-    httpClient
-      .get<ApiResponse<{ status: string }>>(API_ROUTES.HEALTH)
-      .then(data => {
-        setMessage(`Hello from Bun Server! Health: ${data.data.status}`)
-      })
-      .catch(() => setMessage('Hello from Client! (Server not running)'))
-  }, [])
+        // Type-safe health endpoint fetch
+        httpClient
+            .get<ApiResponse<{ status: string }>>(API_ROUTES.HEALTH)
+            .then(data => {
+                setMessage(`Hello from Bun Server! Health: ${data.data.status}`);
+            })
+            .catch(() => setMessage('Hello from Client! (Server not running)'));
+    }, []);
 
-  return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      flexDirection: 'column',
-      gap: '1rem'
-    }}>
-      <h1>Alle - Task App</h1>
-      <p>{message}</p>
-    </div>
-  )
+    return (
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                fontFamily: 'system-ui, sans-serif',
+                flexDirection: 'column',
+                gap: '1rem',
+            }}
+        >
+            <h1>Alle - Task App</h1>
+            <p>{message}</p>
+        </div>
+    );
 }
 
-export default App
+export default App;

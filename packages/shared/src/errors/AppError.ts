@@ -18,35 +18,47 @@
  * All custom errors should extend this class
  */
 export class AppError extends Error {
-  public readonly statusCode: number
-  public readonly isOperational: boolean
-  public readonly data?: unknown
+    public readonly statusCode: number;
+    public readonly isOperational: boolean;
+    public readonly data?: unknown;
 
-  constructor(message: string, statusCode: number = 500, isOperational: boolean = true, data?: unknown) {
-    super(message)
-    this.name = this.constructor.name
-    this.statusCode = statusCode
-    this.isOperational = isOperational
-    this.data = data
+    constructor(
+        message: string,
+        statusCode: number = 500,
+        isOperational: boolean = true,
+        data?: unknown,
+    ) {
+        super(message);
+        this.name = this.constructor.name;
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        this.data = data;
 
-    // Maintains proper stack trace (only available on V8)
-    if (typeof (Error as unknown as { captureStackTrace?: Function }).captureStackTrace === 'function') {
-      (Error as unknown as { captureStackTrace: (target: object, constructor: Function) => void })
-        .captureStackTrace(this, this.constructor)
+        // Maintains proper stack trace (only available on V8)
+        // We need to narrow Error to include captureStackTrace if it exists
+        if (
+            typeof (Error as unknown as { captureStackTrace?: CallableFunction })
+                .captureStackTrace === 'function'
+        ) {
+            (
+                Error as unknown as {
+                    captureStackTrace: (target: object, constructorFn: CallableFunction) => void;
+                }
+            ).captureStackTrace(this, this.constructor);
+        }
     }
-  }
 
-  /**
-   * Convert error to JSON format for API responses
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      statusCode: this.statusCode,
-      data: this.data,
+    /**
+     * Convert error to JSON format for API responses
+     */
+    toJSON() {
+        return {
+            name: this.name,
+            message: this.message,
+            statusCode: this.statusCode,
+            data: this.data,
+        };
     }
-  }
 }
 
 /**
@@ -54,9 +66,9 @@ export class AppError extends Error {
  * Used when input data fails validation
  */
 export class ValidationError extends AppError {
-  constructor(message: string, data?: unknown) {
-    super(message, 400, true, data)
-  }
+    constructor(message: string, data?: unknown) {
+        super(message, 400, true, data);
+    }
 }
 
 /**
@@ -64,9 +76,9 @@ export class ValidationError extends AppError {
  * Used when a requested resource doesn't exist
  */
 export class NotFoundError extends AppError {
-  constructor(message: string = 'Resource not found', data?: unknown) {
-    super(message, 404, true, data)
-  }
+    constructor(message: string = 'Resource not found', data?: unknown) {
+        super(message, 404, true, data);
+    }
 }
 
 /**
@@ -74,9 +86,9 @@ export class NotFoundError extends AppError {
  * Used when authentication is required but not provided
  */
 export class UnauthorizedError extends AppError {
-  constructor(message: string = 'Authentication required', data?: unknown) {
-    super(message, 401, true, data)
-  }
+    constructor(message: string = 'Authentication required', data?: unknown) {
+        super(message, 401, true, data);
+    }
 }
 
 /**
@@ -84,9 +96,9 @@ export class UnauthorizedError extends AppError {
  * Used when user is authenticated but lacks permission
  */
 export class ForbiddenError extends AppError {
-  constructor(message: string = 'Permission denied', data?: unknown) {
-    super(message, 403, true, data)
-  }
+    constructor(message: string = 'Permission denied', data?: unknown) {
+        super(message, 403, true, data);
+    }
 }
 
 /**
@@ -94,9 +106,9 @@ export class ForbiddenError extends AppError {
  * Used when there's a conflict with existing data (e.g., duplicate)
  */
 export class ConflictError extends AppError {
-  constructor(message: string, data?: unknown) {
-    super(message, 409, true, data)
-  }
+    constructor(message: string, data?: unknown) {
+        super(message, 409, true, data);
+    }
 }
 
 /**
@@ -104,9 +116,9 @@ export class ConflictError extends AppError {
  * Used for malformed requests
  */
 export class BadRequestError extends AppError {
-  constructor(message: string, data?: unknown) {
-    super(message, 400, true, data)
-  }
+    constructor(message: string, data?: unknown) {
+        super(message, 400, true, data);
+    }
 }
 
 /**
@@ -114,7 +126,7 @@ export class BadRequestError extends AppError {
  * Used for unexpected errors (bugs)
  */
 export class InternalServerError extends AppError {
-  constructor(message: string = 'Internal server error', data?: unknown) {
-    super(message, 500, false, data) // Not operational - indicates a bug
-  }
+    constructor(message: string = 'Internal server error', data?: unknown) {
+        super(message, 500, false, data); // Not operational - indicates a bug
+    }
 }

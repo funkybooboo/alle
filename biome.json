@@ -1,0 +1,77 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+    "assist": { "actions": { "source": { "organizeImports": "on" } } },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": true,
+            "complexity": {
+                "noForEach": "off"
+            },
+            "style": {
+                "useImportType": "error",
+                "useExportType": "error",
+                "useConst": "error",
+                "useNodejsImportProtocol": "off",
+                "noNonNullAssertion": "error"
+            },
+            "suspicious": {
+                "noExplicitAny": "error",
+                "noConfusingVoidType": "error"
+            },
+            "correctness": {
+                "noUnusedVariables": "error",
+                "noUnusedImports": "error"
+            }
+        }
+    },
+    "formatter": {
+        "enabled": true,
+        "formatWithErrors": false,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 100,
+        "lineEnding": "lf"
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single",
+            "jsxQuoteStyle": "double",
+            "quoteProperties": "asNeeded",
+            "trailingCommas": "all",
+            "semicolons": "always",
+            "arrowParentheses": "asNeeded",
+            "bracketSpacing": true,
+            "bracketSameLine": false
+        }
+    },
+    "json": {
+        "formatter": {
+            "enabled": true,
+            "indentWidth": 4,
+            "lineWidth": 100
+        },
+        "parser": {
+            "allowComments": true,
+            "allowTrailingCommas": false
+        }
+    },
+    "files": {
+        "ignoreUnknown": true,
+        "includes": [
+            "**/packages/**/*/src/**/*.ts",
+            "**/packages/**/*/src/**/*.tsx",
+            "**/packages/**/*/*.json",
+            "**/*.json",
+            "!**/node_modules",
+            "!**/dist",
+            "!**/build",
+            "!**/out",
+            "!**/.vite",
+            "!**/coverage",
+            "!**/*.tsbuildinfo",
+            "!**/bun.lock",
+            "!**/.claude"
+        ]
+    }
+}

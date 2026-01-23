@@ -11,106 +11,106 @@
  * - Business logic stays completely unchanged
  */
 
-import { EnvConfigProvider } from './adapters/config/EnvConfigProvider'
-import { BunHttpServer } from './adapters/http/BunHttpServer'
-import { InMemoryTaskRepository } from './adapters/data/InMemoryTaskRepository'
 import {
-  ConsoleLogger,
-  FetchHttpClient,
-  LogLevel,
-  NativeDateProvider,
-  type ConfigProvider,
-  type DateProvider,
-  type HttpClient,
-  type Logger,
-} from '@alle/shared'
-import type { HttpServer } from './adapters/http/HttpServer'
-import type { TaskRepository } from './adapters/data/TaskRepository'
+    type ConfigProvider,
+    ConsoleLogger,
+    type DateProvider,
+    FetchHttpClient,
+    type HttpClient,
+    type Logger,
+    LogLevel,
+    NativeDateProvider,
+} from '@alle/shared';
+import { EnvConfigProvider } from './adapters/config/EnvConfigProvider';
+import { InMemoryTaskRepository } from './adapters/data/InMemoryTaskRepository';
+import type { TaskRepository } from './adapters/data/TaskRepository';
+import { BunHttpServer } from './adapters/http/BunHttpServer';
+import type { HttpServer } from './adapters/http/HttpServer';
 
 /**
  * Dependency injection container
  */
 export class Container {
-  private _config: ConfigProvider | null = null
-  private _httpServer: HttpServer | null = null
-  private _httpClient: HttpClient | null = null
-  private _taskRepository: TaskRepository | null = null
-  private _logger: Logger | null = null
-  private _dateProvider: DateProvider | null = null
+    private _config: ConfigProvider | null = null;
+    private _httpServer: HttpServer | null = null;
+    private _httpClient: HttpClient | null = null;
+    private _taskRepository: TaskRepository | null = null;
+    private _logger: Logger | null = null;
+    private _dateProvider: DateProvider | null = null;
 
-  /**
-   * Get the configuration provider
-   * Lazy-initializes on first access
-   */
-  get config(): ConfigProvider {
-    if (!this._config) {
-      this._config = new EnvConfigProvider()
+    /**
+     * Get the configuration provider
+     * Lazy-initializes on first access
+     */
+    get config(): ConfigProvider {
+        if (!this._config) {
+            this._config = new EnvConfigProvider();
+        }
+        return this._config;
     }
-    return this._config
-  }
 
-  /**
-   * Get the HTTP server (for receiving requests)
-   * Lazy-initializes on first access with CORS settings from config
-   */
-  get httpServer(): HttpServer {
-    if (!this._httpServer) {
-      const corsOrigin = this.config.get('CORS_ORIGIN', '*')
-      this._httpServer = new BunHttpServer({ corsOrigin })
+    /**
+     * Get the HTTP server (for receiving requests)
+     * Lazy-initializes on first access with CORS settings from config
+     */
+    get httpServer(): HttpServer {
+        if (!this._httpServer) {
+            const corsOrigin = this.config.get('CORS_ORIGIN', '*');
+            this._httpServer = new BunHttpServer({ corsOrigin });
+        }
+        return this._httpServer;
     }
-    return this._httpServer
-  }
 
-  /**
-   * Get the HTTP client (for making outbound requests to external services)
-   * Lazy-initializes on first access
-   */
-  get httpClient(): HttpClient {
-    if (!this._httpClient) {
-      this._httpClient = new FetchHttpClient()
+    /**
+     * Get the HTTP client (for making outbound requests to external services)
+     * Lazy-initializes on first access
+     */
+    get httpClient(): HttpClient {
+        if (!this._httpClient) {
+            this._httpClient = new FetchHttpClient();
+        }
+        return this._httpClient;
     }
-    return this._httpClient
-  }
 
-  /**
-   * Get the task repository (for data persistence)
-   * Lazy-initializes on first access with injected date provider
-   */
-  get taskRepository(): TaskRepository {
-    if (!this._taskRepository) {
-      this._taskRepository = new InMemoryTaskRepository(this.dateProvider)
+    /**
+     * Get the task repository (for data persistence)
+     * Lazy-initializes on first access with injected date provider
+     */
+    get taskRepository(): TaskRepository {
+        if (!this._taskRepository) {
+            this._taskRepository = new InMemoryTaskRepository(this.dateProvider);
+        }
+        return this._taskRepository;
     }
-    return this._taskRepository
-  }
 
-  /**
-   * Get the logger (for application logging)
-   * Lazy-initializes on first access with log level from config
-   */
-  get logger(): Logger {
-    if (!this._logger) {
-      // Determine log level from config (not environment directly)
-      const env = this.config.get('NODE_ENV', 'development')
-      const logLevel = env === 'production' ? LogLevel.INFO : LogLevel.DEBUG
-      this._logger = new ConsoleLogger(logLevel)
+    /**
+     * Get the logger (for application logging)
+     * Lazy-initializes on first access with log level from config
+     */
+    get logger(): Logger {
+        if (!this._logger) {
+            // Determine log level from config (not environment directly)
+            const env = this.config.get('NODE_ENV', 'development');
+            const logLevel = env === 'production' ? LogLevel.INFO : LogLevel.DEBUG;
+            this._logger = new ConsoleLogger(logLevel);
+        }
+        return this._logger;
     }
-    return this._logger
-  }
 
-  /**
-   * Get the date provider (for date/time operations)
-   * Lazy-initializes on first access
-   */
-  get dateProvider(): DateProvider {
-    if (!this._dateProvider) {
-      this._dateProvider = new NativeDateProvider()
+    /**
+     * Get the date provider (for date/time operations)
+     * Lazy-initializes on first access
+     */
+    get dateProvider(): DateProvider {
+        if (!this._dateProvider) {
+            this._dateProvider = new NativeDateProvider();
+        }
+        return this._dateProvider;
     }
-    return this._dateProvider
-  }
 }
 
 /**
  * Singleton instance of the container
  * Import this in your application code to access dependencies
  */
-export const container = new Container()
+export const container = new Container();

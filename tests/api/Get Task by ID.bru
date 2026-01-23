@@ -12,12 +12,16 @@ get {
 
 assert {
   res.status: eq 200
-  res.body.data.id: eq {{taskId}}
 }
 
 tests {
   test("should return 200 OK", function() {
     expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the task with the correct id", function() {
+    const task = res.getBody().data;
+    expect(task.id).to.equal(bru.getVar("taskId"));
   });
 
   test("should return the task", function() {

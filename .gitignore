@@ -1,64 +1,192 @@
-# Ignore temporary files from editors and OS
-**/*.bak
-**/*.bk
-*.swp
-*~
+# ==============================================================================
+# Comprehensive .gitignore for Modern Web Projects
+#
+# This file is structured to be robust and cover a wide range of tools,
+# operating systems, and development environments.
+# ==============================================================================
 
-# Ignore log files
-*.log
-*.logs
+# ------------------------------------------------------------------------------
+# Dependency Directories & Caches
+# ------------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
 
-# Ignore environment files (.env files contain local config and secrets)
-# Keep .env.example files as templates
-.env
-.env.*
-.*.env
-!**/.env.example
-
-# Ignore vscode settings folder
-.vscode/
-
-# Ignore JetBrains IDEs folder
-.idea/
-
-# Ignore Mac system files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Ignore Windows system files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Ignore Linux system files
-*~
-.directory
-
-# Coverage reports
-coverage/
-*.coverage
-.nyc_output/
-.lcov
-
-# Build artifacts
+# ------------------------------------------------------------------------------
+# Build, Transpiled & Packaged Output
+# ------------------------------------------------------------------------------
 dist/
 build/
 out/
 bin/
 *.tsbuildinfo
+.next/
+.output/
+.svelte-kit/
 
-# Vite cache
+# ------------------------------------------------------------------------------
+# Tooling Caches
+# ------------------------------------------------------------------------------
 .vite/
-*.local
+.biome-cache/
+.jest-cache/
+.vitest-cache/
+.eslintcache
+.parcel-cache/
 
-# Dependency directories
-node_modules/
+# ------------------------------------------------------------------------------
+# Test Reports & Artifacts
+# ------------------------------------------------------------------------------
+coverage/
+.nyc_output/
+lcov-report/
+*.lcov
+/tests/e2e/playwright-report/
+/test-results/
+/cypress/videos/
+/cypress/screenshots/
 
-# Lock files (keep bun.lockb for reproducible builds)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-Cargo.lock
+# ------------------------------------------------------------------------------
+# Log Files
+# ------------------------------------------------------------------------------
+*.log
+*.logs
+server.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-CLAUDE.md
+# ------------------------------------------------------------------------------
+# Local Environment & Secret Files (VERY IMPORTANT)
+# These files should NEVER be checked into git.
+# ------------------------------------------------------------------------------
+.env
+.env.*
+.env*.local
+*.env.local
+!**/.env.example
+!**/.env.ci
+!**/.env.test
+
+# Secret files
+*secret*
+credentials*
+*.key
+*.pem
+private.key
+
+# Cloud provider credentials
+.aws/
+.gcloud/
+
+# ------------------------------------------------------------------------------
+# IDE & Editor Configuration
+# ------------------------------------------------------------------------------
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (WebStorm, IntelliJ, etc.)
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.sw[a-p]
+*~
+*.swp
+
+# Atom
+.atom/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ------------------------------------------------------------------------------
+# OS-Specific Files
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+__MACOSX
+Icon\r
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ------------------------------------------------------------------------------
+# Temporary, Backup, Database & Archive Files
+# ------------------------------------------------------------------------------
+*.bak
+*.bk
+*.tmp
+*.temp
+*.old
+*.orig
+*.patch
+*.rej
+
+# Generic temporary directories
+temp/
+tmp/
+
+# Local database files
+*.db
+data/
+db/
+*.sqlite
+*.sqlite3
+dump.rdb
+.localdb/
+
+# Archive files (if not deployment artifacts)
+*.zip
+*.tar
+*.gz
+
+# ------------------------------------------------------------------------------
+# Infrastructure & DevOps
+# ------------------------------------------------------------------------------
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Serverless Framework
+.serverless/
+
+# Docker
+docker-compose.override.yml
+
+# ------------------------------------------------------------------------------
+# Misc
+# ------------------------------------------------------------------------------
+# Local user uploads
+uploads/
+media/
+
+# Lock files (uncomment the one for the package manager you are NOT using)
+# ------------------------------------------------------------------------------
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# Cargo.lock

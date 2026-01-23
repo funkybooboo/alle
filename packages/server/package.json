@@ -1,18 +1,18 @@
 {
-  "name": "@alle/server",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@alle/shared": "workspace:*",
-    "@types/bun": "latest"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3"
-  }
+    "name": "@alle/server",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun --watch src/index.ts",
+        "start": "bun src/index.ts",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@alle/shared": "workspace:*",
+        "@types/bun": "latest"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
 }

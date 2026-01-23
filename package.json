@@ -1,18 +1,34 @@
 {
-  "name": "alle",
-  "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "predev": "bun run kill-ports",
-    "dev": "concurrently -n server,client -c blue,green \"bun run server\" \"bun run client\"",
-    "client": "bun --cwd packages/client dev",
-    "server": "bun --cwd packages/server dev",
-    "kill-ports": "kill $(lsof -ti:3000,4000) 2>/dev/null || true"
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
-  }
+    "name": "alle",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "predev": "bun run kill-ports",
+        "dev": "concurrently -n server,client -c blue,green \"bun run server\" \"bun run client\"",
+        "client": "bun --cwd packages/client dev",
+        "server": "bun --cwd packages/server dev",
+        "kill-ports": "kill $(lsof -ti:3000,4000) 2>/dev/null || true",
+        "format": "biome format --write .",
+        "format:check": "biome format .",
+        "lint": "biome lint --write .",
+        "lint:check": "biome lint .",
+        "check": "biome check --write .",
+        "check:ci": "biome ci .",
+        "type-check": "bun run type-check:shared && bun run type-check:server && bun run type-check:client",
+        "type-check:client": "tsc --noEmit -p packages/client/tsconfig.json",
+        "type-check:server": "tsc --noEmit -p packages/server/tsconfig.json",
+        "type-check:shared": "tsc --noEmit -p packages/shared/tsconfig.json",
+        "validate": "bun run check:ci && bun run type-check",
+        "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
+        "test:e2e:no-server": "playwright test --no-server --config tests/e2e/playwright.config.ts",
+        "test:api": "cd tests/api && bru run --env local",
+        "test": "concurrently -n api,e2e -c magenta,cyan \"bun run test:api\" \"bun run test:e2e:no-server\""
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.3.11",
+        "concurrently": "^9.2.1"
+    }
 }
