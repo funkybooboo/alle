@@ -7,7 +7,12 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "type-check": "tsc --noEmit"
+        "type-check": "tsc --noEmit",
+        "test": "bun test",
+        "test:watch": "bun test --watch",
+        "test:coverage": "bun test --coverage",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "dependencies": {
         "@alle/shared": "workspace:*",
@@ -15,10 +20,26 @@
         "react-dom": "^18.3.1"
     },
     "devDependencies": {
+        "@chromatic-com/storybook": "^5.0.0",
+        "@storybook/addon-a11y": "^10.2.0",
+        "@storybook/addon-docs": "^10.2.0",
+        "@storybook/addon-essentials": "^8.6.14",
+        "@storybook/addon-interactions": "^8.6.14",
+        "@storybook/addon-links": "^10.2.0",
+        "@storybook/addon-onboarding": "^10.2.0",
+        "@storybook/addon-vitest": "^10.2.0",
+        "@storybook/react": "^10.2.0",
+        "@storybook/react-vite": "^10.2.0",
+        "@types/bun": "^1.3.6",
         "@types/react": "^19.2.8",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^4.3.4",
+        "@vitest/browser-playwright": "^4.0.18",
+        "@vitest/coverage-v8": "^4.0.18",
+        "playwright": "^1.58.0",
+        "storybook": "^10.2.0",
         "typescript": "^5.9.3",
-        "vite": "^6.0.5"
+        "vite": "^6.0.5",
+        "vitest": "^4.0.18"
     }
 }

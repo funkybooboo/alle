@@ -22,6 +22,7 @@ export { LogLevel } from './adapters/logging/Logger';
 // Constants
 export { API_ROUTES, TASK_CONSTRAINTS } from './constants';
 // Errors
+export type { AppErrorJson } from './errors/AppError';
 export {
     AppError,
     BadRequestError,

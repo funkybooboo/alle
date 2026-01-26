@@ -1,0 +1,2 @@
+# Validate commit message format (Conventional Commits)
+bunx commitlint --edit $1

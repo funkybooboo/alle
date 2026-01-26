@@ -71,7 +71,8 @@
             "!**/coverage",
             "!**/*.tsbuildinfo",
             "!**/bun.lock",
-            "!**/.claude"
+            "!**/.claude",
+            "!**/storybook-static"
         ]
     }
 }

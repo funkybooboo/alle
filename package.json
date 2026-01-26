@@ -22,13 +22,26 @@
         "type-check:server": "tsc --noEmit -p packages/server/tsconfig.json",
         "type-check:shared": "tsc --noEmit -p packages/shared/tsconfig.json",
         "validate": "bun run check:ci && bun run type-check",
+        "test": "bun run test:unit",
+        "test:unit": "bun run test:unit:shared && bun run test:unit:server && bun run test:unit:client",
+        "test:unit:shared": "bun --cwd packages/shared test",
+        "test:unit:server": "bun --cwd packages/server test",
+        "test:unit:client": "bun --cwd packages/client test",
+        "test:watch": "bun test --watch",
+        "test:coverage": "bun test --coverage",
         "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
         "test:e2e:no-server": "playwright test --no-server --config tests/e2e/playwright.config.ts",
         "test:api": "cd tests/api && bru run --env local",
-        "test": "concurrently -n api,e2e -c magenta,cyan \"bun run test:api\" \"bun run test:e2e:no-server\""
+        "test:all": "concurrently -n api,e2e -c magenta,cyan \"bun run test:api\" \"bun run test:e2e:no-server\"",
+        "storybook": "bun --cwd packages/client storybook",
+        "prepare": "husky"
     },
     "devDependencies": {
         "@biomejs/biome": "2.3.11",
-        "concurrently": "^9.2.1"
+        "@commitlint/cli": "^20.3.1",
+        "@commitlint/config-conventional": "^20.3.1",
+        "concurrently": "^9.2.1",
+        "husky": "^9.1.7",
+        "wait-on": "^9.0.3"
     }
 }

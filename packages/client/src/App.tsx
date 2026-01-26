@@ -12,7 +12,7 @@ import { container } from './container';
  * This makes it easy to swap implementations (axios, ky, etc.)
  * by changing one line in the container.
  */
-function App() {
+function App(): React.JSX.Element {
     const [message, setMessage] = useState<string>('Loading...');
 
     // Fetch message from server on component mount using HTTP client adapter

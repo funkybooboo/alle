@@ -1,0 +1,13 @@
+echo "🔍 Running pre-commit validation..."
+
+# Run validation (lint, format, type-check)
+bun run validate
+
+# Check exit code
+if [ $? -ne 0 ]; then
+  echo "❌ Pre-commit validation failed!"
+  echo "💡 Fix the errors above or use 'git commit --no-verify' to skip (not recommended)"
+  exit 1
+fi
+
+echo "✅ Pre-commit validation passed!"

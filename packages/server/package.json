@@ -6,7 +6,10 @@
     "scripts": {
         "dev": "bun --watch src/index.ts",
         "start": "bun src/index.ts",
-        "type-check": "tsc --noEmit"
+        "type-check": "tsc --noEmit",
+        "test": "bun test",
+        "test:watch": "bun test --watch",
+        "test:coverage": "bun test --coverage"
     },
     "dependencies": {
         "@alle/shared": "workspace:*",

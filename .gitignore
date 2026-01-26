@@ -190,3 +190,6 @@ media/
 # yarn.lock
 # pnpm-lock.yaml
 # Cargo.lock
+
+*storybook.log
+storybook-static

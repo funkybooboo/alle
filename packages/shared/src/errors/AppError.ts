@@ -14,6 +14,16 @@
  */
 
 /**
+ * JSON representation of an AppError
+ */
+export interface AppErrorJson {
+    name: string;
+    message: string;
+    statusCode: number;
+    data?: unknown;
+}
+
+/**
  * Base application error
  * All custom errors should extend this class
  */
@@ -51,7 +61,7 @@ export class AppError extends Error {
     /**
      * Convert error to JSON format for API responses
      */
-    toJSON() {
+    toJSON(): AppErrorJson {
         return {
             name: this.name,
             message: this.message,
