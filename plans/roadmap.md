@@ -73,4 +73,6 @@
 - cd 
   - make it easy to deploy to hosting provider
   - research hosting providers
+- document look and feel for app
+  - I like how basecamp works but I also like how TeuxDeux works
 
