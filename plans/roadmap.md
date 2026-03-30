@@ -2,30 +2,36 @@
 
 This document outlines the development roadmap for Alle. We use semantic versioning to define chunks of work and track our progress.
 
+---
+
 ## v0.1.0: Foundations
 
 This release focuses on establishing the project's foundation, including the core architecture, development environment, and documentation.
 
 - [x] **Monorepo Setup:** Set up a monorepo with `bun` to manage the `client`, `server`, and `shared` packages.
 - [x] **Tech Stack:**
-    -   Frontend: Svelte with SvelteKit
-    -   Backend: Bun
-    -   Language: TypeScript
+    - Frontend: Svelte with SvelteKit
+    - Backend: Bun
+    - Language: TypeScript
 - [x] **Architecture:** Implement a clean, modular architecture using the Adapter Pattern.
 - [x] **Code Quality:** Configure Biome for formatting and linting.
 - [x] **API:**
-    -   Setup basic CRUD endpoints for tasks.
-    -   Use Bun's built-in HTTP server.
+    - Setup basic CRUD endpoints for tasks.
+    - Use Bun's built-in HTTP server.
 - [x] **Client:**
-    -   Setup basic client with a simple UI to display tasks.
+    - Setup basic client with a simple UI to display tasks.
 - [x] **Documentation:**
-    -   Create comprehensive documentation for architecture, code standards, testing, and more.
+    - Create comprehensive documentation for architecture, code standards, testing, and more.
 - [x] **Testing:**
-    -   Setup Playwright for E2E testing.
-    -   Setup Bruno for API testing.
+    - Setup Playwright for E2E testing.
+    - Setup Bruno for API testing.
+
+---
 
 ## v0.1.1: Refactor to Svelte
+
 This release is dedicated to replacing the initial React client with a new SvelteKit application.
+
 - [ ] **Scaffold SvelteKit App:** Create a new SvelteKit application in the `packages/client` directory.
 - [ ] **Setup Basic UI:** Re-create the basic UI for displaying tasks in Svelte.
 - [ ] **Ensure Feature Parity:** The Svelte client should have the same basic functionality as the original React client.
@@ -39,359 +45,615 @@ This release is dedicated to replacing the initial React client with a new Svelt
 - The basic UI for displaying tasks is functional.
 - All previous client-side functionality (as of `v0.1.0`) is implemented in the new Svelte client.
 
+---
+
 ## v0.2.0: Core Task Model
-This release focuses on the in-memory data structures and business logic for tasks.
-- [ ] **Task CRUD:** Implement the fundamental Create, Read, Update, and Delete operations for tasks in memory.
-- [ ] **Task Completion:** Allow tasks to be marked as complete and visually distinguished from incomplete tasks.
-- [ ] **Future & Someday Tasks:**
-    - [ ] Implement the ability to assign tasks to a future date.
-    - [ ] Create a dedicated "Someday" or "Inbox" area for tasks without a specific due date.
+
+This release defines the full data model that powers the entire application — tasks, sub-tasks, Someday groups, projects, and recurring tasks.
+
+- [ ] **Task Model:** Define the complete `Task` type in `packages/shared` with all fields:
+    - `id`, `text`, `notes` (markdown), `completed`, `date` (`null` = Someday), `createdAt`, `updatedAt`
+    - `tags: string[]` — first-class tag system; priority is expressed as special tags (`#p1`, `#p2`, `#p3`)
+    - `parentId: string | null` — enables nested sub-tasks
+    - `rolloverEnabled: boolean` — per-task rollover override (default: `true`)
+    - `someDayGroupId: string | null` — which Someday group this task belongs to
+    - `projectId: string | null`, `position: number | null`, `state: 'ready' | 'scheduled' | 'done' | null`
+    - `recurringTaskId: string | null`, `instanceDate: string | null`
+    - `originalScheduledDate: string | null`, `daysLate: number`
+    - `dependsOn: string | null`
+- [ ] **SomeDayGroup Model:** Define `SomeDayGroup` — user-created tag-based groups in the Someday panel (`id`, `name`, `tag`, `position`, `createdAt`).
+- [ ] **Project Model:** Define `Project` (`id`, `name`, `description`, `startDate`, `dueDate`, `isActive`, `createdAt`, `completedAt`).
+- [ ] **RecurringTask Model:** Define `RecurringTask` template and `RecurringTaskStats` (`currentStreak`, `longestStreak`, `totalCompletions`, `lastCompletedDate`).
+- [ ] **Task CRUD:** Implement Create, Read, Update, Delete in memory. All operations tested with unit tests.
+- [ ] **Tag System:** Tags are plain strings stored on tasks. No separate Tag entity needed — tags are derived from task data.
+- [ ] **Someday Support:** Tasks with `date: null` are unscheduled. `someDayGroupId` assigns them to a group.
+- [ ] **Sub-task Support:** Tasks with `parentId` are sub-tasks. Completion of all sub-tasks rolls up to parent.
 
 ### Technical Notes & Considerations
-- The `Task` model should be defined in the `packages/shared` directory to be used by both the client and server.
-- Business logic (e.g., how tasks are sorted, what fields are required) should be kept within the core model definition.
+- All models live in `packages/shared` to be used by client, server, CLI, and MCP packages.
+- Priority (`#p1`, `#p2`, `#p3`) is just a tag convention — no separate priority field needed.
+- The `tags` array is the primary organizational system across the entire app.
+- `rolloverEnabled` defaults to `true` app-wide; the per-task field overrides the app setting.
 
 ### Definition of Done
-- The `Task` model is fully defined with all necessary fields.
-- All CRUD operations are functional and have unit tests.
-- The concept of "Someday" tasks is implemented and tested.
-
-## v0.3.0: API Endpoints
-This release focuses on creating the API for interacting with the task model.
-- [ ] **Task API:** Create API endpoints for all Task CRUD operations.
-- [ ] **Date API:** Create API endpoints for fetching tasks by date.
-
-### Technical Notes & Considerations
-- A RESTful API design should be used.
-- All API endpoints should be documented using a standard like OpenAPI.
-- Zod or a similar library should be used for robust input validation on the server.
-
-### Definition of Done
-- All API endpoints are implemented and tested with Bruno.
-- API documentation is generated and up-to-date.
-- Input validation is implemented for all endpoints.
-
-## v0.4.0: Basic UI
-This release focuses on creating a minimal UI to display and interact with tasks.
-- [ ] **Display Tasks:** Create a UI to display tasks for a given day.
-- [ ] **Interact with Tasks:** Create a UI to create, edit, delete, and complete tasks.
-
-### Technical Notes & Considerations
-- The UI should be built with Svelte and SvelteKit.
-- Svelte's built-in stores should be sufficient for state management in the early stages.
-- All new UI components should be developed in Storybook for isolation and testing.
-
-### Definition of Done
-- Users can view a list of tasks for a given day.
-- Users can create, edit, delete, and complete tasks through the UI.
-- All new UI components have stories in Storybook.
-
-## v0.5.0: Keyboard Navigation & Actions
-This release focuses on the core keyboard navigation and actions.
-- [ ] **Keyboard Navigation:** Implement a system for navigating between days, weeks, and tasks using only the keyboard (e.g., arrow keys, `j`/`k`).
-- [ ] **Keyboard Actions:** All core actions (create, edit, delete, complete, move) must be triggerable via keyboard shortcuts (e.g., `n` for new, `e` for edit, `d` for delete).
-
-### Technical Notes & Considerations
-- A library like `mousetrap` or `hotkeys-js` could be used to manage keyboard shortcuts.
-- The focus management system will be critical for a good keyboard-first experience. Pay close attention to how focus shifts after an action is performed.
-
-### Definition of Done
-- All UI elements are navigable using the keyboard.
-- All core actions are triggerable with keyboard shortcuts.
-- E2E tests are created to verify all keyboard interactions.
-
-## v0.6.0: Drag-and-Drop
-This release introduces drag-and-drop as a secondary interaction method.
-- [ ] **Drag-and-Drop:** Allow tasks to be reordered and moved between days via drag-and-drop.
-
-### Technical Notes & Considerations
-- A library like `svelte-dnd-action` should be evaluated for this feature.
-- Accessibility is a key concern for drag-and-drop. Ensure that there is a keyboard-accessible alternative for all drag-and-drop actions (this is covered in v0.5.0).
-
-### Definition of Done
-- Tasks can be reordered within a day using drag-and-drop.
-- Tasks can be moved between days using drag-and-drop.
-- E2E tests are created to verify all drag-and-drop interactions.
-
-## v0.7.0: Layout & Responsiveness
-This release focuses on the visual organization of the UI and ensuring it works on different screen sizes.
-- [ ] **Weekly Layout:** Design and implement a primary view that shows tasks for an entire week, providing context and clarity.
-- [ ] **Responsive Design:** Ensure the layout is usable on a variety of screen sizes, from mobile to desktop.
-
-### Technical Notes & Considerations
-- A CSS-in-JS library (e.g., Styled Components, Emotion) or a utility-first CSS framework (e.g., Tailwind CSS) should be chosen to handle styling. The choice will have a significant impact on the developer experience.
-- The weekly layout should be the default on larger screens, while a daily or agenda view might be more appropriate for smaller screens.
-
-### Definition of Done
-- The weekly layout is implemented and functional.
-- The application is fully responsive and usable on mobile, tablet, and desktop screen sizes.
-- E2E tests are created to verify the responsive behavior.
-
-## v0.8.0: I/O & Data
-This release implements the I/O agnostic persistence layer and data export functionality.
-- [ ] **I/O Abstraction Layer:** Solidify the I/O adapter pattern to ensure the application core is completely independent of the data source.
-- [ ] **Persistence Adapters:**
-    - [ ] **In-Memory:** Create an adapter for storing data in memory, suitable for testing and ephemeral sessions.
-    - [ ] **File System:** Implement an adapter that persists data to a local file (e.g., JSON, or a self-contained SQLite database).
-    - [ ] **Database:** Implement an adapter for a full-fledged database like PostgreSQL, with Redis for optional caching to improve performance.
-- [ ] **Configuration:** Allow the user to easily configure their desired persistence method via a configuration file or environment variables.
-- [ ] **Data Export:**
-    - [ ] Implement a one-click "Export All Data" feature.
-    - [ ] Ensure the export format is well-documented and portable (e.g., a structured JSON or a set of human-readable Markdown files).
-
-### Technical Notes & Considerations
-- The choice of file system adapter (single JSON file vs. directory of Markdown files) will impact the complexity of the implementation. A single JSON file is likely simpler to start with.
-- For the database adapter, a lightweight ORM like Prisma or Drizzle ORM could be used to simplify database interactions.
-- The configuration system should be able to read from both environment variables and a configuration file. A library like `dotenv` can be used for this.
-
-### Definition of Done
-- The I/O abstraction layer is fully implemented and tested.
-- All three persistence adapters (in-memory, file system, database) are implemented and have unit tests.
-- The data export feature is functional and produces a well-formatted output.
-
-## v0.9.0: UI Polish & Theming
-This release is dedicated to refining the user interface and experience, creating a calm, modern, and productive aesthetic.
-- [ ] **UI/UX Vision:**
-    - [ ] Conduct a design pass to create a cohesive visual language that borrows the simplicity of TeuxDeux and the clarity of Basecamp.
-    - [ ] Ensure all necessary UI elements are readily accessible, minimizing clicks and context switching.
-- [ ] **Theming:**
-    - [ ] Implement a robust theming system.
-    - [ ] Create polished, high-contrast light and dark modes.
-- [ ] **Focus & Clarity:** Refine animations, transitions, and visual feedback to create a calm, focused, and productive feel.
-
-### Technical Notes & Considerations
-- A design system should be established to ensure consistency across the application. This includes defining a color palette, typography, spacing, and component styles.
-- The theming system should be built in a way that makes it easy to add new themes in the future. CSS variables are a good choice for this.
-- Svelte's built-in transition and animation functions should be sufficient for most animations.
-
-### Definition of Done
-- A clear, consistent design system is in place.
-- The light and dark themes are fully implemented and polished.
-- The application has a calm, focused, and productive feel, with subtle and meaningful animations.
-
-## v0.10.0: Basic Automation
-This release introduces the first set of automation features to reduce manual effort and make the app smarter.
-- [ ] **Task Rollover:** Automatically move any unfinished tasks from the previous day to the current day.
-- [ ] **Recurring Tasks:**
-    - [ ] Implement a system for creating tasks that recur on a daily, weekly, or monthly basis.
-    - [ ] Ensure recurring tasks are automatically created for the appropriate day.
-
-### Technical Notes & Considerations
-- A library for handling recurring dates (e.g., `rrule.js`) will be necessary.
-- The logic for creating recurring tasks should be handled by a background job or a cron job to avoid blocking the main thread.
-- The task rollover feature should be configurable by the user (e.g., they can turn it on or off).
-
-### Definition of Done
-- The task rollover feature is fully functional and configurable.
-- The recurring tasks feature is fully functional and supports daily, weekly, and monthly recurrence.
-- Unit and E2E tests are created for both features.
-
-## v0.11.0: User Accounts
-This release adds multi-user support.
-- [ ] **User Authentication:**
-    - [ ] Implement user registration and login.
-    - [ ] Securely store user credentials.
-- [ ] **Data Scoping:** Associate all tasks and related data with a specific user account.
-
-### Technical Notes & Considerations
-- A library like Passport.js could be used to handle authentication strategies.
-- JWTs (JSON Web Tokens) should be used for session management.
-- All API endpoints must be protected to ensure that users can only access their own data. This will require a middleware that checks for a valid JWT on each request.
-
-### Definition of Done
-- Users can register, login, and logout.
-- All tasks are associated with a user account.
-- All API endpoints are protected and properly scoped to the authenticated user.
-- E2E tests are created for all authentication and authorization flows.
-
-## v0.12.0: Markdown Support
-This release enhances the task description format.
-- [ ] **Markdown Rendering:**
-    - [ ] Integrate a Markdown parser to render task descriptions.
-    - [ ] Support basic formatting like headers, bold, italics, lists, and links.
-
-### Technical Notes & Considerations
-- A library like `marked` should be used for rendering Markdown.
-- Sanitization of the user-provided Markdown is critical to prevent XSS attacks. A library like `dompurify` should be used.
-
-### Definition of Done
-- Task descriptions are rendered as Markdown.
-- All user-provided HTML is sanitized to prevent XSS attacks.
-- E2E tests are created to verify Markdown rendering and sanitization.
-
-
-## v1.0.0: Public Release
-
-This will be the first stable, public release of Alle. It will include all the features from the previous releases, plus any additional polishing and bug fixes.
-
-*   **[ ] Polishing:**
-    *   [ ] Finalize the UI/UX.
-    *   [ ] Ensure the application is responsive and works well on all devices.
-    *   [ ] Implement an "Undo" feature for common actions.
-*   **[ ] Core Features:**
-    *   [ ] Implement a system for sending reminders.
-    *   [ ] Allow users to define custom colors for tasks and display a legend.
-    *   [ ] Allow users to set their local timezone.
-    *   [ ] Allow users to select and act on multiple tasks at once.
-    *   [ ] Implement a powerful and intuitive search functionality.
-    *   [ ] Automatically detect and render links in task descriptions.
-*   **[ ] Deployment:**
-    *   [ ] Dockerize the application.
-    -   [ ] Set up a CI/CD pipeline for automated testing and deployment.
-*   **[ ] Internationalization:**
-    *   [ ] Add support for multiple languages.
-
-### Technical Notes & Considerations
-- A library like `i18next` should be used to manage translations.
-- The CI/CD pipeline should be configured to run all tests, and then build and deploy the application to a hosting provider (e.g., Vercel, Netlify, or a cloud provider like AWS or GCP).
-- Docker images should be optimized for size and security.
-
-### Definition of Done
-- The application is feature-complete as defined by the previous releases.
-- The application is stable and has been thoroughly tested.
-- The application is deployed and publicly accessible.
-
-## v1.1.0: Advanced Task Management
-- [ ] **Multi-select Items:** Allow users to select and act on multiple tasks at once.
-- [ ] **Turn Recurring Tasks On/Off:** Easily toggle recurring tasks without deleting them.
-- [ ] **Order Recurring Items:** Allow users to define a specific order for recurring tasks.
-- [ ] **Better Searching:** Implement a more powerful and intuitive search functionality.
-- [ ] **Support for Links:** Automatically detect and render links in task descriptions.
-
-## v1.2.0: Advanced Automation
-- [ ] **2-Day Rule:** Priority rises over time for recurring items that are not completed. Non-recurring items are moved to the next day.
-- [ ] **Conditional Tasks:** Set conditions on tasks (e.g., "complete X tasks this week to unlock Y").
-- [ ] **Smart Task Sorting:** Automatically sort and prioritize tasks based on due dates, priority flags, or other user-defined rules.
-- [ ] **Auto Project/Course Scheduling:** Automatically schedule and shift project or course-related tasks based on user-defined timelines and dependencies.
-- [ ] **Cron Scheduling:** Advanced scheduling options for tasks using cron expressions.
-
-## v1.3.0: UI & Customization
-- [ ] **Custom Colors & Legend:** Let users define custom colors for tasks and display a legend.
-- [ ] **Adjustable Panes:** Allow users to resize different parts of the UI.
-- [ ] **Custom Keybindings:** Allow users to create their own custom keybindings.
-- [ ] **Timezone Support:** Allow users to set their local timezone.
-
-## v1.4.0: Collaboration
-- [ ] **Share Calendars:**
-    - [ ] Share calendars/task lists with other users.
-    - [ ] Set read-only or edit access.
-- [ ] **Email Sharing:** Integrate with the standard email sharing API to share tasks.
-
-## v1.5.0: Personal Wellness
-- [ ] **Habit Trackers:**
-    - [ ] Track habits and view statistics over time.
-    - [ ] Include a happiness tracker.
-- [ ] **Daily Journal:**
-    - [ ] A space for daily journaling.
-    - [ ] Sync with Obsidian.
-
-## v2.0.0: Major New Features
-
-- [ ] **Advanced Project Management:** Expand beyond basic project boards with advanced features.
-- [ ] **Integrations:** Integrate with other services like calendars or project management tools.
-- [ ] **Expense Tracker:**
-    - [ ] Basic expense tracking and budgeting.
-    - [ ] Potential integration with services like [Fintable](https://fintable.io/).
-- [ ] **Automatic Meal Planner:**
-    - [ ] Generate meal plans and recipes.
-    - [ ] Integrate with a recipe API like [TheMealDB](https://www.themealdb.com/api.php).
-- [ ] **Automatic Exercise Planner:**
-    - [ ] Suggest workouts based on user goals and available equipment.
-    - [ ] Integrate with data from sources like [Kaggle Gym Exercise Data](https://www.kaggle.com/datasets/niharika41298/gym-exercise-data).
-- [ ] **Mobile App:** Create a native mobile app for iOS and Android.
+- All models fully defined and exported from `packages/shared`.
+- Full CRUD for tasks with unit tests.
+- Sub-task parent/child relationship tested.
+- Someday group assignment tested.
+- Tag filtering logic tested (filter tasks by one or more tags).
 
 ---
 
-# 🎯 Vision: Unified Daily + Project Management System
+## v0.3.0: API Endpoints
 
-This section outlines a comprehensive vision for transforming Alle into a unified task management system that bridges strategic project planning with tactical daily execution. This vision combines:
+This release creates the REST API for all entities.
 
-- **Daily execution view** (TeuxDeux-style columns for what to work on today)
-- **Project management** (collections of sequential tasks with dependencies)
-- **Recurring tasks** (habits and life-maintenance with streak tracking)
-- All powered by a **single unified Task data model**
+- [ ] **Task API:** Full CRUD endpoints for tasks, including filtering by date, tag, completion status, and Someday group.
+- [ ] **SomeDayGroup API:** CRUD endpoints for managing Someday groups.
+- [ ] **Project API:** CRUD endpoints for projects, plus activate/deactivate and task distribution.
+- [ ] **RecurringTask API:** CRUD for recurring task templates; endpoint to generate instances for a date range.
+- [ ] **Tag API:** Derive tags from task data; endpoint to list all tags, rename, merge.
+
+### Technical Notes & Considerations
+- RESTful design throughout.
+- Zod for input validation on all endpoints.
+- OpenAPI documentation generated and kept up to date.
+- Bruno tests written before implementation (TDD).
+
+### Definition of Done
+- All endpoints implemented and tested with Bruno.
+- OpenAPI documentation generated.
+- Zod validation on all inputs.
+
+---
+
+## v0.4.0: Basic UI
+
+This release builds the core three-panel layout and all fundamental task interactions.
+
+### Layout
+- [ ] **Four-zone layout:**
+    - **Left icon rail** — slim vertical rail with icons that each open a large centered modal (background dims on open, `Esc` or click-outside closes). One modal open at a time.
+    - **Center day list** — the primary working area; fills all space between the two panels.
+    - **Right Someday panel** — always visible by default; collapsible via toggle button or keyboard shortcut; resizable by dragging the left divider edge; width saved to DB.
+    - **Bottom bar** — state display and navigation only (see below).
+
+### Left Icon Rail
+Icons (all open centered modals):
+- [ ] 📅 **Summary** — daily stats: completion %, overdue tasks, streaks, upcoming deadlines + holidays
+- [ ] 📊 **Projects** — project list; click a project → Kanban modal (Ready | Scheduled | Done columns)
+- [ ] 🔁 **Habits** — recurring task list with GitHub-style heatmaps; click → habit detail modal
+- [ ] 📆 **Calendar** — date picker to jump the day list to any date
+- [ ] 🔍 **Search / Cmd+K** — unified command palette: search tasks, add tasks, navigate, run actions, natural language input (e.g. `buy milk tomorrow #work #p1`); clicking a result scrolls day list to that task and closes modal
+- [ ] 🏷️ **Filter** — full filter builder: tags, priority (`#p1`/`#p2`/`#p3`), date range, project, completion status; filters apply to day list and Someday simultaneously
+- [ ] 🗑️ **Trash** — recently deleted tasks with restore; auto-purge after 7 days
+- [ ] ⚙️ **Settings** — theme, rollover defaults, panel prefs, tag management, holidays, filter persistence, automation rules
+- [ ] ❓ **Help** — keyboard shortcut reference organized by category
+
+Active icon has a subtle highlight. Labels shown/hidden via Settings.
+
+### Center Day List
+- [ ] **Vertical scroll** of day sections, lazy loaded as the user scrolls (intersection observer).
+- [ ] **Day section header:** `March 30, Sunday  •  4 tasks` + horizontal rule.
+- [ ] **Holiday banners** displayed above day headers where applicable (managed in Settings > Holidays).
+- [ ] **Task row:** `⠿ ○ text  #tags  #p1` — drag handle (⠿) on left, visible on hover; checkbox; text; tag chips; priority tag if present.
+- [ ] **Sub-tasks:** always shown indented below their parent task.
+- [ ] **Recurring task indicator:** subtle 🔁 icon after the task text.
+- [ ] **Empty days** shown by default (user can hide in Settings).
+- [ ] **App opens scrolled to today** with a subtle "Today" highlight; sticky `▲ Today` button appears when scrolled away from today.
+- [ ] **`+ add task`** prompt at the bottom of each day section.
+
+### Right Someday Panel
+- [ ] Title "Someday" with collapse button (‹).
+- [ ] `+ add group` button at top.
+- [ ] Groups rendered identically to day sections (same task rows, same interactions).
+- [ ] No rollover, no recurring instances.
+- [ ] Global filter (🏷️) applies to Someday tasks simultaneously with the day list.
+
+### Bottom Bar
+- [ ] **Left:** `alle` logo — clicking clears all filters and snaps to today (home button).
+- [ ] **Center-left:** active filter chips, each with `×` to dismiss; `[clear all]` when multiple filters active.
+- [ ] **Center-right:** status — `12 tasks • 4 done`; when no filters: `March 30 • 12 tasks`.
+- [ ] **Right:** `▲ Today` button (visible only when scrolled away from today).
+
+### Task Interactions
+- [ ] **Click text** → inline edit (Enter saves, Esc cancels).
+- [ ] **`e` or detail icon** → floating task detail modal (text, notes/markdown, tags, date picker, sub-tasks, rollover toggle).
+- [ ] **Space** → complete task; undo toast (5s) + Cmd+Z.
+- [ ] **`d`** → delete task; undo toast (5s) + Cmd+Z. Behavior (instant vs confirm) configurable in Settings.
+- [ ] **`n` or `a`** → inline add input appears at bottom of focused day section.
+- [ ] **Drag (⠿ handle)** → drag between day sections; drag right to Someday (clears date); drag left from Someday onto a day header to schedule.
+
+### Technical Notes & Considerations
+- Built with SvelteKit + Tailwind CSS.
+- Svelte stores for UI state (active filters, panel widths, scroll position).
+- Optimistic updates for all task mutations.
+- All new components developed in Storybook.
+
+### Definition of Done
+- All four zones render correctly.
+- Full task CRUD through the UI.
+- Inline editing, detail modal, and quick-add all functional.
+- Someday panel functional with groups.
+- Bottom bar reflects filter and task state.
+- Storybook stories for all components.
+
+---
+
+## v0.5.0: Keyboard Navigation & Command Palette
+
+This release makes Alle fully operable without a mouse.
+
+- [ ] **Vim + arrow key navigation:** Both work simultaneously throughout the app.
+    - `j`/`k` or `↑`/`↓` — navigate tasks within a day section
+    - `J`/`K` — jump between day sections (or Someday groups)
+    - `n`/`a` — add task to focused day/group
+    - `e` — open task detail modal for focused task
+    - `Space` — complete focused task
+    - `d` — delete focused task
+    - `Esc` — cancel edit / close modal
+    - `g t` — jump to today
+    - `Ctrl+\` — toggle Someday panel
+    - `?` — open Help modal (keyboard shortcuts)
+    - `Cmd+K` — open unified search/command palette
+    - `Cmd+Z` — undo last action
+- [ ] **Command palette (Cmd+K / 🔍):** Unified modal for everything.
+    - Real-time task search across all tasks.
+    - Natural language task creation: `buy milk tomorrow #work #p1`.
+    - Navigation: `go to march 15`, `go to today`.
+    - Actions: `complete fix auth bug`, `move write tests to friday`, `delete review PR`.
+    - Selecting a result closes the palette and scrolls to that task's day.
+- [ ] **Focus management:** Keyboard focus is always visible and predictable after every action.
+
+### Technical Notes & Considerations
+- A library like `mousetrap` or `hotkeys-js` for keybinding management.
+- Natural language date parsing with a library like `chrono-node`.
+- E2E tests for all keyboard flows.
+
+### Definition of Done
+- All UI elements reachable and operable via keyboard.
+- Command palette handles search, add, navigate, and actions.
+- Natural language date/tag/priority parsing works.
+- E2E tests for keyboard navigation and command palette.
+
+---
+
+## v0.6.0: Drag-and-Drop
+
+This release introduces drag-and-drop as a secondary interaction method.
+
+- [ ] **Drag handle:** ⠿ grip icon appears on the left of each task row on hover. Only the handle initiates a drag.
+- [ ] **Drag between days:** Drag a task from one day section and drop it onto another day's header or task list. The target day section highlights on hover.
+- [ ] **Drag to Someday:** Drag a task rightward into the Someday panel. Task's `date` is cleared on drop (becomes unscheduled). Task lands in the first group or a highlighted group.
+- [ ] **Drag from Someday:** Drag a task from the Someday panel leftward onto a specific day section header to schedule it. The target day highlights as the task hovers over it.
+- [ ] **Visual feedback:** Ghost image while dragging; drop zone indicator; smooth animations.
+- [ ] **Reorder within a day:** Drag tasks up/down within the same day section to reorder.
+
+### Technical Notes & Considerations
+- Evaluate `svelte-dnd-action` for drag-and-drop.
+- Keyboard alternatives (move task with `m` + arrow keys) are covered in v0.5.0.
+- E2E tests for all drag scenarios.
+
+### Definition of Done
+- All drag scenarios functional with visual feedback.
+- Dragging to/from Someday correctly clears/sets dates.
+- Reordering within a day persists.
+- E2E tests passing.
+
+---
+
+## v0.7.0: Layout & Responsiveness
+
+This release polishes the three-panel layout, implements lazy loading, view modes, and responsive behavior.
+
+- [ ] **Lazy loading:** Day sections load on demand as the user scrolls using an intersection observer. Starts at today; loads past and future days as needed.
+- [ ] **Panel resize & collapse:**
+    - Left icon rail: fixed width, always visible.
+    - Someday panel: resizable by dragging divider edge; collapsible via toggle button and `Ctrl+\`; width saved to DB.
+    - Both panels handle gracefully on smaller viewports.
+- [ ] **Priority view mode:** Accessible through the 🏷️ Filter modal as a sort option. When "Priority" sort is active, tasks within each day section are ordered `#p1` → `#p2` → `#p3` → untagged, with a subtle left-border accent per priority level.
+- [ ] **Filter modal (🏷️):**
+    - Full filter builder: tags (multi-select), priority level, date range, project, completion status.
+    - Applies live as filters are selected.
+    - Filter state shown as chips in the bottom bar.
+    - Filter persistence: configurable in Settings (default: persist across sessions).
+- [ ] **Tailwind CSS:** Adopt Tailwind CSS as the styling framework across all components.
+- [ ] **Mobile:**
+    - Day list fills full width.
+    - Someday panel and icon rail modals accessible as bottom sheets.
+    - Bottom bar always visible.
+- [ ] **Responsive breakpoints:** Graceful degradation from desktop to tablet to mobile.
+
+### Technical Notes & Considerations
+- Intersection observer for lazy loading — avoid virtual scrolling unless performance requires it.
+- CSS custom properties for theme tokens alongside Tailwind.
+- Tailwind's JIT mode for optimal bundle size.
+- E2E tests for responsive behavior and filter scenarios.
+
+### Definition of Done
+- Lazy loading functional with smooth scroll experience.
+- Panel resize/collapse working and persisted.
+- Priority sort mode functional.
+- Filter modal with full filter builder working.
+- Bottom bar reflects active filter state correctly.
+- Mobile bottom sheet behavior functional.
+- Tailwind adopted throughout.
+
+---
+
+## v0.8.0: I/O & Data
+
+This release implements persistent storage and data export.
+
+- [ ] **I/O Abstraction Layer:** Solidify the adapter pattern so the application core is independent of the data source.
+- [ ] **In-Memory Adapter:** Already exists; keep for testing and ephemeral sessions.
+- [ ] **SQLite Adapter:** Implement a file-based SQLite adapter as the first real persistence layer.
+    - Zero-config for self-hosted use: single `.db` file on disk.
+    - Schema migrations via a lightweight migration tool.
+    - Supports all entities: tasks, sub-tasks, Someday groups, projects, recurring tasks, tags.
+- [ ] **Configuration:** Select adapter via environment variable (`STORAGE_ADAPTER=sqlite|memory`).
+- [ ] **Data Export:** One-click export of all data as structured JSON.
+- [ ] **Data Import:** Import from a previously exported JSON file.
+
+### Technical Notes & Considerations
+- SQLite via `bun:sqlite` (built into Bun — no extra dependency).
+- Keep PostgreSQL adapter for v2.3.0 when multi-user auth is added.
+- Drizzle ORM is a good fit for both SQLite and PostgreSQL when the time comes.
+- The export format should be documented and stable so users can rely on it.
+
+### Definition of Done
+- SQLite adapter fully implemented and tested.
+- All in-memory tests pass against SQLite adapter too (adapter contract tests).
+- Export/import round-trip tested.
+- Configuration via environment variable working.
+
+---
+
+## v0.9.0: UI Polish & Theming
+
+This release refines the visual design into a cohesive, calm, and beautiful product.
+
+- [ ] **Design system:** Establish a consistent visual language using Tailwind + CSS custom properties.
+    - Inspired by Basecamp: clean, spacious, warm, calm. No clutter.
+    - Typography: a readable sans-serif for task text, monospace accents for dates and labels.
+    - Spacing, border radius, shadow, and color scales defined as CSS variables.
+- [ ] **Light & dark mode:**
+    - System preference detected by default.
+    - Manual toggle in ⚙️ Settings.
+    - Light: warm off-white background, dark text, subtle borders.
+    - Dark: deep charcoal background, light text, muted borders.
+- [ ] **Tag colors:**
+    - Tags are auto-assigned distinct pastel colors on creation.
+    - User can override the color for any tag in Settings > Tags.
+    - Tag chips in task rows and filter bar reflect the color.
+- [ ] **Tag management screen** (in ⚙️ Settings):
+    - List all tags with their colors.
+    - Rename, merge (combine two tags), delete, recolor.
+- [ ] **Animations & transitions:** Subtle and purposeful — task completion fade, modal open/close, panel collapse, drag ghost.
+- [ ] **Storybook design review:** All components reviewed in Storybook against the design system.
+
+### Technical Notes & Considerations
+- Tailwind's dark mode with `class` strategy for manual toggle support.
+- CSS custom properties for tokens that need to be dynamic (theme switching, tag colors).
+- Svelte's built-in transition functions for animations.
+
+### Definition of Done
+- Light and dark themes fully implemented and polished.
+- Tag colors auto-assigned and user-overridable.
+- Tag management screen functional.
+- Application has a calm, spacious, Basecamp-inspired feel throughout.
+- All animations are smooth and purposeful.
+
+---
+
+## v0.10.0: Basic Automation
+
+This release introduces the automation features that make Alle smart.
+
+- [ ] **Task rollover:**
+    - Incomplete tasks with `rolloverEnabled: true` automatically move to the next day.
+    - `originalScheduledDate` is preserved; `daysLate` is calculated and displayed as an overdue badge.
+    - App-wide rollover default configurable in ⚙️ Settings (on/off, trigger time: midnight / 9am / manual).
+    - Per-task override via the task detail modal.
+- [ ] **Recurring tasks:**
+    - Recurring task instances are auto-generated from templates.
+    - Generation window configurable in Settings (1 week, 2 weeks, 1 month ahead).
+    - Instances appear in the day list with a 🔁 icon.
+    - Completing an instance updates `RecurringTaskStats` (streak tracking: current streak, longest streak, total completions).
+    - Missing a day breaks the streak.
+- [ ] **Streak tracking:** Displayed on recurring tasks in the 🔁 Habits modal heatmap.
+
+### Technical Notes & Considerations
+- `rrule.js` for recurring date generation.
+- Rollover can run as a background job on server start or via a cron expression.
+- Streak calculation: check if yesterday's instance was completed when today's is completed.
+
+### Definition of Done
+- Rollover moves incomplete tasks and tracks `daysLate`.
+- Recurring instances appear in the day list on the correct days.
+- Streak statistics update correctly on completion and missed days.
+- All automation logic has unit tests.
+- Rollover settings configurable and respected.
+
+---
+
+## v0.11.0: Projects & Habits UI
+
+This release builds the full UI for project management and habit tracking.
+
+- [ ] **Projects modal (📊):**
+    - List all projects (active and inactive).
+    - Create/edit/delete projects with name, description, start date, due date.
+    - **Project detail:** Kanban board with three columns — Ready, Scheduled, Done.
+    - Drag tasks between columns.
+    - Each scheduled task shows its assigned date.
+    - [Activate] button runs the auto-distribution algorithm (spreads tasks across days between start and due date).
+    - [Auto-distribute] shows a preview before confirming.
+    - Dependency indicators: tasks blocked by incomplete predecessors show a lock icon.
+    - Project tasks appear in the day list tagged with the project name (e.g., `#build-alle`).
+- [ ] **Habits modal (🔁):**
+    - List all recurring task templates with current streak and last completion date.
+    - `+ new habit` flow: text + recurrence rule builder (presets: daily, weekly, monthly; custom rrule).
+    - **Habit detail:** edit form + stats bar (current streak, longest streak, total completions) + GitHub-style completion heatmap.
+    - Promote any existing task to recurring: toggle "Make recurring" in the task detail modal.
+- [ ] **Summary modal (📅):**
+    - Completion percentage for today.
+    - List of overdue tasks with days-late count.
+    - Active streaks for recurring tasks.
+    - Upcoming hard deadlines (tasks tagged `#deadline`) and holidays within the next 14 days.
+- [ ] **Calendar modal (📆):**
+    - A date picker that jumps the day list to the selected date.
+- [ ] **Holidays in Settings:**
+    - Manual entry of named dates (name + date).
+    - Optional `.ics` import via URL or file upload.
+    - Holiday banners displayed above day section headers in the day list.
+
+### Technical Notes & Considerations
+- Kanban drag-and-drop reuses the drag infrastructure from v0.6.0.
+- `rrule.js` recurrence rule builder for habit creation.
+- `.ics` parsing with a library like `ical.js`.
+
+### Definition of Done
+- Projects modal fully functional with Kanban board.
+- Auto-distribution algorithm working.
+- Habits modal with heatmap and streak stats functional.
+- Summary modal shows accurate daily overview.
+- Calendar date picker jumps the day list correctly.
+- Holidays appear as banners in the day list.
+- "Make recurring" toggle in task detail modal works.
+
+---
+
+## v0.12.0: Markdown Notes
+
+This release adds rich text support to task notes.
+
+- [ ] **Markdown rendering:** Task notes (the `notes` field) are rendered as Markdown in the task detail modal.
+    - Supports: headings, bold, italic, inline code, code blocks, lists, links.
+    - Edit mode: raw Markdown textarea. View mode: rendered output. Toggle between modes.
+- [ ] **Sanitization:** All user-provided HTML is sanitized before rendering to prevent XSS.
+
+### Technical Notes & Considerations
+- `marked` for Markdown parsing.
+- `DOMPurify` for sanitization.
+
+### Definition of Done
+- Markdown rendered correctly in task detail modal.
+- Edit/view toggle functional.
+- XSS sanitization tested with adversarial inputs.
+
+---
+
+## v1.0.0: Public Release
+
+The first stable, fully usable release of Alle. Goal: a complete daily driver for a single self-hosted user.
+
+- [ ] **Feature complete:** All v0.x features integrated and working end-to-end.
+- [ ] **SQLite persistence:** All data persists reliably across restarts.
+- [ ] **Full keyboard operation:** Every action reachable without a mouse.
+- [ ] **Command palette:** Search, add, navigate, and run actions via Cmd+K.
+- [ ] **Projects & Habits:** Fully functional project Kanban and habit tracking with streaks.
+- [ ] **Rollover automation:** Incomplete tasks roll over by default; overdue badges shown.
+- [ ] **Tag system:** Full tag management — colors, rename, merge, delete.
+- [ ] **Light & dark themes:** Polished and complete.
+- [ ] **Markdown notes:** Rich notes in task detail.
+- [ ] **Trash & undo:** 7-day trash, undo toasts, Cmd+Z.
+- [ ] **Holidays:** Manual + .ics import; banners in day list.
+- [ ] **Mobile:** Bottom sheet behavior for panels on small screens.
+- [ ] **Dockerized:** A single `docker-compose up` starts the full application.
+- [ ] **CI/CD pipeline:** Tests run on every push; Docker image built on release.
+- [ ] **Performance:** Day list loads in <100ms; lazy loading keeps scroll smooth.
+
+### Definition of Done
+- Application is a fully usable, self-hosted daily task manager.
+- Single user, no authentication required.
+- All E2E tests passing.
+- Biome checks passing.
+- Docker deployment working.
+
+---
+
+## v2.0.0: CLI
+
+Adds a full-featured command-line interface in a new `packages/cli` package.
+
+- [ ] **Package setup:** `packages/cli` using Bun, communicates with the server over HTTP REST.
+- [ ] **Command-based mode:**
+    - `alle add "buy milk tomorrow #work #p1"` — natural language task creation
+    - `alle list [--today] [--tag work] [--priority p1]` — list tasks
+    - `alle complete <id|text>` — complete a task
+    - `alle delete <id|text>` — delete a task
+    - `alle someday add "learn Rust"` — add to Someday
+    - `alle someday list` — list Someday tasks
+    - `alle server start|stop|status` — control the server process
+- [ ] **Interactive TUI mode:** Running `alle` with no arguments opens a terminal UI for navigating and managing tasks.
+- [ ] **Natural language parsing:** Dates (today, tomorrow, next monday), tags (`#work`), priority (`#p1`), all parsed from free text.
+- [ ] **Full parity:** Everything the web UI can do, the CLI can do.
+
+### Definition of Done
+- All commands functional and tested.
+- TUI mode navigable with keyboard.
+- Natural language parsing reliable.
+
+---
+
+## v2.1.0: MCP Server
+
+Adds an MCP (Model Context Protocol) server in `packages/mcp` enabling AI-assisted task management.
+
+- [ ] **Package setup:** `packages/mcp` exposing all Alle capabilities as MCP tools.
+- [ ] **Core tools:** create/update/delete tasks, query tasks by date/tag/priority, manage Someday groups, manage projects, manage recurring tasks.
+- [ ] **AI workflow support:**
+    - **AI scheduling:** "Schedule all my `#work` tasks for next week" — AI distributes tasks across days.
+    - **Daily briefing:** "What do I have today?" — summarizes tasks, overdue, streaks.
+    - **Batch creation:** "Create a project with these 10 tasks: ..." — AI creates project + tasks at once.
+    - **Smart triage:** "Which overdue tasks should I reschedule vs drop?" — AI helps decide.
+
+### Definition of Done
+- All MCP tools implemented and documented.
+- AI scheduling and briefing workflows functional.
+
+---
+
+## v2.2.0: Notifications
+
+Adds browser push and email reminders.
+
+- [ ] **Per-task reminders:** Add `reminder: { time: string; channels: ('push' | 'email')[] }` to the Task model.
+- [ ] **Browser push notifications:** Web Push API; user grants permission on first use.
+- [ ] **Email reminders:** Configurable email provider (SMTP / SendGrid) in Settings.
+- [ ] **App-wide defaults:** Default reminder time and channels configurable in ⚙️ Settings.
+- [ ] **Notification management:** View, edit, and cancel scheduled reminders.
+
+### Definition of Done
+- Push and email reminders deliver reliably.
+- Per-task and app-wide defaults work correctly.
+
+---
+
+## v2.3.0: Authentication
+
+Adds multi-user support with passwordless authentication.
+
+- [ ] **Passwordless auth:** Passkey (WebAuthn) as the primary method; magic link via email as fallback.
+- [ ] **User accounts:** Registration, login, logout. Sessions managed with JWTs.
+- [ ] **Data scoping:** All tasks, projects, groups, and settings are scoped per user.
+- [ ] **Protected API:** All endpoints require a valid JWT. Middleware enforces data isolation.
+- [ ] **PostgreSQL adapter:** Add a PostgreSQL persistence adapter (Drizzle ORM) to support multi-user at scale.
+
+### Definition of Done
+- Passkey and magic link login working.
+- All data correctly scoped per user.
+- PostgreSQL adapter tested and production-ready.
+
+---
+
+## v2.4.0: Advanced Automation
+
+- [ ] **2-Day Rule:** Priority rises over time for recurring tasks not completed. Non-recurring tasks roll over to the next day.
+- [ ] **Smart scheduling:** AI-assisted task distribution — suggests how to spread tasks based on capacity, deadlines, and priority.
+- [ ] **Conditional tasks:** Set conditions on tasks (e.g., "complete X to unlock Y").
+- [ ] **Capacity planning:** Set a daily task limit; auto-distribution respects it.
+
+---
+
+# 🎯 Vision: Unified Daily Task Management System
+
+This section describes the full product vision that guides Alle's development.
 
 ## Core Philosophy
 
-The system eliminates the need to maintain separate project boards and daily planners by unifying them into one coherent interface. The Kanban board becomes the planning surface, and the daily columns become the execution surface, with both views powered by the same underlying task data.
+Alle is a unified task management system built around one simple idea: **you should only need one place to manage your work and your life**.
 
-**Key Principles:**
-- One task type that can appear in different views depending on attributes
-- Project boards feed tasks directly into daily columns (no manual re-entry)
-- Recurring tasks automatically populate daily columns
-- Sequential project tasks with dependencies
+The daily list is the execution surface. Someday is the capture net. Projects and habits feed into the daily list automatically. Everything is organized with tags — the same tag system works across tasks, groups, Someday, and filters.
+
+**Key principles:**
+- One task type that appears differently depending on its attributes and context
+- Tags as the primary organizational paradigm (including priority: `#p1`, `#p2`, `#p3`)
+- Project tasks and recurring tasks feed into the daily list automatically — no manual re-entry
 - Auto-rollover for incomplete tasks with "late" tracking
 - Streak tracking for recurring habits
+- A layout that gets out of your way: clean, calm, spacious, Basecamp-inspired
+
+## Layout Overview
+
+```
+┌──┬──────────────────────────────────────────┬──────────────┐
+│📅│                                          │  Someday   ‹ │
+│📊│  [holiday: Easter 🐣]                    │  + add group │
+│🔁│                                          │              │
+│📆│  March 30, Sunday  •  4 tasks            │  #work       │
+│🔍│  ─────────────────────────────────────  │  ─────────── │
+│🏷️│  ⠿ ○ fix auth  #work  #p1              │  ⠿ ○ idea    │
+│🗑️│       ○ unit tests                       │  ⠿ ○ thing   │
+│⚙️│  ⠿ ○ write tests       #p2             │  + add task  │
+│? │  + add task                              │              │
+│  │                                          │  #school     │
+│  │  March 31, Monday  •  2 tasks            │  ─────────── │
+│  │  ─────────────────────────────────────  │  ⠿ ○ essay   │
+│  │  ⠿ ○ deploy to prod   #p1              │              │
+├──┴──────────────────────────────────────────┴──────────────┤
+│  alle   #work ×  #p1 ×      12 tasks • 4 done   ▲ Today   │
+└────────────────────────────────────────────────────────────┘
+```
 
 ## Unified Data Model
 
-### Enhanced Task Type
-
-The current `Task` model would be extended to support all task types:
-
 ```typescript
 interface Task {
-  // Existing fields
   id: string
   text: string
+  notes: string | null              // markdown
   completed: boolean
-  date: string | null              // null = unscheduled
+  date: string | null               // null = Someday / unscheduled
+  tags: string[]                    // #work, #p1, #build-alle, #deadline, etc.
+  parentId: string | null           // nested sub-tasks
+  rolloverEnabled: boolean          // per-task override; default: true
+  someDayGroupId: string | null     // which Someday group
+
+  projectId: string | null
+  position: number | null
+  state: 'ready' | 'scheduled' | 'done' | null
+
+  recurringTaskId: string | null
+  instanceDate: string | null
+
+  originalScheduledDate: string | null
+  daysLate: number
+  dependsOn: string | null
+
   createdAt: string
   updatedAt: string
-  
-  // NEW: Project relationship
-  projectId: string | null         // null = standalone task
-  position: number | null          // Order within project (null for standalone)
-  state: 'ready' | 'scheduled' | 'done'  // Project task workflow state
-  
-  // NEW: Recurrence support  
-  recurringTaskId: string | null   // Links to RecurringTask template
-  instanceDate: string | null      // Which date this instance represents
-  
-  // NEW: Late/overdue tracking
-  originalScheduledDate: string | null  // Track if task was moved
-  daysLate: number                 // Auto-calculated
-  
-  // NEW: Dependencies (for sequential project tasks)
-  dependsOn: string | null         // Task ID that must be completed first
 }
-```
 
-**Task Types (all use same Task interface):**
-1. **Standalone tasks** - one-off items (`projectId: null`, `recurringTaskId: null`)
-2. **Project tasks** - belong to a project, have order and state
-3. **Recurring task instances** - generated from templates, track streaks
+interface SomeDayGroup {
+  id: string
+  name: string
+  tag: string | null
+  position: number
+  createdAt: string
+}
 
-### New Core Entities
-
-**Project:**
-```typescript
 interface Project {
   id: string
   name: string
   description: string | null
-  startDate: string | null         // When project work begins
-  dueDate: string | null           // When project must be complete
-  isActive: boolean                // Active = tasks distributed to daily view
+  startDate: string | null
+  dueDate: string | null
+  isActive: boolean
   createdAt: string
   completedAt: string | null
 }
-```
 
-**RecurringTask (template):**
-```typescript
 interface RecurringTask {
   id: string
   text: string
-  recurrenceRule: string           // rrule.js format (DAILY, WEEKLY, etc.)
-  startDate: string                // When recurrence begins
-  endDate: string | null           // Optional end date
+  recurrenceRule: string    // rrule.js format
+  startDate: string
+  endDate: string | null
   createdAt: string
 }
-```
 
-**RecurringTaskStats (separate entity for tracking):**
-```typescript
 interface RecurringTaskStats {
   recurringTaskId: string
   currentStreak: number
@@ -401,458 +663,64 @@ interface RecurringTaskStats {
 }
 ```
 
-## Key Features & Behaviors
+## Key Features
 
-### 1. Project Management
+### Tag System
+Tags are the primary organizational tool. A task can have any number of tags. Special tag conventions:
+- `#p1`, `#p2`, `#p3` — priority levels
+- `#deadline` — promoted in Summary modal
+- `#project-name` — links task visually to a project
+- `#habit-name` — useful for grouping recurring tasks
 
-**Projects are collections of related tasks** to accomplish a larger goal (e.g., "Build Alle Feature", "CS 101 Final Project").
+### Someday Panel
+The right-side Someday panel captures ideas and unscheduled work. Tasks are organized into user-created groups (tag-based). Works identically to the day list but without dates or automation. Global filtering applies.
 
-**Features:**
-- Create projects with name, description, start/due dates
-- Add tasks to projects in a specific order
-- Tasks have sequential dependencies (Task 2 depends on Task 1)
-- Drag to reorder tasks (updates dependencies automatically)
-- Activate project to distribute tasks across daily columns
-- Auto-distribution algorithm spreads tasks between start and due dates
-- Manual override: drag specific tasks to specific days
+### Command Palette (Cmd+K)
+One unified modal for search, add, navigate, and actions. Natural language: `buy milk tomorrow #work #p1`, `go to march 15`, `move fix auth to friday`. The fastest way to do anything in Alle.
 
-**Project States:**
-- **Inactive** - tasks are unscheduled, ready for planning
-- **Active** - tasks are distributed to daily columns between start/due dates
+### Project Management
+Projects are collections of ordered tasks. When activated, tasks are auto-distributed across days between the project's start and due dates. Project tasks appear in the day list tagged with the project name.
 
-**Task States:**
-- **Ready** - task is in project but not scheduled to a day
-- **Scheduled** - task is assigned to a specific day
-- **Done** - task is completed
+### Habit Tracking
+Recurring tasks generate daily instances automatically. Completing instances builds streaks. The Habits modal shows a GitHub-style heatmap of completion history per habit.
 
-### 2. Recurring Tasks
+### Rollover
+Incomplete tasks roll over to the next day by default. The `daysLate` counter tracks how overdue a task is. Configurable app-wide and per-task.
 
-**Recurring tasks are life-maintenance activities** like eating, exercise, cleaning, budgeting that repeat on a schedule.
+## Monorepo Structure
 
-**Features:**
-- Create recurring task templates with text and recurrence rule
-- Recurrence patterns: Daily, Weekly, Monthly, Yearly (using rrule.js)
-- Instances automatically appear in daily columns without manual entry
-- Hybrid generation: current week + next week on load, on-demand for future
-- Streak tracking: current streak, longest streak, total completions
-- Completing an instance updates streak stats
-- Missed days break streaks
-
-**Example:**
-- Template: "Exercise" (recurs daily)
-- Instances appear in each day's column
-- Completing Monday's instance increments current streak
-- Skipping Tuesday breaks the streak (resets to 0)
-
-### 3. Daily Execution View
-
-**The primary interface** showing unified task list for a specific day.
-
-**Features:**
-- Date selector with prev/next/today navigation
-- Displays three task types in one unified list:
-  - **Recurring habits** - instances from templates
-  - **Project tasks** - scheduled from active projects
-  - **Standalone tasks** - one-off items
-- Visual distinction between types (icons, colors, sections)
-- Task interactions: complete, edit, delete, drag to different day
-- Quick-add for standalone tasks
-- Visual indicators:
-  - 🔥 Streak counter for recurring tasks
-  - "LATE: X days" badge for overdue tasks
-  - 🔒 Blocked indicator for tasks with unmet dependencies
-  - Project badge showing which project task belongs to
-
-**Unified View Example:**
 ```
-Monday, Feb 17
-
-RECURRING HABITS
-☐ Exercise (7 day streak 🔥)
-☐ Budget review
-
-PROJECT: Build Alle Feature
-☐ Design data model (1/5) [LATE: 2 days]
-☐ Write API endpoints (2/5) [BLOCKED]
-
-STANDALONE TASKS
-☐ Buy groceries
-☐ Call dentist
+alle/
+├── packages/
+│   ├── client/   # SvelteKit frontend (Tailwind CSS)
+│   ├── server/   # Bun REST API
+│   ├── shared/   # Types, constants, universal adapters
+│   ├── cli/      # alle CLI — command + TUI modes (v2.0.0)
+│   └── mcp/      # MCP server for AI automation (v2.1.0)
+├── docs/
+├── tests/
+└── package.json
 ```
 
-### 4. Task Distribution & Scheduling
+## Persistence Strategy
 
-**Auto-distribution algorithm** when a project is activated:
-
-1. Get all project tasks in order (by `position`)
-2. Calculate available days between start and due dates
-3. Distribute tasks sequentially across days
-4. Respect dependencies (Task 2 can't be scheduled before Task 1)
-5. Mark distributed tasks as `state: 'scheduled'` with assigned `date`
-
-**Manual scheduling:**
-- Drag task from project detail view to specific day in daily view
-- Override auto-distribution for specific tasks
-- Still respects dependencies (shows warning if moved before dependency)
-
-**Smart scheduling (future enhancement):**
-- Consider task effort/duration
-- Balance tasks per day based on capacity
-- Re-distribute when tasks run late
-
-### 5. Dependencies & Sequential Execution
-
-**Sequential project tasks** ensure work happens in the right order.
-
-**Features:**
-- Tasks have explicit order within project (position 1, 2, 3...)
-- Each task depends on the previous task (`task.dependsOn` = previous task ID)
-- Drag to reorder updates both position and dependencies
-- Blocked tasks can't be completed until dependency is met
-- Visual indicator shows which task is blocking completion
-- Warning when moving/scheduling would break dependency chain
-
-**Example:**
-1. "Research architecture" (no dependency)
-2. "Design data model" (depends on task 1)
-3. "Write API endpoints" (depends on task 2)
-
-If task 1 isn't complete, task 2 shows as "Blocked" with lock icon and tooltip.
-
-### 6. Late Task Handling & Auto-Rollover
-
-**Automatic rollover** ensures incomplete tasks don't get lost.
-
-**Features:**
-- Daily background job (or on app load) checks yesterday's incomplete tasks
-- Incomplete `scheduled` tasks automatically move to today
-- `originalScheduledDate` tracks when task was first scheduled
-- `daysLate` calculates how many days overdue (today - originalScheduledDate)
-- Visual "LATE: X days" badge in daily view
-- Option to reset original date (mark as "on time" again)
-
-**Example:**
-- Task scheduled for Monday
-- Not completed Monday → auto-moves to Tuesday
-- `originalScheduledDate: "2026-02-17"`, `daysLate: 1`
-- Still not done Tuesday → moves to Wednesday, `daysLate: 2`
-
-### 7. Streak Tracking & Habit Building
-
-**Streak tracking** provides motivation for recurring tasks.
-
-**Features:**
-- When recurring instance completed → update `RecurringTaskStats`:
-  - Increment `totalCompletions`
-  - Check if yesterday's instance was completed:
-    - If yes → increment `currentStreak`
-    - If no → reset `currentStreak` to 1
-  - Update `longestStreak` if current exceeds it
-  - Set `lastCompletedDate` to today
-- Display current streak in daily view (🔥 icon + number)
-- Completion history calendar showing which days completed
-- Streak graph visualization
-- Motivational feedback ("You're on a 7 day streak!")
-
-**Example:**
-- Monday: Complete "Exercise" → currentStreak = 1, totalCompletions = 1
-- Tuesday: Complete "Exercise" → currentStreak = 2, totalCompletions = 2
-- Wednesday: Skip "Exercise" → currentStreak remains 2
-- Thursday: Complete "Exercise" → currentStreak = 1 (streak broken), totalCompletions = 3
-
-### 8. Movement Constraints
-
-**Different task types have different movement rules.**
-
-**Constraints:**
-- **Recurring templates** - Cannot be moved (edit recurrence rule instead)
-- **Recurring instances** - Can move freely (only affects that instance)
-- **Project tasks** - Can move but shows warning if breaks dependencies
-- **Standalone tasks** - Can move freely without restrictions
-
-**Tracking:**
-- When any task is moved from original date → track `originalScheduledDate`
-- Calculate `daysLate` if moved to later date
-- Show visual indicator for late tasks
-
-## User Interface Architecture
-
-### View Hierarchy
-
-**Primary View: Daily Execution**
-- Default landing page
-- Shows unified task list for selected day
-- Date selector navigation
-- Links to project detail for project tasks
-- Links to recurring task stats for recurring tasks
-
-**Secondary View: Project Management**
-- List of all projects (active/inactive sections)
-- Create/edit project form
-- Project detail showing ordered task list
-- Activate/deactivate buttons
-- Auto-distribute button with preview
-- Drag to reorder tasks
-
-**Tertiary View: Recurring Task Management**
-- List of all recurring task templates
-- Create/edit recurring task form
-- Recurrence rule builder (presets + custom)
-- Completion history calendar
-- Streak statistics and visualizations
-
-### Navigation Pattern
-
-**Daily-first approach:**
-- App opens to daily execution view
-- Navigation tabs/buttons: `[Daily] [Projects] [Recurring Tasks]`
-- Keyboard shortcut to cycle views (Tab or Cmd+1/2/3)
-- Contextual links (click project task → jump to project detail)
-
-### Interaction Models
-
-**Daily View:**
-- Click checkbox → complete task
-- Click task text → inline edit
-- Drag task → move to different day
-- `[+]` button → quick-add standalone task
-- Project badge click → jump to project detail
-- Streak icon click → view recurring task stats
-
-**Project View:**
-- Create project → form with name, dates, description
-- Add task → creates in `ready` state, unscheduled
-- Drag tasks → reorder position
-- `[Activate]` → runs distribution algorithm
-- `[Auto-distribute]` → show preview, confirm, then distribute
-- Drag task to day → manual schedule override
-
-**Recurring View:**
-- Create recurring task → form with text, recurrence rule, dates
-- Recurrence builder → presets or custom rrule
-- View stats → calendar, streak graph, totals
-- Edit template → updates future instances only
-
-## Implementation Roadmap
-
-### Phase 1: Enhanced Data Model (v0.2.0 - Enhanced)
-- Extend Task type with all new fields
-- Create Project, RecurringTask, RecurringTaskStats types
-- Build repository interfaces for all entities
-- Implement in-memory repositories
-- Integrate rrule.js for recurrence logic
-- **100% TDD approach** - tests first, then implementation
-
-### Phase 2: Comprehensive APIs (v0.3.0 - Enhanced)
-- Project endpoints (CRUD, activate, deactivate, distribute)
-- RecurringTask endpoints (CRUD, generate instances, stats)
-- Enhanced Task endpoints (unified daily view, reschedule, complete with streaks)
-- Business logic services:
-  - TaskDistributionService (auto-layout algorithm)
-  - DependencyValidationService (check completion eligibility)
-  - StreakCalculationService (update stats)
-  - AutoRolloverService (move incomplete tasks)
-- Zod validation for all new fields
-- OpenAPI documentation
-- **Bruno tests written BEFORE implementation (TDD)**
-
-### Phase 3: Daily Execution UI (v0.4.0 - Enhanced)
-- DailyView component with unified task list
-- Display all three task types with visual distinction
-- Task interactions (complete, edit, delete)
-- Visual indicators (late badge, blocked, streak, project)
-- Quick-add task form
-- Svelte stores with optimistic updates
-- **Storybook stories + component tests BEFORE implementation (TDD)**
-
-### Phase 4: Project Management UI (v0.5.0 - NEW)
-- Project list view (active/inactive)
-- Project create/edit forms
-- Project detail with ordered task list
-- Task management (add, reorder, delete)
-- Manual scheduling (assign to day)
-- Activation flow with distribution preview
-- Dependency visualization
-- **Full TDD with stories and tests first**
-
-### Phase 5: Recurring Task UI (v0.6.0 - NEW)
-- Recurring task template list
-- Recurrence rule builder (presets + custom)
-- Preview of upcoming instances
-- Create/edit forms
-- Completion history calendar
-- Streak visualization
-- **TDD approach throughout**
-
-### Phase 6: Movement & Constraints (v0.7.0 - Enhanced)
-- Drag-and-drop between days
-- Drag within project (reorder)
-- Drag from project to day (schedule)
-- Movement constraints enforcement
-- Late task handling (auto-rollover)
-- Track originalScheduledDate
-- **E2E tests for all drag scenarios (TDD)**
-
-### Phase 7: Keyboard Navigation (v0.8.0 - Moved from v0.5.0)
-- Navigate between days/tasks
-- Switch views with keyboard
-- Action shortcuts (n, e, d, Space, m)
-- Focus management
-- **Full TDD with keyboard tests**
-
-### Phase 8: Responsive Layout (v0.9.0 - Moved from v0.7.0)
-- Weekly layout (7-day view)
-- Responsive breakpoints
-- Light/dark theming
-- Task type color-coding
-- **E2E tests for responsive behavior**
-
-### Phase 9: PostgreSQL Persistence (v0.10.0 - Enhanced)
-- PostgreSQL adapters for all repositories
-- Database migrations
-- Environment-based configuration
-- Optional Redis caching
-- Data export/import (JSON)
-- **Migration path from in-memory**
-
-### Phase 10: UI Polish (v0.11.0 - Moved from v0.9.0)
-- Design system establishment
-- Refined light/dark themes
-- Smooth animations
-- Calm, focused aesthetic
-
-### Phase 11: Advanced Automation (v0.12.0 - Enhanced)
-- **Full streak tracking automation:**
-  - Automatic streak calculation on completion
-  - Detect streak breaks
-  - Update longest streak
-  - Background job or app-load trigger
-- **Task rollover automation:**
-  - Daily job to move incomplete tasks
-  - Mark with "late" status
-  - Track days late
-- **2-Day Rule (optional):**
-  - Priority rises for uncompleted recurring tasks
-- **Smart scheduling (optional):**
-  - Suggest distribution based on capacity
-  - Auto-adjust when tasks run late
-- **Instance management:**
-  - Hybrid generation (current+next week, on-demand for future)
-  - Cleanup old completed instances
-- **TDD for all automation logic**
-
-### Phase 12: Public Release (v1.0.0 - Updated)
-- Full QA pass
-- Performance optimization
-- Accessibility audit
-- Complete documentation
-- Dockerization
-- CI/CD pipeline
-- 85%+ test coverage
-- Additional features:
-  - Undo/redo system
-  - Search and filtering
-  - Bulk operations
-  - Task notes/descriptions
-
-## Benefits of This Approach
-
-### For Users
-- **No duplicate entry** - create task once, appears in both project and daily views
-- **Automatic scheduling** - projects distribute tasks across days automatically
-- **Never miss habits** - recurring tasks appear every day without manual creation
-- **Stay focused** - clear view of exactly what to work on today
-- **Build streaks** - motivation through habit tracking
-- **Handle late work** - automatic rollover with visible late indicators
-- **Respect dependencies** - system prevents completing tasks out of order
-
-### For Developers
-- **Single task model** - one type handles all use cases
-- **Clean architecture** - adapter pattern makes swapping implementations easy
-- **Type safety** - TypeScript ensures consistency
-- **TDD approach** - tests first prevents bugs
-- **Well-tested** - comprehensive coverage at all levels
-- **Extensible** - easy to add new task types or views
-
-## Future Enhancements
-
-Beyond v1.0.0, consider:
-
-- **Effort estimation** - tasks have estimated time, daily view shows total
-- **Capacity planning** - limit tasks per day based on available hours
-- **Priority levels** - high/medium/low priority for task ordering
-- **Tags/labels** - cross-cutting categorization beyond projects
-- **Task templates** - quickly create common project structures
-- **Dependency graphs** - visualize complex dependency chains
-- **Project templates** - reusable project structures (e.g., "Course Template")
-- **Recurring projects** - projects that repeat (e.g., quarterly reviews)
-- **Time tracking** - track actual time spent on tasks
-- **Analytics** - completion rates, streak statistics, productivity insights
-- **Collaboration** - share projects with others
-- **Mobile apps** - native iOS/Android with offline support
-- **Calendar integration** - sync with Google Calendar, Outlook, etc.
-- **Smart suggestions** - AI-powered task distribution and scheduling
-
-## Migration Strategy
-
-For existing Alle installations:
-
-1. **Database migration** - add new columns to tasks table (projectId, position, state, etc.)
-2. **Backwards compatibility** - existing tasks become standalone tasks (all new fields null)
-3. **Gradual adoption** - users can start using projects/recurring without affecting existing workflow
-4. **Data export** - allow exporting before migration for safety
-5. **Documentation** - clear guide for understanding new features
-
-## Open Questions & Decisions
-
-### Design Decisions
-- [ ] Should "Someday" be a special project, or a state, or just unscheduled tasks?
-- [ ] How to visualize dependency chains in project view? (Tree? Gantt? Simple list?)
-- [ ] Should recurring tasks have their own dedicated "habits" section in daily view?
-- [ ] What should happen to unscheduled project tasks when project is deactivated?
-
-### Technical Decisions
-- [ ] Should RecurringTaskStats be a separate table or embedded in RecurringTask?
-- [ ] How many recurring instances to generate ahead of time (1 week? 1 month?)
-- [ ] Should auto-rollover run as cron job, on app load, or both?
-- [ ] What's the cascade behavior when deleting a project with tasks?
-- [ ] Should circular dependency detection be strict (error) or warning?
-
-### UX Decisions
-- [ ] Should project activation require confirmation or happen immediately?
-- [ ] How to handle conflicts when manually moving a task breaks dependencies?
-- [ ] Should completing a blocking task auto-schedule dependent tasks?
-- [ ] What's the default behavior for new tasks (standalone vs project)?
-- [ ] How prominent should streak counters be (motivating vs distracting)?
+| Phase | Adapter | When |
+|-------|---------|------|
+| Development | In-memory | v0.x |
+| Self-hosted v1 | SQLite (bun:sqlite) | v0.8.0 |
+| Multi-user v2 | PostgreSQL + Drizzle ORM | v2.3.0 |
 
 ## Success Metrics
 
-How we'll know this vision is successful:
-
-**User Metrics:**
-- Users create and maintain active projects
-- Recurring tasks have high completion rates
-- Daily view is primary interface (>80% of time)
+**For users:**
+- Can replace their current task system with Alle
+- Daily list is the primary interface (>80% of time spent there)
 - Streak lengths increase over time
 - Late task count decreases over time
-- User reports "no longer need separate todo app and project manager"
 
-**Technical Metrics:**
-- >85% test coverage maintained
-- <100ms response time for daily view
+**Technical:**
+- >85% test coverage
+- <100ms response time for day list
 - Zero data loss incidents
-- Clean architecture maintained (easy to swap adapters)
 - All E2E tests passing
 - Biome checks passing
-
-**Product Metrics:**
-- Feature adoption (% of users using projects, recurring tasks)
-- User retention (daily/weekly active users)
-- Task completion rates
-- Time to first project created
-- Time to first recurring task created
-- User satisfaction (NPS score)
-
----
-
-**This vision represents the evolution of Alle from a simple daily task manager into a comprehensive unified system that eliminates the friction between planning and execution, between project management and daily habits, and between strategic thinking and tactical action.**
