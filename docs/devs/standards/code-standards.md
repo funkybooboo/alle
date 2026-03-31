@@ -546,56 +546,61 @@ try {
 
 ---
 
-## 7. React-Specific Standards
+## 7. Svelte-Specific Standards
 
-### 7.1 Component Typing
+### 7.1 Component Props Typing
 
-**Rule**: Functional components must have explicit return types.
+**Rule**: Component props must have explicit TypeScript types.
 
-```typescript
-// ❌ BAD
-function UserProfile({ user }) {
-  return <div>{user.name}</div>
-}
+```svelte
+<!-- ❌ BAD -->
+<script>
+  export let user;
+  export let onEdit;
+</script>
 
-// ✅ GOOD
-interface UserProfileProps {
-  user: User
-  onEdit?: (user: User) => void
-}
+<!-- ✅ GOOD -->
+<script lang="ts">
+  import type { User } from '@alle/shared';
 
-function UserProfile({ user, onEdit }: UserProfileProps): React.JSX.Element {
-  return (
-    <div>
-      <h1>{user.name}</h1>
-      {onEdit !== undefined && (
-        <button onClick={(): void => onEdit(user)}>Edit</button>
-      )}
-    </div>
-  )
-}
+  interface Props {
+    user: User;
+    onEdit?: (user: User) => void;
+  }
+
+  let { user, onEdit }: Props = $props();
+</script>
+
+<div>
+  <h1>{user.name}</h1>
+  {#if onEdit}
+    <button onclick={() => onEdit!(user)}>Edit</button>
+  {/if}
+</div>
 ```
 
 ### 7.2 Event Handlers
 
 **Rule**: Event handlers must have explicit types.
 
-```typescript
-// ❌ BAD
-function handleClick(event) {
-  event.preventDefault()
-}
+```svelte
+<script lang="ts">
+  // ❌ BAD
+  function handleClick(event) {
+    event.preventDefault();
+  }
 
-// ✅ GOOD
-function handleClick(event: React.MouseEvent<HTMLButtonElement>): void {
-  event.preventDefault()
-  // Handle click
-}
+  // ✅ GOOD
+  function handleClick(event: MouseEvent): void {
+    event.preventDefault();
+    // Handle click
+  }
 
-function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
-  const value: string = event.target.value
-  // Handle change
-}
+  function handleInputChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    // Handle change
+  }
+</script>
 ```
 
 ---

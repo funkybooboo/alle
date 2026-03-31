@@ -1,11 +1,9 @@
 /**
  * Alle Task App - API Server
  *
- * Now using adapter pattern for HTTP server abstraction.
- * This makes it trivial to swap from Bun → Node.js/Express/Fastify
- * by changing one line in the container.
- *
- * No more giant fetch handler - routes are registered individually.
+ * Routes are registered individually against the HttpServer adapter.
+ * Swap the underlying runtime (Bun → Node/Express/Fastify) by changing
+ * one line in container.ts — business logic stays unchanged.
  */
 
 import {

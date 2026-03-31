@@ -6,7 +6,7 @@
  *
  * Following the Repository pattern, this abstraction allows us to:
  * - Swap database implementations without changing business logic
- * - Test with mock repositories
+ * - Test with in-memory or SQLite implementations
  * - Keep domain logic separate from data access
  */
 

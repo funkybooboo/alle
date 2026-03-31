@@ -5,7 +5,6 @@ describe('Container', () => {
     const container = new Container();
 
     test('should provide all required services', () => {
-        // Verify all services can be instantiated
         expect(container.config).toBeDefined();
         expect(container.httpClient).toBeDefined();
         expect(container.logger).toBeDefined();

@@ -23,7 +23,7 @@ The Twelve-Factor App is a methodology for building software-as-a-service apps t
 ✅ **We have**: Single Git repository with all code
 ```
 alle/
-├── packages/client/    # React frontend
+├── packages/client/    # SvelteKit frontend
 ├── packages/server/    # Bun API
 └── packages/shared/    # Shared types
 ```
@@ -50,8 +50,7 @@ alle/
 ```json
 {
   "dependencies": {
-    "react": "18.3.1",
-    "postgres": "3.4.3"
+    "svelte": "5.0.0"
   },
   "devDependencies": {
     "typescript": "5.9.3",
@@ -91,7 +90,7 @@ bun.lockb
 ```bash
 # .env.example
 PORT=4000
-DATABASE_URL=postgresql://user:pass@localhost:5432/alle
+DATABASE_URL=file:./alle.db
 CORS_ORIGIN=http://localhost:3000
 LOG_LEVEL=info
 ```
@@ -134,19 +133,18 @@ export class EnvConfigProvider implements ConfigProvider {
 ### Alle Implementation
 
 ✅ **Services as resources**:
-- PostgreSQL database
-- Redis cache
-- Email service (SendGrid)
-- Object storage (S3)
+- SQLite database (bun:sqlite)
+- Email service (future)
+- Object storage (future)
 
 ✅ **Swappable via config**:
 ```typescript
 // Switch databases with env var
 const dbUrl = config.get('DATABASE_URL');
 
-// Production: PostgreSQL
+// Self-hosted v1: SQLite file
 // Development: In-memory
-// Testing: Docker container
+// Testing: SQLite in-memory (:memory:)
 ```
 
 ✅ **Adapter pattern** for all services:
@@ -155,8 +153,7 @@ interface TaskRepository { /* ... */ }
 
 // Swap implementations via container
 class InMemoryTaskRepository implements TaskRepository
-class PostgresTaskRepository implements TaskRepository
-class MongoTaskRepository implements TaskRepository
+class SQLiteTaskRepository implements TaskRepository
 ```
 
 ❌ **We NEVER**:
@@ -235,9 +232,7 @@ class TaskService {
 ```
 
 ✅ **Session data in backing services**:
-- User sessions → Redis
-- File uploads → S3
-- Task data → PostgreSQL
+- Task data → SQLite file (self-hosted v1)
 
 ❌ **We NEVER**:
 - Store user data in process memory
@@ -377,13 +372,12 @@ async function createTask(input: CreateTaskInput): Promise<Task> {
 ### Alle Implementation
 
 ✅ **Same backing services**:
-- Development: PostgreSQL (Docker)
-- Staging: PostgreSQL (Cloud)
-- Production: PostgreSQL (Cloud)
+- Development: SQLite (`:memory:` for tests, file for dev)
+- Production: SQLite (file, same bun:sqlite driver)
 
-❌ **NEVER** use different services:
-- ~~Development: SQLite~~
-- ~~Production: PostgreSQL~~
+❌ **NEVER** use different drivers per environment:
+- ~~Development: in-memory store~~
+- ~~Production: a different database engine~~
 
 ✅ **Same deployment**:
 ```bash

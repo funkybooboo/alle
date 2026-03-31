@@ -14,4 +14,4 @@ The server will be available at `http://localhost:4000`.
 
 ## 📚 Learn More
 
-To learn more about the project's architecture and how the server fits in, check out the [**Architecture**](../docs/03-architecture.md) documentation.
+To learn more about the project's architecture and how the server fits in, check out the [**Architecture**](../../docs/devs/architecture/architecture.md) documentation.

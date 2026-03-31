@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import App from './App';
+import type { Meta, StoryObj } from '@storybook/svelte';
+import Page from './+page.svelte';
 
-const meta: Meta<typeof App> = {
+const meta: Meta<typeof Page> = {
     title: 'App/Main',
-    component: App,
+    component: Page,
     parameters: {
         layout: 'fullscreen',
     },
@@ -11,18 +11,9 @@ const meta: Meta<typeof App> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof App>;
+type Story = StoryObj<typeof Page>;
 
 export const Default: Story = {};
-
-export const Loading: Story = {
-    parameters: {
-        // Mock server not responding
-        mockData: {
-            delay: 'infinite',
-        },
-    },
-};
 
 export const ServerOffline: Story = {
     parameters: {

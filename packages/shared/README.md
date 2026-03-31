@@ -4,4 +4,4 @@ This package contains code that is shared between the `client` and `server` pack
 
 ## 📚 Learn More
 
-To learn more about the project's architecture and the role of the shared package, check out the [**Architecture**](../docs/03-architecture.md) documentation.
+To learn more about the project's architecture and the role of the shared package, check out the [**Architecture**](../../docs/devs/architecture/architecture.md) documentation.

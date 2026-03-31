@@ -11,7 +11,7 @@ Alle is a monorepo managed with [Bun Workspaces](https://bun.sh/docs/cli/workspa
 ```
 alle/
 ├── packages/
-│   ├── client/          # React frontend
+│   ├── client/          # SvelteKit frontend
 │   ├── server/          # Bun API server
 │   └── shared/          # Shared types and utilities
 ├── docs/                # Project documentation
@@ -19,7 +19,7 @@ alle/
 └── package.json         # Root workspace config
 ```
 
-*   **`packages/client`**: A React application built with Vite.
+*   **`packages/client`**: A SvelteKit application.
 *   **`packages/server`**: a Bun HTTP server that exposes a REST API.
 *   **`packages/shared`**: A package that contains code shared between the client and server, such as types, interfaces, and constants.
 
@@ -43,7 +43,7 @@ A cornerstone of our architecture is the **adapter pattern**. This pattern allow
 
 ### Benefits of the Adapter Pattern
 
-*   **Flexibility**: We can easily swap out implementations without changing our application's code. For example, we could replace the `InMemoryTaskRepository` with a `PostgresTaskRepository` to use a real database.
+*   **Flexibility**: We can easily swap out implementations without changing our application's code. For example, we could replace the `InMemoryTaskRepository` with a `SQLiteTaskRepository` to use a real database.
 *   **Testability**: We can easily mock our dependencies in our tests. For example, we can use a `MockHttpClient` to simulate API calls.
 *   **Maintainability**: The separation of concerns makes our code easier to understand, maintain, and reason about.
 
@@ -56,7 +56,7 @@ We use a simple dependency injection (DI) container to manage our application's 
 export const container = new Container()
 
 // Lazily create and provide an instance of the TaskRepository
-const taskRepo = container.taskRepository // Swap InMemory → Postgres here
+const taskRepo = container.taskRepository // Swap InMemory → SQLite here
 ```
 
 This approach allows us to easily manage the lifecycle of our dependencies and provides a central place to configure our application.

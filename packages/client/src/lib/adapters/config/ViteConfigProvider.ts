@@ -5,6 +5,8 @@
  * This allows the client to be build-tool-agnostic - we could swap this
  * for a different config source (webpack env, runtime config, etc.) without
  * changing any business logic.
+ *
+ * Works identically in SvelteKit since it is Vite-based.
  */
 
 import { ConfigError, type ConfigProvider } from '@alle/shared';
@@ -31,7 +33,6 @@ export class ViteConfigProvider implements ConfigProvider {
 
     /**
      * Get a number configuration value from import.meta.env
-     * Parses the string value to a number and validates it
      */
     getNumber(key: string, defaultValue?: number): number {
         const value = this.get(key, defaultValue?.toString());
@@ -46,7 +47,6 @@ export class ViteConfigProvider implements ConfigProvider {
 
     /**
      * Get a boolean configuration value from import.meta.env
-     * Accepts 'true', 'false', '1', or '0'
      */
     getBoolean(key: string, defaultValue?: boolean): boolean {
         const value = this.get(key, defaultValue?.toString());

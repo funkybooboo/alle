@@ -132,7 +132,7 @@ export class Task {
 }
 
 // ❌ BAD - Depends on database
-import { Database } from 'postgres';  // I/O dependency!
+import { Database } from 'bun:sqlite';  // I/O dependency!
 
 export class Task {
   async save(db: Database) {  // Business logic coupled to database
@@ -238,30 +238,35 @@ export interface DateProvider {
 ### Database Adapters
 
 ```typescript
-// PostgreSQL implementation
-export class PostgresTaskRepository implements TaskRepository {
-  constructor(private sql: Postgres) {}
+// SQLite implementation (bun:sqlite)
+export class SQLiteTaskRepository implements TaskRepository {
+  constructor(private db: Database) {}
 
   async findById(id: string): Promise<Task | null> {
-    const [task] = await this.sql`
-      SELECT * FROM tasks WHERE id = ${id}
-    `;
-    return task ?? null;
+    const task = this.db.query('SELECT * FROM tasks WHERE id = ?').get(id);
+    return (task as Task) ?? null;
   }
 
   async save(input: CreateTaskInput): Promise<Task> {
-    const [task] = await this.sql`
-      INSERT INTO tasks (id, text, date, completed, created_at, updated_at)
-      VALUES (${crypto.randomUUID()}, ${input.text}, ${input.date}, false, NOW(), NOW())
-      RETURNING *
-    `;
+    const task: Task = {
+      id: crypto.randomUUID(),
+      text: input.text,
+      date: input.date,
+      completed: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.db.run(
+      'INSERT INTO tasks (id, text, date, completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [task.id, task.text, task.date, 0, task.createdAt, task.updatedAt],
+    );
     return task;
   }
 
   // Other methods...
 }
 
-// In-memory implementation (testing/development)
+// In-memory implementation (development/testing)
 export class InMemoryTaskRepository implements TaskRepository {
   private tasks: Map<string, Task> = new Map();
 
@@ -284,26 +289,15 @@ export class InMemoryTaskRepository implements TaskRepository {
 
   // Other methods...
 }
-
-// MongoDB implementation
-export class MongoTaskRepository implements TaskRepository {
-  constructor(private db: MongoClient) {}
-
-  async findById(id: string): Promise<Task | null> {
-    return this.db.collection('tasks').findOne({ _id: id });
-  }
-
-  // Other methods...
-}
 ```
 
 **Switch implementations**:
 ```typescript
-// Development
+// Development / testing
 const repository: TaskRepository = new InMemoryTaskRepository();
 
-// Production
-const repository: TaskRepository = new PostgresTaskRepository(sql);
+// Self-hosted (v1+)
+const repository: TaskRepository = new SQLiteTaskRepository(db);
 
 // Use case doesn't change!
 const useCase = new CreateTaskUseCase(repository, dateProvider);
@@ -543,7 +537,7 @@ Alle already uses I/O abstraction extensively:
 | HTTP Server | `HttpServer` | `BunHttpServer` |
 | Task Storage | `TaskRepository` | `InMemoryTaskRepository` |
 
-**Future**: Add PostgreSQL, CLI, and TUI adapters without changing business logic.
+**Future**: Add CLI, TUI, and other adapters without changing business logic.
 
 ---
 

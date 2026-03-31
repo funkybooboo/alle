@@ -66,7 +66,7 @@ We follow a strict testing pyramid distribution:
 
 **SCOPE**: Pure functions, calculations, validations, transformers, business rules.
 
-**TOOLS**: Bun test runner, Vitest, React Testing Library.
+**TOOLS**: Bun test runner, Vitest.
 
 **REQUIREMENTS**:
 - Every pure function MUST have comprehensive unit tests
@@ -113,51 +113,36 @@ We follow a strict testing pyramid distribution:
 - ✅ Concurrent access scenarios
 - ✅ Error propagation across layers
 
-**DOCKER CONTAINER REQUIREMENT**:
+**SQLITE IN-MEMORY REQUIREMENT**:
 
-All integration tests MUST use Testcontainers:
+All integration tests MUST use a fresh in-memory SQLite database — no Docker, no file I/O:
 
 ```typescript
-import { test, expect, describe, beforeAll, afterAll } from "bun:test";
-import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import postgres from "postgres";
+import { test, expect, describe, beforeEach, afterEach } from "bun:test";
+import { Database } from "bun:sqlite";
+import { SQLiteTaskRepository } from "../adapters/data/SQLiteTaskRepository";
 
-describe('UserRepository Integration', () => {
-  let container;
-  let sql;
+describe('TaskRepository Integration', () => {
+  let db: Database;
+  let repository: SQLiteTaskRepository;
 
-  beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:15')
-      .withDatabase('test_db')
-      .withUsername('test_user')
-      .withPassword('test_pass')
-      .start();
-
-    sql = postgres({
-      host: container.getHost(),
-      port: container.getMappedPort(5432),
-      database: container.getDatabase(),
-      username: container.getUsername(),
-      password: container.getPassword(),
-    });
-
-    // Setup schema
-    await sql`
-      CREATE TABLE users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
+  beforeEach(() => {
+    db = new Database(':memory:'); // Fresh DB per test — no shared state
+    db.run(`
+      CREATE TABLE tasks (
+        id TEXT PRIMARY KEY,
+        text TEXT NOT NULL,
+        completed INTEGER NOT NULL DEFAULT 0,
+        date TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
-    `;
-  }, 60000);
-
-  afterAll(async () => {
-    if (sql) await sql.end();
-    if (container) await container.stop();
+    `);
+    repository = new SQLiteTaskRepository(db);
   });
 
-  beforeEach(async () => {
-    await sql`TRUNCATE users RESTART IDENTITY CASCADE`;
+  afterEach(() => {
+    db.close();
   });
 
   // Tests here...
@@ -170,7 +155,7 @@ describe('UserRepository Integration', () => {
 
 **SCOPE**: Full user stories, acceptance criteria, cross-browser compatibility.
 
-**TOOLS**: Playwright, Cypress.
+**TOOLS**: Playwright.
 
 **REQUIREMENTS**:
 - E2E tests MUST cover ALL user stories
@@ -388,36 +373,34 @@ For more information on writing tests, see the [Bruno documentation](https://doc
 
 ```typescript
 // Button.stories.ts
-export default {
+import type { Meta, StoryObj } from '@storybook/svelte';
+import Button from './Button.svelte';
+
+const meta: Meta<typeof Button> = {
   title: 'Design System/Button',
   component: Button,
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['primary', 'secondary', 'danger', 'ghost']
-    }
-  }
+      options: ['primary', 'secondary', 'danger', 'ghost'],
+    },
+  },
 };
 
-export const Primary = {
-  args: { children: 'Primary Button', variant: 'primary' }
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: { label: 'Primary Button', variant: 'primary' },
 };
 
-export const AllSizes = () => (
-  <div style={{ display: 'flex', gap: '1rem' }}>
-    <Button size="small">Small</Button>
-    <Button size="medium">Medium</Button>
-    <Button size="large">Large</Button>
-  </div>
-);
+export const AllSizes: Story = {
+  args: { size: 'small' },
+};
 
-export const InteractiveStates = () => (
-  <div style={{ display: 'grid', gap: '1rem' }}>
-    <Button>Default</Button>
-    <Button disabled>Disabled</Button>
-    <Button loading>Loading</Button>
-  </div>
-);
+export const Disabled: Story = {
+  args: { label: 'Disabled Button', disabled: true },
+};
 ```
 
 ---

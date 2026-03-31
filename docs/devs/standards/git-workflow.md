@@ -363,96 +363,28 @@ git stash drop stash@{0}
 
 **RULE**: Use Git hooks to enforce quality standards automatically.
 
-### Pre-Commit Hook
+### Pre-Commit Hook (`.husky/pre-commit`)
 
-Runs before commit is created. Use for fast checks.
+Runs before every commit. Blocks the commit if validation fails.
 
 ```bash
-# .git/hooks/pre-commit
-#!/bin/sh
-
-# Run linting
-bun run lint:check || {
-  echo "❌ Linting failed. Run 'bun run lint' to fix."
-  exit 1
-}
-
-# Run type checking
-bun run type-check || {
-  echo "❌ Type checking failed. Fix type errors before committing."
-  exit 1
-}
-
-# Check for secrets
-git diff --cached --name-only | while read file; do
-  if grep -qE '(password|secret|api[-_]?key|token).*=.*["\047]' "$file"; then
-    echo "❌ Possible secret found in $file"
-    exit 1
-  fi
-done
-
-echo "✅ Pre-commit checks passed"
+bun run validate   # biome ci (format + lint) + tsc --noEmit across all packages
 ```
 
-### Pre-Push Hook
+### Commit-Msg Hook (`.husky/commit-msg`)
 
-Runs before push to remote. Use for longer checks.
-
-```bash
-# .git/hooks/pre-push
-#!/bin/sh
-
-# Run tests
-bun run test || {
-  echo "❌ Tests failed. Fix tests before pushing."
-  exit 1
-}
-
-# Check test coverage
-bun run test --coverage || {
-  echo "❌ Test coverage below threshold."
-  exit 1
-}
-
-echo "✅ Pre-push checks passed"
-```
-
-### Commit-Msg Hook
-
-Validates commit message format.
+Validates the commit message against Conventional Commits using commitlint.
 
 ```bash
-# .git/hooks/commit-msg
-#!/bin/sh
-
-commit_msg_file=$1
-commit_msg=$(cat "$commit_msg_file")
-
-# Check if message follows Conventional Commits
-if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .{1,}'; then
-  echo "❌ Commit message must follow Conventional Commits format:"
-  echo "   type(scope): description"
-  echo ""
-  echo "   Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
-  exit 1
-fi
-
-echo "✅ Commit message format valid"
+bunx commitlint --edit $1
 ```
 
 ### Installing Hooks
 
-```bash
-# Make hooks executable
-chmod +x .git/hooks/pre-commit
-chmod +x .git/hooks/pre-push
-chmod +x .git/hooks/commit-msg
+Hooks are managed with Husky and activate automatically on `bun install`. No manual setup needed — just clone and install:
 
-# Or use husky for team-wide hooks
-bun add -d husky
-bunx husky install
-bunx husky add .husky/pre-commit "bun run lint:check && bun run type-check"
-bunx husky add .husky/pre-push "bun run test"
+```bash
+bun install   # installs deps and activates .husky/ hooks via the "prepare" script
 ```
 
 ---

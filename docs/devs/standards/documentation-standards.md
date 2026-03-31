@@ -69,45 +69,36 @@ Our documentation approach prioritizes:
 
 ```
 alle/
-├── docs/                      # Technical documentation
-│   ├── 00-table-of-contents.md
-│   ├── 01-introduction.md
-│   ├── 02-getting-started.md
-│   ├── 03-architecture.md
-│   ├── 04-code-standards.md
-│   ├── 05-testing.md
-│   ├── 06-contributing.md
-│   ├── 07-testing-philosophy.md
-│   ├── 08-design-patterns.md
-│   ├── ... (numbered docs)
-│   ├── user/                  # End-user documentation
-│   │   ├── getting-started.md
-│   │   ├── features/
-│   │   └── troubleshooting.md
-│   ├── developer/             # Developer guides
-│   │   ├── setup.md
-│   │   ├── architecture/
-│   │   └── api-reference/
-│   └── diagrams/              # Mermaid diagrams
-│       ├── architecture.md
-│       └── flows.md
+├── docs/
+│   ├── README.md              # Documentation index
+│   ├── devs/                  # Developer documentation
+│   │   ├── README.md
+│   │   ├── standards/         # Coding and process standards
+│   │   │   ├── code-standards.md
+│   │   │   ├── testing.md
+│   │   │   ├── git-workflow.md
+│   │   │   ├── documentation-standards.md
+│   │   │   ├── diagramming-standards.md
+│   │   │   └── philosophy.md
+│   │   ├── architecture/      # System design docs
+│   │   │   ├── architecture.md
+│   │   │   ├── design-patterns.md
+│   │   │   ├── io-abstraction.md
+│   │   │   ├── api-abstraction.md
+│   │   │   ├── functional-programming.md
+│   │   │   └── twelve-factor.md
+│   │   └── process/           # Development process
+│   │       ├── getting-started.md
+│   │       ├── feature-development-loop.md
+│   │       └── ci-cd-pipeline.md
+│   └── users/                 # End-user documentation
+│       ├── README.md
+│       ├── introduction.md
+│       └── design.md
 │
-├── planning/                  # Project planning
-│   ├── roadmap.md
-│   ├── user-stories/          # User stories
-│   │   ├── US-001-...md
-│   │   └── US-002-...md
-│   ├── technical-specs/       # Technical specifications
-│   │   └── US-001-spec.md
-│   ├── decisions/             # Architecture Decision Records
-│   │   ├── ADR-001-...md
-│   │   └── ADR-002-...md
-│   └── retrospectives/        # Sprint retrospectives
-│       └── 2024-01.md
-│
-└── .ai-agents/                # AI agent prompts for CI
-    ├── security-agent.md
-    └── ...
+└── plans/                     # Project planning
+    ├── README.md
+    └── roadmap.md
 ```
 
 ---
@@ -130,7 +121,7 @@ alle/
 - Common problems and solutions
 - Keyboard shortcuts and tips
 
-**EXAMPLE** (`docs/user/task-filtering.md`):
+**EXAMPLE** (`docs/users/task-filtering.md`):
 ```markdown
 # Filtering Tasks by Date
 
@@ -185,14 +176,14 @@ Your task list now shows only tasks in your selected date range.
 - Testing strategy
 - Performance considerations
 
-**EXAMPLE** (`docs/developer/task-filtering.md`):
+**EXAMPLE** (`docs/devs/task-filtering.md`):
 ```markdown
 # Task Filtering Implementation
 
 ## Architecture
 
 The date filtering feature uses:
-- Client-side: `DateRangeFilter` React component
+- Client-side: `DateRangeFilter` Svelte component
 - API: Query parameters on `GET /api/tasks`
 - Database: Compound index on `(user_id, date)`
 - State: LocalStorage for filter persistence
@@ -234,7 +225,7 @@ ORDER BY date ASC, created_at ASC;
 ## State Management
 
 Filter state stored in:
-1. React state (UI)
+1. Svelte state (UI)
 2. URL query params (shareable links)
 3. LocalStorage (persistence)
 

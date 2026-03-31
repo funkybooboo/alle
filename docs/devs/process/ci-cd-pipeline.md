@@ -314,19 +314,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -341,8 +328,6 @@ jobs:
 
       - name: Run integration tests
         run: bun run test:integration
-        env:
-          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
 
       - name: Run E2E tests
         run: bun run test:e2e

@@ -68,7 +68,7 @@ graph TB
 
     System[Alle Task Manager<br/>Web Application]
 
-    DB[(PostgreSQL<br/>Database)]
+    DB[(SQLite<br/>Database)]
     Email[SendGrid<br/>Email Service]
     Auth[Google OAuth<br/>Authentication]
 
@@ -116,9 +116,9 @@ graph TB
     User[User]
 
     subgraph "Alle System"
-        Client[Client Application<br/>React + Vite<br/>Port 3000]
+        Client[Client Application<br/>SvelteKit<br/>Port 3000]
         API[API Server<br/>Bun HTTP Server<br/>Port 4000]
-        DB[(Database<br/>PostgreSQL)]
+        DB[(Database<br/>SQLite)]
         Cache[(Cache<br/>Redis)]
     end
 
@@ -163,7 +163,7 @@ graph TB
         Container[Dependency Injection<br/>Container]
     end
 
-    DB[(PostgreSQL)]
+    DB[(SQLite)]
 
     Routes --> TaskService
     Routes --> UserService
@@ -462,7 +462,7 @@ gitGraph
 ```
 User
 TaskService
-PostgreSQL Database
+SQLite Database
 HTTP API Server
 ```
 

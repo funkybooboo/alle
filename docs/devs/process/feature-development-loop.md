@@ -149,7 +149,7 @@ them because they feel overwhelmed.
 
 ## Architecture Overview
 
-- Client: React component with date picker library
+- Client: Svelte component with date picker library
 - API: New query parameters on existing GET /api/tasks endpoint
 - Database: Add compound index on (user_id, date) for performance
 
@@ -306,43 +306,40 @@ describe('Date Range Utilities', () => {
 Test API endpoint with real database:
 
 ```typescript
-import { test, expect, describe, beforeAll, afterAll, beforeEach } from 'bun:test';
-import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { test, expect, describe, beforeEach, afterEach } from 'bun:test';
+import { Database } from 'bun:sqlite';
+import { SQLiteTaskRepository } from '../adapters/data/SQLiteTaskRepository';
 
-describe('Date Filter API Integration', () => {
-  let container;
-  let sql;
-  let apiUrl;
+describe('Date Filter Integration', () => {
+  let db: Database;
+  let repository: SQLiteTaskRepository;
 
-  beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:15')
-      .withDatabase('test_db')
-      .start();
-    // Setup database and API server...
-  }, 60000);
-
-  afterAll(async () => {
-    if (sql) await sql.end();
-    if (container) await container.stop();
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.run(`
+      CREATE TABLE tasks (
+        id TEXT PRIMARY KEY, text TEXT NOT NULL,
+        completed INTEGER NOT NULL DEFAULT 0,
+        date TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+      )
+    `);
+    repository = new SQLiteTaskRepository(db);
   });
 
-  test('GET /api/tasks with date range returns filtered tasks', async () => {
+  afterEach(() => {
+    db.close();
+  });
+
+  test('findByDateRange returns only tasks in range', async () => {
     // Insert test data
-    await sql`INSERT INTO tasks (text, date) VALUES
-      ('Task 1', '2024-01-05'),
-      ('Task 2', '2024-01-10'),
-      ('Task 3', '2024-01-15')`;
+    await repository.save({ text: 'Task 1', date: '2024-01-05' });
+    await repository.save({ text: 'Task 2', date: '2024-01-10' });
+    await repository.save({ text: 'Task 3', date: '2024-01-15' });
 
-    // Query with date filter
-    const response = await fetch(
-      `${apiUrl}/api/tasks?startDate=2024-01-01&endDate=2024-01-07`
-    );
+    const tasks = await repository.findByDateRange('2024-01-01', '2024-01-07');
 
-    expect(response.status).toBe(200);
-    const data = await response.json();
-    expect(data.tasks).toHaveLength(1);
-    expect(data.tasks[0].text).toBe('Task 1');
-    expect(data.total).toBe(3);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]?.text).toBe('Task 1');
   });
 });
 ```
@@ -387,7 +384,7 @@ export function isDateInRange(date: string, start: string, end: string): boolean
 
 ### Step 4.1: User Documentation
 
-**LOCATION**: `docs/user/filtering-tasks.md`
+**LOCATION**: `docs/users/filtering-tasks.md`
 
 ```markdown
 # Filtering Tasks by Date
@@ -422,7 +419,7 @@ Click the "Clear Filter" button to see all tasks again.
 
 ### Step 4.2: Developer Documentation
 
-**LOCATION**: `docs/developer/date-filtering-api.md`
+**LOCATION**: `docs/devs/date-filtering-api.md`
 
 ```markdown
 # Date Filtering API
@@ -483,7 +480,7 @@ Before requesting review:
 
 ### Step 5.2: Create Pull Request
 
-Use PR template (see [09-git-workflow.md](./09-git-workflow.md)).
+Use PR template (see [git-workflow.md](../standards/git-workflow.md)).
 
 ### Step 5.3: Address Review Feedback
 
@@ -515,7 +512,7 @@ ALL must pass before merge:
 
 ### AI Agent Reviews
 
-See [17-ci-cd-pipeline.md](./17-ci-cd-pipeline.md) for agent details:
+See [ci-cd-pipeline.md](./ci-cd-pipeline.md) for agent details:
 
 - Security Agent
 - Performance Agent

@@ -32,9 +32,9 @@ This release focuses on establishing the project's foundation, including the cor
 
 This release replaces the initial React client with a SvelteKit application.
 
-- [ ] **Scaffold SvelteKit App:** Create a new SvelteKit application in the `packages/client` directory.
-- [ ] **Setup Basic UI:** Re-create the basic UI for displaying tasks in Svelte.
-- [ ] **Ensure Feature Parity:** The Svelte client should have the same basic functionality as the original React client.
+- [x] **Scaffold SvelteKit App:** Create a new SvelteKit application in the `packages/client` directory.
+- [x] **Setup Basic UI:** Re-create the basic UI for displaying tasks in Svelte.
+- [x] **Ensure Feature Parity:** The Svelte client should have the same basic functionality as the original React client.
 
 ### Technical Notes & Considerations
 - This will be a "rip and replace" of the `packages/client` directory.

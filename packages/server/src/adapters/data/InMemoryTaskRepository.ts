@@ -1,16 +1,12 @@
 /**
  * In-memory implementation of TaskRepository
  *
- * This is a simple in-memory store using a Map for fast lookups.
- * Data is lost when the server restarts.
+ * Simple in-memory store using a Map for fast lookups.
+ * Data is lost when the server restarts — intended for development
+ * and as the baseline before the SQLite adapter ships in v0.8.0.
  *
- * Benefits:
- * - No external dependencies or database setup needed
- * - Fast for development and testing
- * - Easy to swap for PostgreSQL/MongoDB implementation later
- *
- * To switch to a real database, just:
- * 1. Create PostgresTaskRepository.ts implementing TaskRepository
+ * To switch to a persistent store:
+ * 1. Create SQLiteTaskRepository.ts implementing TaskRepository
  * 2. Change one line in container.ts
  * 3. Business logic stays unchanged
  */
