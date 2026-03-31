@@ -641,6 +641,18 @@ Before merging documentation:
 
 ---
 
+## Documentation Architecture
+
+This is a standing commitment across every release.
+
+- **User docs**: Hosted on a Writebook instance. Covers getting started, all features, keyboard shortcuts, import/export, and customization. Linked from the bottom bar of the app.
+- **Dev docs**: Architecture, contributing guide, API reference, adapter contracts, and ADRs. Hosted alongside user docs or in the repo.
+- **ADRs**: Stored in `docs/adr/` using the MADR format. Written for every significant technical or product decision. Numbered sequentially.
+- **In-app help**: The `?` Help modal shows all keyboard shortcuts organized by category. Links at the bottom open the full Writebook docs.
+- **Writebook link**: Bottom bar far-right corner — a small "docs" link that opens the user docs home page.
+
+---
+
 ## Summary
 
 Quality documentation is as important as quality code. Invest in clear, accurate, well-organized documentation to enable team scalability and user success.

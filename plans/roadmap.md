@@ -2,38 +2,6 @@
 
 This document outlines the development roadmap for Alle. We use semantic versioning to define chunks of work and track our progress.
 
-## Development Philosophy
-
-**Feature by feature.** The roadmap is the north star — a grand design to keep in mind — but we never build the grand design up front. We implement one small feature at a time, always working on the simplest thing that adds real value. No speculative abstractions, no "while we're in here" scope creep.
-
-**Strict TDD — Red → Green → Refactor:**
-1. **Red:** Write a failing test that describes the behavior you want. Don't write any production code yet.
-2. **Green:** Write the minimum code needed to make the test pass. Ugly is fine here.
-3. **Refactor:** Clean up the implementation — extract functions, apply patterns, improve names — while keeping all tests green.
-
-This cycle repeats for every piece of functionality, no matter how small.
-
-**Refactor after every implementation.** After the test goes green, always do a refactor pass before moving on. Keep the code clean, extensible, and free of duplication. The refactor step is not optional.
-
-**Core principles applied throughout every release:**
-- **TDD**: Tests are written before implementation. Unit tests first, then integration/E2E.
-- **Documentation**: User docs and dev docs updated alongside code. ADRs written for every significant decision.
-- **Security**: Security considerations addressed in each release, not bolted on at the end.
-- **Extensibility**: Every major subsystem is defined as an interface first; concrete adapters implement it.
-- **Accessibility**: WCAG 2.1 AA is the target; a11y work runs continuously, not just in v0.13.0.
-
----
-
-## Documentation Architecture
-
-This is a standing commitment across every release.
-
-- **User docs**: Hosted on a Writebook instance. Covers getting started, all features, keyboard shortcuts, import/export, and customization. Linked from the bottom bar of the app.
-- **Dev docs**: Architecture, contributing guide, API reference, adapter contracts, and ADRs. Hosted alongside user docs or in the repo.
-- **ADRs**: Stored in `docs/adr/` using the MADR format. Written for every significant technical or product decision. Numbered sequentially.
-- **In-app help**: The `?` Help modal shows all keyboard shortcuts organized by category. Links at the bottom open the full Writebook docs.
-- **Writebook link**: Bottom bar far-right corner — a small "docs" link that opens the user docs home page.
-
 ---
 
 ## v0.1.0: Foundations
@@ -62,7 +30,7 @@ This release focuses on establishing the project's foundation, including the cor
 
 ## v0.1.1: Refactor to Svelte
 
-This release is dedicated to replacing the initial React client with a new SvelteKit application.
+This release replaces the initial React client with a SvelteKit application.
 
 - [ ] **Scaffold SvelteKit App:** Create a new SvelteKit application in the `packages/client` directory.
 - [ ] **Setup Basic UI:** Re-create the basic UI for displaying tasks in Svelte.
@@ -145,7 +113,7 @@ This release creates the REST API for all entities. The API is designed to be cl
 - [ ] **Security headers:** All responses include:
     - `X-Content-Type-Options: nosniff`
     - `X-Frame-Options: DENY`
-    - `Content-Security-Policy` (strict baseline; tightened in v2.6.0)
+    - `Content-Security-Policy` (strict baseline; tightened in v2.4.0)
     - `Strict-Transport-Security` (HSTS; enforced in production)
 - [ ] **Rate limiting:** Simple token-bucket rate limiter on all endpoints from day one. Configurable via environment variable.
 - [ ] **Input validation:** Zod validators on all request bodies and query params, generated from the OpenAPI spec.
@@ -430,7 +398,7 @@ This release polishes the three-panel layout, implements lazy loading, view mode
 
 ---
 
-## v0.8.0: I/O & Data
+## v0.8.0: Persistence & Data I/O
 
 This release implements persistent storage, multi-format data export, and import from popular task managers.
 
@@ -498,51 +466,7 @@ This release implements persistent storage, multi-format data export, and import
 
 ---
 
-## v0.9.0: UI Polish & Theming
-
-This release refines the visual design into a cohesive, calm, and beautiful product. Consistent look and feel across every surface.
-
-- [ ] **Design system:** Establish a consistent visual language using Tailwind + CSS custom properties.
-    - Inspired by Basecamp: clean, spacious, warm, calm. No clutter.
-    - Typography: a readable sans-serif for task text, monospace accents for dates and labels.
-    - Spacing, border radius, shadow, and color scales defined as CSS variables.
-    - Design tokens documented in Storybook.
-- [ ] **Light & dark mode:**
-    - System preference detected by default.
-    - Manual toggle in ⚙️ Settings.
-    - Light: warm off-white background, dark text, subtle borders.
-    - Dark: deep charcoal background, light text, muted borders.
-- [ ] **Tag colors:**
-    - Tags are auto-assigned distinct pastel colors on creation.
-    - User can override the color for any tag in Settings > Tags.
-    - Tag chips in task rows and filter bar reflect the color.
-- [ ] **Tag management screen** (in ⚙️ Settings):
-    - List all tags with their colors.
-    - Rename, merge (combine two tags), delete, recolor.
-- [ ] **Animations & transitions:** Subtle and purposeful — task completion fade, modal open/close, panel collapse, drag ghost.
-- [ ] **Visual consistency audit:** Every modal, panel, form, and interaction reviewed against the design system. No orphaned styles.
-- [ ] **Storybook design review:** All components reviewed in Storybook against the design system.
-
-### Technical Notes & Considerations
-- Tailwind's dark mode with `class` strategy for manual toggle support.
-- CSS custom properties for tokens that need to be dynamic (theme switching, tag colors).
-- Svelte's built-in transition functions for animations.
-
-### Documentation & ADRs
-- ADR: design system approach (Tailwind + CSS custom properties).
-- Dev docs: design system reference (tokens, typography, spacing).
-
-### Definition of Done
-- Light and dark themes fully implemented and polished.
-- Tag colors auto-assigned and user-overridable.
-- Tag management screen functional.
-- Application has a calm, spacious, Basecamp-inspired feel throughout.
-- All animations are smooth and purposeful.
-- Visual consistency audit passed.
-
----
-
-## v0.10.0: Basic Automation
+## v0.9.0: Automation
 
 This release introduces the automation features that make Alle smart.
 
@@ -574,7 +498,7 @@ This release introduces the automation features that make Alle smart.
 
 ---
 
-## v0.11.0: Projects & Habits UI
+## v0.10.0: Projects & Habits
 
 This release builds the full UI for project management and habit tracking.
 
@@ -621,7 +545,7 @@ This release builds the full UI for project management and habit tracking.
 
 ---
 
-## v0.12.0: Markdown Notes
+## v0.11.0: Markdown Notes
 
 This release adds rich text support to task notes.
 
@@ -643,6 +567,69 @@ This release adds rich text support to task notes.
 - Markdown rendered correctly in task detail modal.
 - Edit/view toggle functional.
 - XSS sanitization tested with adversarial inputs.
+
+---
+
+## v0.12.0: UI Polish, Theming & Customization
+
+This release refines the visual design into a cohesive, calm product and formalizes all user-configurable preferences into a complete Settings experience.
+
+### Design System & Theming
+- [ ] **Design system:** Establish a consistent visual language using Tailwind + CSS custom properties.
+    - Inspired by Basecamp: clean, spacious, warm, calm. No clutter.
+    - Typography: a readable sans-serif for task text, monospace accents for dates and labels.
+    - Spacing, border radius, shadow, and color scales defined as CSS variables.
+    - Design tokens documented in Storybook.
+- [ ] **Theme system:** Light, dark, and system default. Optional accent color schemes (e.g., warm, cool, high-contrast). All stored in `UserPreferences`.
+- [ ] **Tag colors:**
+    - Tags are auto-assigned distinct pastel colors on creation.
+    - User can override the color for any tag in Settings > Tags.
+    - Tag chips in task rows and filter bar reflect the color.
+- [ ] **Tag management screen** (in ⚙️ Settings):
+    - List all tags with their colors.
+    - Rename, merge (combine two tags), delete, recolor.
+- [ ] **Animations & transitions:** Subtle and purposeful — task completion fade, modal open/close, panel collapse, drag ghost.
+- [ ] **Visual consistency audit:** Every modal, panel, form, and interaction reviewed against the design system. No orphaned styles.
+- [ ] **Storybook design review:** All components reviewed in Storybook against the design system.
+
+### User Preferences (Settings)
+- [ ] **Font size:** Small, medium (default), large. Adjusts `--font-size-base` CSS variable globally.
+- [ ] **Task row density:** Compact (tight spacing) vs comfortable (spacious, default).
+- [ ] **Completion animation:** Configurable — strikethrough+fade, stay grayed, or hide immediately.
+- [ ] **Delete behavior:** Instant + 5s undo toast (default) vs require confirmation dialog.
+- [ ] **Rollover defaults:** App-wide on/off, trigger time (midnight / 9am / manual).
+- [ ] **Empty day visibility:** Show empty days (default) vs hide.
+- [ ] **Filter persistence:** Persist active filters across sessions (default) vs always start fresh.
+- [ ] **Panel defaults:** Someday panel default open/closed. Icon rail labels shown/hidden.
+- [ ] **Custom keyboard shortcuts:** User can remap any shortcut via Settings > Keyboard. Overrides stored in `UserPreferences`. Conflicts shown with a warning.
+- [ ] **All preferences persisted** in `UserPreferences` (SQLite). Survive restarts, browser refreshes, and re-logins.
+
+### Privacy Principle
+- No analytics, no telemetry, no tracking — not even anonymized. Alle knows nothing about how you use it except what you explicitly store in your own database.
+- Document this commitment explicitly in the user docs.
+
+### Technical Notes & Considerations
+- Tailwind's dark mode with `class` strategy for manual toggle support.
+- CSS custom properties for tokens that need to be dynamic (theme switching, tag colors).
+- Svelte's built-in transition functions for animations.
+
+### Documentation & ADRs
+- ADR: design system approach (Tailwind + CSS custom properties).
+- ADR: `UserPreferences` schema and persistence strategy.
+- Dev docs: design system reference (tokens, typography, spacing).
+- User docs: full Settings reference.
+
+### Definition of Done
+- Light, dark, and system themes fully implemented and polished.
+- Accent color schemes functional.
+- Tag colors auto-assigned and user-overridable.
+- Tag management screen functional.
+- All preference categories implemented, functional, and persisted.
+- Custom keyboard shortcut remapping working.
+- Application has a calm, spacious, Basecamp-inspired feel throughout.
+- All animations are smooth and purposeful.
+- Visual consistency audit passed.
+- Privacy principle documented in user docs.
 
 ---
 
@@ -681,7 +668,7 @@ This release ensures Alle meets WCAG 2.1 Level AA accessibility standards across
 
 ---
 
-## v0.14.0: Internationalization (i18n)
+## v0.14.0: Internationalization
 
 This release adds infrastructure for multiple languages and locale-aware formatting.
 
@@ -713,39 +700,7 @@ This release adds infrastructure for multiple languages and locale-aware formatt
 
 ---
 
-## v0.15.0: User Customization
-
-This release formalizes all user-configurable preferences into a cohesive Settings experience.
-
-- [ ] **Theme system:** Light, dark, and system default. Optional accent color schemes (e.g., warm, cool, high-contrast). All stored in `UserPreferences`.
-- [ ] **Font size:** Small, medium (default), large. Adjusts `--font-size-base` CSS variable globally.
-- [ ] **Task row density:** Compact (tight spacing) vs comfortable (spacious, default).
-- [ ] **Completion animation:** Configurable — strikethrough+fade, stay grayed, or hide immediately.
-- [ ] **Delete behavior:** Instant + 5s undo toast (default) vs require confirmation dialog.
-- [ ] **Rollover defaults:** App-wide on/off, trigger time (midnight / 9am / manual).
-- [ ] **Empty day visibility:** Show empty days (default) vs hide.
-- [ ] **Filter persistence:** Persist active filters across sessions (default) vs always start fresh.
-- [ ] **Panel defaults:** Someday panel default open/closed. Icon rail labels shown/hidden.
-- [ ] **Custom keyboard shortcuts:** User can remap any shortcut via Settings > Keyboard. Overrides stored in `UserPreferences`. Conflicts shown with a warning.
-- [ ] **All preferences persisted** in `UserPreferences` (SQLite). Survive restarts, browser refreshes, and re-logins (in multi-user mode, per-user).
-
-### Privacy Principle
-- No analytics, no telemetry, no tracking — not even anonymized. Alle knows nothing about how you use it except what you explicitly store in your own database.
-- Document this commitment explicitly in the user docs and the privacy policy (when applicable for managed hosting).
-
-### Documentation & ADRs
-- ADR: `UserPreferences` schema and persistence strategy.
-- User docs: full Settings reference.
-
-### Definition of Done
-- All preference categories implemented and functional.
-- Custom keyboard shortcut remapping working.
-- All preferences survive restarts.
-- Privacy principle documented in user docs.
-
----
-
-## v0.16.0: Calendar Time-Grid View
+## v0.15.0: Calendar Time-Grid View
 
 This release adds a time-grid calendar view for tasks with start and end times.
 
@@ -914,7 +869,33 @@ Adds multi-user support with passwordless authentication.
 
 ---
 
-## v2.4.0: SaaS & Billing
+## v2.4.0: Security Hardening
+
+A dedicated security audit and hardening release. Runs before SaaS billing to ensure the platform is secure before accepting payment and managing multiple users' data.
+
+- [ ] **OWASP Top 10 audit:** Systematic review of all endpoints against the OWASP Top 10. Findings documented and remediated.
+- [ ] **Dependency scanning:** `osv-scanner` (or equivalent) integrated into CI. Zero known-vulnerable dependencies in production.
+- [ ] **Secrets scanning:** `git-secrets` or `trufflehog` pre-commit hook and CI check. Historical git scan on first run.
+- [ ] **CSP hardening:** Content Security Policy tightened to the minimum required set of directives. Subresource integrity on all external assets.
+- [ ] **Audit logging:** All write operations logged with user ID, timestamp, and action. Logs stored separately from application data.
+- [ ] **Brute-force protection:** Account lockout after N failed auth attempts. Rate limiting on auth endpoints (stricter than general API rate limit).
+- [ ] **CORS:** Locked down to explicit origin allowlist in production. Wildcard `*` never used.
+- [ ] **Threat model document:** Written and stored in `docs/security/threat-model.md`. Covers trust boundaries, attack surfaces, and mitigations.
+
+### Documentation & ADRs
+- ADR: threat model and key security decisions (session storage, token lifetimes, CORS policy).
+- Dev docs: security model overview, how to run the dependency scanner, how to interpret audit logs.
+
+### Definition of Done
+- OWASP Top 10 audit complete; all high/critical findings remediated.
+- Dependency scanner green in CI.
+- Secrets scanner in pre-commit hook and CI.
+- Audit logging functional.
+- Threat model document written.
+
+---
+
+## v2.5.0: SaaS & Billing
 
 Alle is open-source — anyone can self-host for free. This release adds optional managed hosting with Stripe billing for users who prefer not to self-host.
 
@@ -956,7 +937,7 @@ Alle is open-source — anyone can self-host for free. This release adds optiona
 
 ---
 
-## v2.5.0: Advanced Automation
+## v2.6.0: Advanced Automation
 
 - [ ] **2-Day Rule:** Priority rises over time for recurring tasks not completed. Non-recurring tasks roll over to the next day.
 - [ ] **Smart scheduling (MCP-only):** AI-assisted task distribution — suggests how to spread tasks based on capacity, deadlines, and priority. Available via MCP server; not surfaced in the web UI.
@@ -965,7 +946,7 @@ Alle is open-source — anyone can self-host for free. This release adds optiona
 
 ---
 
-## v2.5.5: Canvas LMS Calendar Integration
+## v2.7.0: Canvas LMS Integration
 
 Pull assignments and due dates from a Canvas LMS instance into Alle.
 
@@ -990,259 +971,3 @@ Pull assignments and due dates from a Canvas LMS instance into Alle.
 - Deduplication prevents double-imports.
 - Auto-sync configurable and functional.
 - Canvas token stored encrypted.
-
----
-
-## v2.6.0: Security Hardening
-
-A dedicated security audit and hardening release.
-
-- [ ] **OWASP Top 10 audit:** Systematic review of all endpoints against the OWASP Top 10. Findings documented and remediated.
-- [ ] **Dependency scanning:** `osv-scanner` (or equivalent) integrated into CI. Zero known-vulnerable dependencies in production.
-- [ ] **Secrets scanning:** `git-secrets` or `trufflehog` pre-commit hook and CI check. Historical git scan on first run.
-- [ ] **CSP hardening:** Content Security Policy tightened to the minimum required set of directives. Subresource integrity on all external assets.
-- [ ] **Audit logging:** All write operations logged with user ID, timestamp, and action. Logs stored separately from application data.
-- [ ] **Brute-force protection:** Account lockout after N failed auth attempts. Rate limiting on auth endpoints (stricter than general API rate limit).
-- [ ] **CORS:** Locked down to explicit origin allowlist in production. Wildcard `*` never used.
-- [ ] **Threat model document:** Written and stored in `docs/security/threat-model.md`. Covers trust boundaries, attack surfaces, and mitigations.
-
-### Documentation & ADRs
-- ADR: threat model and key security decisions (session storage, token lifetimes, CORS policy).
-- Dev docs: security model overview, how to run the dependency scanner, how to interpret audit logs.
-
-### Definition of Done
-- OWASP Top 10 audit complete; all high/critical findings remediated.
-- Dependency scanner green in CI.
-- Secrets scanner in pre-commit hook and CI.
-- Audit logging functional.
-- Threat model document written.
-
----
-
-# 🎯 Vision: Unified Daily Task Management System
-
-This section describes the full product vision that guides Alle's development.
-
-## Core Philosophy
-
-Alle is a unified task management system built around one simple idea: **you should only need one place to manage your work and your life**.
-
-The daily list is the execution surface. Someday is the capture net. Projects and habits feed into the daily list automatically. Everything is organized with tags — the same tag system works across tasks, groups, Someday, and filters.
-
-**Key principles:**
-- One task type that appears differently depending on its attributes and context
-- Tags as the primary organizational paradigm (including priority: `#p1`, `#p2`, `#p3`)
-- Project tasks and recurring tasks feed into the daily list automatically — no manual re-entry
-- Auto-rollover for incomplete tasks with "late" tracking
-- Streak tracking for recurring habits
-- A layout that gets out of your way: clean, calm, spacious, Basecamp-inspired
-- **No AI in the UI** — AI automation lives exclusively in the MCP server and CLI
-- **Privacy first** — no analytics, no telemetry, minimal user data stored
-
-## Layout Overview
-
-```
-┌──┬──────────────────────────────────────────┬──────────────┐
-│📅│                                          │  Someday   ‹ │
-│📊│  [holiday: Easter 🐣]                    │  + add group │
-│🔁│                                          │              │
-│📆│  March 30, Sunday  •  4 tasks            │  #work       │
-│🔍│  ─────────────────────────────────────  │  ─────────── │
-│🏷️│  ⠿ ○ 09:00 fix auth  #work  #p1        │  ⠿ ○ idea    │
-│🗑️│       ○ unit tests                       │  ⠿ ○ thing   │
-│⚙️│  ⠿ ○ write tests       #p2             │  + add task  │
-│? │  + add task                              │              │
-│  │                                          │  #school     │
-│  │  March 31, Monday  •  2 tasks            │  ─────────── │
-│  │  ─────────────────────────────────────  │  ⠿ ○ essay   │
-│  │  ⠿ ○ deploy to prod   #p1              │              │
-├──┴──────────────────────────────────────────┴──────────────┤
-│  alle   #work ×  #p1 ×    12 tasks • 4 done  ▲ Today  docs↗│
-└────────────────────────────────────────────────────────────┘
-```
-
-## Unified Data Model
-
-```typescript
-interface Task {
-  id: string
-  text: string
-  notes: string | null              // markdown
-  completed: boolean
-  date: string | null               // null = Someday / unscheduled
-  startTime: string | null          // "09:00" — null = all-day
-  endTime: string | null            // "10:30" — null = all-day or open-ended
-  tags: string[]                    // #work, #p1, #build-alle, #deadline, etc.
-  parentId: string | null           // nested sub-tasks
-  rolloverEnabled: boolean          // per-task override; default: true
-  someDayGroupId: string | null     // which Someday group
-
-  projectId: string | null
-  position: number | null
-  state: 'ready' | 'scheduled' | 'done' | null
-
-  recurringTaskId: string | null
-  instanceDate: string | null
-
-  originalScheduledDate: string | null
-  daysLate: number
-  dependsOn: string | null
-
-  reminder: { time: string; channels: ('push' | 'email')[] } | null
-
-  createdAt: string
-  updatedAt: string
-}
-
-interface SomeDayGroup {
-  id: string
-  name: string
-  description: string | null
-  tag: string | null
-  position: number
-  createdAt: string
-}
-
-interface Project {
-  id: string
-  name: string
-  description: string | null
-  startDate: string | null
-  dueDate: string | null
-  isActive: boolean
-  createdAt: string
-  completedAt: string | null
-}
-
-interface RecurringTask {
-  id: string
-  text: string
-  recurrenceRule: string    // rrule.js format
-  startDate: string
-  endDate: string | null
-  createdAt: string
-}
-
-interface RecurringTaskStats {
-  recurringTaskId: string
-  currentStreak: number
-  longestStreak: number
-  totalCompletions: number
-  lastCompletedDate: string | null
-}
-
-interface UserPreferences {
-  id: string
-  userId: string | null            // null in single-user mode
-  theme: 'light' | 'dark' | 'system'
-  accentScheme: string | null
-  fontSize: 'small' | 'medium' | 'large'
-  taskDensity: 'compact' | 'comfortable'
-  completionAnimation: 'fade' | 'gray' | 'hide'
-  deleteConfirmation: boolean
-  rolloverEnabled: boolean
-  rolloverTime: 'midnight' | '9am' | 'manual'
-  showEmptyDays: boolean
-  persistFilters: boolean
-  someDayDefaultOpen: boolean
-  locale: string                   // e.g. 'en', 'fr', 'es'
-  someDayPanelWidth: number | null
-  lastScrollDate: string | null
-  activeFilters: string[]
-  keyboardOverrides: Record<string, string>
-  updatedAt: string
-}
-```
-
-## Extensibility: Interface Inventory
-
-Every major subsystem has an interface in `packages/shared`. Adapters implement the interface. New implementations can be swapped in without changing application code.
-
-| Interface | Adapters |
-|-----------|----------|
-| `StorageAdapter` | In-memory, SQLite, PostgreSQL |
-| `ExportAdapter` | JSON, CSV, Markdown, iCal |
-| `ImportAdapter` | JSON, CSV, iCal, Todoist CSV, Things 3, Canvas |
-| `EmailAdapter` | SMTP, Resend, Postmark |
-| `PaymentAdapter` | Stripe, No-op (self-hosted) |
-| `I18nAdapter` | locale JSON files |
-| `NLPAdapter` | chrono-node (swappable) |
-| `LoggerAdapter` | Console, file, structured (e.g. pino) |
-| `RateLimiterAdapter` | In-memory, Redis |
-| `NotificationAdapter` | Web Push, email |
-
-## Command Palette Convention
-
-The command palette (Cmd+K) has two modes:
-
-- **Plain text** → fuzzy search across all tasks (title, tags, notes). Results scroll the day list to the matching task on selection.
-- **`/` prefix** → command mode. Commands: `/add`, `/complete`, `/delete`, `/move`, `/go`, `/tag`, `/filter`, `/clear`, `/today`, `/someday`, `/settings`, `/help`, and more. The command registry is extensible.
-
-## Key Features
-
-### Tag System
-Tags are the primary organizational tool. A task can have any number of tags. Special tag conventions:
-- `#p1`, `#p2`, `#p3` — priority levels
-- `#deadline` — promoted in Summary modal
-- `#project-name` — links task visually to a project
-- `#habit-name` — useful for grouping recurring tasks
-
-### Someday Panel
-The right-side Someday panel captures ideas and unscheduled work. Tasks are organized into user-created groups (tag-based). Works identically to the day list but without dates or automation. Global filtering applies.
-
-### Command Palette (Cmd+K)
-One unified modal for search and commands. `/add buy milk tomorrow #work #p1` creates a task. Plain text searches. The fastest way to do anything in Alle.
-
-### Project Management
-Projects are collections of ordered tasks. When activated, tasks are auto-distributed across days between the project's start and due dates. Project tasks appear in the day list tagged with the project name.
-
-### Habit Tracking
-Recurring tasks generate daily instances automatically. Completing instances builds streaks. The Habits modal shows a GitHub-style heatmap of completion history per habit.
-
-### Rollover
-Incomplete tasks roll over to the next day by default. The `daysLate` counter tracks how overdue a task is. Configurable app-wide and per-task.
-
-### Calendar Time-Grid View
-Tasks with `startTime`/`endTime` can be viewed in a day or week time-grid view (like Google Calendar), available from the 📆 Calendar rail icon.
-
-## Monorepo Structure
-
-```
-alle/
-├── packages/
-│   ├── client/   # SvelteKit frontend (Tailwind CSS)
-│   ├── server/   # Bun REST API
-│   ├── shared/   # Types, interfaces, constants, universal adapters
-│   ├── cli/      # alle CLI — command + TUI modes (v2.0.0)
-│   └── mcp/      # MCP server for AI automation (v2.1.0)
-├── docs/
-│   ├── adr/      # Architecture Decision Records (MADR format)
-│   └── ...
-├── tests/
-└── package.json
-```
-
-## Persistence Strategy
-
-| Phase | Adapter | When |
-|-------|---------|------|
-| Development | In-memory | v0.x |
-| Self-hosted v1 | SQLite (bun:sqlite) | v0.8.0 |
-| Multi-user v2 | PostgreSQL + Drizzle ORM | v2.3.0 |
-
-## Success Metrics
-
-**For users:**
-- Can replace their current task system with Alle
-- Daily list is the primary interface (>80% of time spent there)
-- Streak lengths increase over time
-- Late task count decreases over time
-
-**Technical:**
-- >85% test coverage
-- <100ms response time for day list
-- Zero data loss incidents
-- All E2E tests passing
-- Biome checks passing
-- axe-core a11y checks passing in CI
-- Zero known-vulnerable dependencies in CI

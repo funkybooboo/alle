@@ -115,3 +115,11 @@ Here's a list of the most common scripts you'll use:
 *   `bun run server`: Start the server development server.
 *   `bun run kill-ports`: A utility script to kill any processes running on ports 3000 and 4000.
 *   `bun run validate`: Run all code quality checks (formatting, linting, and type-checking).
+
+---
+
+## Contributing
+
+- **Bug reports**: [Open an issue](https://github.com/natestott/alle/issues) with as much detail as possible.
+- **Feature requests**: [Open an issue](https://github.com/natestott/alle/issues) to discuss the idea first.
+- **Pull requests**: Fork the repo, create a branch, make your changes, run `bun run validate`, then submit a PR. See [git-workflow.md](./git-workflow.md) for branching conventions and commit standards.
