@@ -41,9 +41,7 @@ coverage/
 lcov-report/
 *.lcov
 /tests/e2e/playwright-report/
-/test-results/
-/cypress/videos/
-/cypress/screenshots/
+/tests/e2e/test-results/
 
 # ------------------------------------------------------------------------------
 # Log Files
