@@ -7,7 +7,7 @@
         "dev": "vite dev",
         "build": "vite build",
         "preview": "vite preview",
-        "type-check": "svelte-kit sync && tsc --noEmit",
+        "type-check": "svelte-kit sync && bunx tsc --noEmit",
         "test": "bun test",
         "test:watch": "bun test --watch",
         "test:coverage": "bun test --coverage",
@@ -16,24 +16,25 @@
     },
     "dependencies": {
         "@alle/shared": "workspace:*",
-        "@sveltejs/kit": "^2.0.0",
-        "svelte": "^5.0.0"
+        "@sveltejs/adapter-node": "^5.5.4",
+        "@sveltejs/kit": "^2.56.1",
+        "svelte": "^5.55.1"
     },
     "devDependencies": {
-        "@storybook/addon-a11y": "^10.2.0",
-        "@storybook/addon-docs": "^10.2.0",
-        "@storybook/addon-links": "^10.2.0",
-        "@storybook/addon-vitest": "^10.2.0",
-        "@storybook/sveltekit": "^10.2.0",
-        "@sveltejs/adapter-auto": "^3.0.0",
-        "@sveltejs/vite-plugin-svelte": "^5.0.0",
-        "@types/bun": "^1.3.6",
-        "@vitest/browser-playwright": "^4.0.18",
-        "@vitest/coverage-v8": "^4.0.18",
-        "playwright": "^1.58.0",
-        "storybook": "^10.2.0",
-        "typescript": "^5.9.3",
-        "vite": "^6.0.5",
-        "vitest": "^4.0.18"
+        "@storybook/addon-a11y": "^10.3.4",
+        "@storybook/addon-docs": "^10.3.4",
+        "@storybook/addon-links": "^10.3.4",
+        "@storybook/addon-vitest": "^10.3.4",
+        "@storybook/sveltekit": "^10.3.4",
+        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "@types/bun": "^1.3.11",
+        "@types/node": "^25.5.2",
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.59.1",
+        "storybook": "^10.3.4",
+        "typescript": "^6.0.2",
+        "vite": "^8.0.5",
+        "vitest": "^4.1.2"
     }
 }

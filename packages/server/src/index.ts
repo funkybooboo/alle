@@ -132,8 +132,8 @@ server.route(
             );
         }
 
-        if (!input.date || typeof input.date !== 'string') {
-            throw validationError('Date is required (ISO 8601 format)');
+        if (input.date !== null && input.date !== undefined && typeof input.date !== 'string') {
+            throw validationError('Date must be an ISO 8601 string or null (for Someday tasks)');
         }
 
         // Create the task
@@ -197,8 +197,8 @@ server.route(
             throw validationError('Completed must be a boolean');
         }
 
-        if (input.date !== undefined && typeof input.date !== 'string') {
-            throw validationError('Date must be a string (ISO 8601 format)');
+        if (input.date !== undefined && input.date !== null && typeof input.date !== 'string') {
+            throw validationError('Date must be an ISO 8601 string or null (for Someday tasks)');
         }
 
         // Update the task

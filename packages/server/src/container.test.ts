@@ -11,12 +11,19 @@ describe('Container', () => {
         expect(container.taskRepository).toBeDefined();
         expect(container.logger).toBeDefined();
         expect(container.dateProvider).toBeDefined();
+        expect(container.someDayGroupRepository).toBeDefined();
+        expect(container.projectRepository).toBeDefined();
+        expect(container.recurringTaskRepository).toBeDefined();
+        expect(container.userPreferencesRepository).toBeDefined();
     });
 
     test('should return same instance on multiple calls (singleton)', () => {
         const config1 = container.config;
         const config2 = container.config;
-
         expect(config1).toBe(config2);
+
+        const repo1 = container.someDayGroupRepository;
+        const repo2 = container.someDayGroupRepository;
+        expect(repo1).toBe(repo2);
     });
 });

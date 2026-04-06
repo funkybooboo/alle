@@ -51,7 +51,7 @@ This release replaces the initial React client with a SvelteKit application.
 
 This release defines the full data model that powers the entire application — tasks, sub-tasks, Someday groups, projects, and recurring tasks.
 
-- [ ] **Task Model:** Define the complete `Task` type in `packages/shared` with all fields:
+- [x] **Task Model:** Define the complete `Task` type in `packages/shared` with all fields:
     - `id`, `text`, `notes` (markdown), `completed`, `date` (`null` = Someday), `createdAt`, `updatedAt`
     - `tags: string[]` — first-class tag system; priority is expressed as special tags (`#p1`, `#p2`, `#p3`)
     - `parentId: string | null` — enables nested sub-tasks
@@ -64,14 +64,14 @@ This release defines the full data model that powers the entire application — 
     - `startTime: string | null` — ISO 8601 time string (e.g. `"09:00"`); `null` = all-day task
     - `endTime: string | null` — ISO 8601 time string; `null` = all-day or open-ended
     - `reminder: { time: string; channels: ('push' | 'email')[] } | null` — stub field; implemented in v2.2.0
-- [ ] **SomeDayGroup Model:** Define `SomeDayGroup` — user-created tag-based groups in the Someday panel (`id`, `name`, `description: string | null`, `tag`, `position`, `createdAt`).
-- [ ] **Project Model:** Define `Project` (`id`, `name`, `description`, `startDate`, `dueDate`, `isActive`, `createdAt`, `completedAt`).
-- [ ] **RecurringTask Model:** Define `RecurringTask` template and `RecurringTaskStats` (`currentStreak`, `longestStreak`, `totalCompletions`, `lastCompletedDate`).
-- [ ] **UserPreferences Model:** Define `UserPreferences` entity — stores all user-configurable settings and UI state (panel widths, scroll position, active filters, theme, locale, etc.). Single-row entity for single-user mode; per-user in multi-user mode.
-- [ ] **Task CRUD:** Implement Create, Read, Update, Delete in memory. All operations tested with unit tests (written before implementation).
-- [ ] **Tag System:** Tags are plain strings stored on tasks. No separate Tag entity needed — tags are derived from task data.
-- [ ] **Someday Support:** Tasks with `date: null` are unscheduled. `someDayGroupId` assigns them to a group.
-- [ ] **Sub-task Support:** Tasks with `parentId` are sub-tasks. Completion of all sub-tasks rolls up to parent.
+- [x] **SomeDayGroup Model:** Define `SomeDayGroup` — user-created tag-based groups in the Someday panel (`id`, `name`, `description: string | null`, `tag`, `position`, `createdAt`).
+- [x] **Project Model:** Define `Project` (`id`, `name`, `description`, `startDate`, `dueDate`, `isActive`, `createdAt`, `completedAt`).
+- [x] **RecurringTask Model:** Define `RecurringTask` template and `RecurringTaskStats` (`currentStreak`, `longestStreak`, `totalCompletions`, `lastCompletedDate`).
+- [x] **UserPreferences Model:** Define `UserPreferences` entity — stores all user-configurable settings and UI state (panel widths, scroll position, active filters, theme, locale, etc.). Single-row entity for single-user mode; per-user in multi-user mode.
+- [x] **Task CRUD:** Implement Create, Read, Update, Delete in memory. All operations tested with unit tests (written before implementation).
+- [x] **Tag System:** Tags are plain strings stored on tasks. No separate Tag entity needed — tags are derived from task data.
+- [x] **Someday Support:** Tasks with `date: null` are unscheduled. `someDayGroupId` assigns them to a group.
+- [x] **Sub-task Support:** Tasks with `parentId` are sub-tasks. Completion of all sub-tasks rolls up to parent.
 
 ### Technical Notes & Considerations
 - All models live in `packages/shared` to be used by client, server, CLI, and MCP packages.

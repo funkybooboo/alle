@@ -22,8 +22,16 @@ import {
     NativeDateProvider,
 } from '@alle/shared';
 import { EnvConfigProvider } from './adapters/config/EnvConfigProvider';
+import { InMemoryProjectRepository } from './adapters/data/InMemoryProjectRepository';
+import { InMemoryRecurringTaskRepository } from './adapters/data/InMemoryRecurringTaskRepository';
+import { InMemorySomeDayGroupRepository } from './adapters/data/InMemorySomeDayGroupRepository';
 import { InMemoryTaskRepository } from './adapters/data/InMemoryTaskRepository';
+import { InMemoryUserPreferencesRepository } from './adapters/data/InMemoryUserPreferencesRepository';
+import type { ProjectRepository } from './adapters/data/ProjectRepository';
+import type { RecurringTaskRepository } from './adapters/data/RecurringTaskRepository';
+import type { SomeDayGroupRepository } from './adapters/data/SomeDayGroupRepository';
 import type { TaskRepository } from './adapters/data/TaskRepository';
+import type { UserPreferencesRepository } from './adapters/data/UserPreferencesRepository';
 import { BunHttpServer } from './adapters/http/BunHttpServer';
 import type { HttpServer } from './adapters/http/HttpServer';
 
@@ -35,6 +43,10 @@ export class Container {
     private _httpServer: HttpServer | null = null;
     private _httpClient: HttpClient | null = null;
     private _taskRepository: TaskRepository | null = null;
+    private _someDayGroupRepository: SomeDayGroupRepository | null = null;
+    private _projectRepository: ProjectRepository | null = null;
+    private _recurringTaskRepository: RecurringTaskRepository | null = null;
+    private _userPreferencesRepository: UserPreferencesRepository | null = null;
     private _logger: Logger | null = null;
     private _dateProvider: DateProvider | null = null;
 
@@ -95,6 +107,36 @@ export class Container {
             this._logger = new ConsoleLogger(logLevel);
         }
         return this._logger;
+    }
+
+    get someDayGroupRepository(): SomeDayGroupRepository {
+        if (!this._someDayGroupRepository) {
+            this._someDayGroupRepository = new InMemorySomeDayGroupRepository(this.dateProvider);
+        }
+        return this._someDayGroupRepository;
+    }
+
+    get projectRepository(): ProjectRepository {
+        if (!this._projectRepository) {
+            this._projectRepository = new InMemoryProjectRepository(this.dateProvider);
+        }
+        return this._projectRepository;
+    }
+
+    get recurringTaskRepository(): RecurringTaskRepository {
+        if (!this._recurringTaskRepository) {
+            this._recurringTaskRepository = new InMemoryRecurringTaskRepository(this.dateProvider);
+        }
+        return this._recurringTaskRepository;
+    }
+
+    get userPreferencesRepository(): UserPreferencesRepository {
+        if (!this._userPreferencesRepository) {
+            this._userPreferencesRepository = new InMemoryUserPreferencesRepository(
+                this.dateProvider,
+            );
+        }
+        return this._userPreferencesRepository;
     }
 
     /**

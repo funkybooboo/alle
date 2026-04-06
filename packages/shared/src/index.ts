@@ -35,4 +35,26 @@ export {
 } from './errors/AppError';
 export type { ApiError, ApiResponse, TaskApi } from './types/api';
 // Types
+export type { CreateProjectInput, Project, UpdateProjectInput } from './types/project';
+export type {
+    CreateRecurringTaskInput,
+    RecurringFrequency,
+    RecurringTask,
+    RecurringTaskStats,
+    UpdateRecurringTaskInput,
+} from './types/recurringTask';
+export type {
+    CreateSomeDayGroupInput,
+    SomeDayGroup,
+    UpdateSomeDayGroupInput,
+} from './types/someDayGroup';
 export type { CreateTaskInput, Task, UpdateTaskInput } from './types/task';
+export {
+    isValidTimeRange,
+    isValidTimeString,
+} from './types/task';
+export type {
+    ActiveFilters,
+    UpdateUserPreferencesInput,
+    UserPreferences,
+} from './types/userPreferences';

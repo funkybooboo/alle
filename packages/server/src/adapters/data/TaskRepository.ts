@@ -60,6 +60,27 @@ export interface TaskRepository {
      * Delete all tasks (useful for testing)
      */
     deleteAll(): Promise<void>;
+
+    /**
+     * Get tasks with no date (Someday / unscheduled)
+     */
+    findSomeday(): Promise<Task[]>;
+
+    /**
+     * Get tasks belonging to a specific Someday group
+     */
+    findBySomeDayGroup(groupId: string): Promise<Task[]>;
+
+    /**
+     * Get direct children of a parent task
+     */
+    findChildren(parentId: string): Promise<Task[]>;
+
+    /**
+     * Get tasks matching any of the given tags (OR semantics).
+     * Returns all tasks when tags array is empty.
+     */
+    findByTags(tags: string[]): Promise<Task[]>;
 }
 
 /**

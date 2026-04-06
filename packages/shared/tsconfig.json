@@ -11,6 +11,7 @@
         "noFallthroughCasesInSwitch": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
+        "types": ["bun"],
         "declaration": true,
         "declarationMap": true,
         "noImplicitOverride": true,

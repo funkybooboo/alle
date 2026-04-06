@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/svelte';
+import type { Meta, StoryObj } from '@storybook/sveltekit';
 import Page from './+page.svelte';
 
 const meta: Meta<typeof Page> = {
