@@ -1,0 +1,43 @@
+meta {
+  name: Create RecurringTask
+  type: http
+  seq: 40
+}
+
+post {
+  url: {{baseUrl}}/api/recurring-tasks
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Weekly review",
+    "frequency": "weekly",
+    "startDate": "2026-01-05"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.text: eq Weekly review
+  res.body.data.frequency: eq weekly
+}
+
+tests {
+  test("should return 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return created recurring task", function() {
+    const rt = res.getBody().data;
+    expect(rt.text).to.equal("Weekly review");
+    expect(rt.frequency).to.equal("weekly");
+    expect(rt.startDate).to.equal("2026-01-05");
+    expect(rt.id).to.be.a("string");
+  });
+
+  test("should save recurring task ID", function() {
+    bru.setVar("recurringTaskId", res.getBody().data.id);
+  });
+}

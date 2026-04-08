@@ -1,0 +1,34 @@
+meta {
+  name: Rename Tag
+  type: http
+  seq: 51
+}
+
+post {
+  url: {{baseUrl}}/api/tags/rename
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "from": "oldtag",
+    "to": "newtag"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated count", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property("updated");
+    expect(data.updated).to.be.a("number");
+  });
+}

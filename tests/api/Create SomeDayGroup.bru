@@ -1,0 +1,44 @@
+meta {
+  name: Create SomeDayGroup
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/api/someday-groups
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Personal Projects",
+    "tag": "personal",
+    "position": 0
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.name: eq Personal Projects
+  res.body.data.tag: eq personal
+}
+
+tests {
+  test("should return 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return created group", function() {
+    const group = res.getBody().data;
+    expect(group.name).to.equal("Personal Projects");
+    expect(group.tag).to.equal("personal");
+    expect(group.position).to.equal(0);
+    expect(group.id).to.be.a("string");
+    expect(group.createdAt).to.be.a("string");
+  });
+
+  test("should save group ID for later tests", function() {
+    bru.setVar("someDayGroupId", res.getBody().data.id);
+  });
+}

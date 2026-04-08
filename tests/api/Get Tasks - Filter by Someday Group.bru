@@ -1,0 +1,26 @@
+meta {
+  name: Get Tasks - Filter by Someday Group
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/tasks?someDayGroupId=nonexistent-group
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return empty array for nonexistent group", function() {
+    expect(res.getBody().data).to.be.an("array");
+    expect(res.getBody().data.length).to.equal(0);
+  });
+}

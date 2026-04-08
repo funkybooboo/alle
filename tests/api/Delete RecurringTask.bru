@@ -1,0 +1,26 @@
+meta {
+  name: Delete RecurringTask
+  type: http
+  seq: 47
+}
+
+delete {
+  url: {{baseUrl}}/api/recurring-tasks/{{recurringTaskId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.success: eq true
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return success", function() {
+    expect(res.getBody().data.success).to.equal(true);
+  });
+}

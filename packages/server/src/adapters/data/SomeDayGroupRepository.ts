@@ -9,5 +9,4 @@ export interface SomeDayGroupRepository {
     create(input: CreateSomeDayGroupInput): Promise<SomeDayGroup>;
     update(id: string, input: UpdateSomeDayGroupInput): Promise<SomeDayGroup | null>;
     delete(id: string): Promise<boolean>;
-    deleteAll(): Promise<void>;
 }

@@ -31,18 +31,21 @@ export class AppError extends Error {
     public readonly statusCode: number;
     public readonly isOperational: boolean;
     public readonly data?: unknown;
+    public readonly code: string;
 
     constructor(
         message: string,
         statusCode: number = 500,
         isOperational: boolean = true,
         data?: unknown,
+        code: string = 'INTERNAL_SERVER_ERROR',
     ) {
         super(message);
         this.name = this.constructor.name;
         this.statusCode = statusCode;
         this.isOperational = isOperational;
         this.data = data;
+        this.code = code;
 
         // Maintains proper stack trace (only available on V8)
         // We need to narrow Error to include captureStackTrace if it exists
@@ -77,7 +80,7 @@ export class AppError extends Error {
  */
 export class ValidationError extends AppError {
     constructor(message: string, data?: unknown) {
-        super(message, 400, true, data);
+        super(message, 400, true, data, 'VALIDATION_ERROR');
     }
 }
 
@@ -87,7 +90,7 @@ export class ValidationError extends AppError {
  */
 export class NotFoundError extends AppError {
     constructor(message: string = 'Resource not found', data?: unknown) {
-        super(message, 404, true, data);
+        super(message, 404, true, data, 'NOT_FOUND');
     }
 }
 
@@ -97,7 +100,7 @@ export class NotFoundError extends AppError {
  */
 export class UnauthorizedError extends AppError {
     constructor(message: string = 'Authentication required', data?: unknown) {
-        super(message, 401, true, data);
+        super(message, 401, true, data, 'UNAUTHORIZED');
     }
 }
 
@@ -107,7 +110,7 @@ export class UnauthorizedError extends AppError {
  */
 export class ForbiddenError extends AppError {
     constructor(message: string = 'Permission denied', data?: unknown) {
-        super(message, 403, true, data);
+        super(message, 403, true, data, 'FORBIDDEN');
     }
 }
 
@@ -117,7 +120,7 @@ export class ForbiddenError extends AppError {
  */
 export class ConflictError extends AppError {
     constructor(message: string, data?: unknown) {
-        super(message, 409, true, data);
+        super(message, 409, true, data, 'CONFLICT');
     }
 }
 
@@ -127,7 +130,7 @@ export class ConflictError extends AppError {
  */
 export class BadRequestError extends AppError {
     constructor(message: string, data?: unknown) {
-        super(message, 400, true, data);
+        super(message, 400, true, data, 'BAD_REQUEST');
     }
 }
 
@@ -137,6 +140,6 @@ export class BadRequestError extends AppError {
  */
 export class InternalServerError extends AppError {
     constructor(message: string = 'Internal server error', data?: unknown) {
-        super(message, 500, false, data); // Not operational - indicates a bug
+        super(message, 500, false, data, 'INTERNAL_SERVER_ERROR');
     }
 }

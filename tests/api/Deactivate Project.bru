@@ -1,0 +1,26 @@
+meta {
+  name: Deactivate Project
+  type: http
+  seq: 37
+}
+
+post {
+  url: {{baseUrl}}/api/projects/{{projectId}}/deactivate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.isActive: eq false
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return deactivated project", function() {
+    expect(res.getBody().data.isActive).to.equal(false);
+  });
+}

@@ -5,6 +5,7 @@ import type {
     RecurringTaskStats,
     UpdateRecurringTaskInput,
 } from '@alle/shared';
+import { RECURRING_TASK_DEFAULTS } from './defaults';
 import type { RecurringTaskRepository } from './RecurringTaskRepository';
 
 export class InMemoryRecurringTaskRepository implements RecurringTaskRepository {
@@ -31,15 +32,15 @@ export class InMemoryRecurringTaskRepository implements RecurringTaskRepository 
             id,
             text: input.text,
             notes: input.notes ?? null,
-            tags: input.tags ?? [],
+            tags: input.tags ?? [...RECURRING_TASK_DEFAULTS.tags],
             frequency: input.frequency,
-            interval: input.interval ?? 1,
+            interval: input.interval ?? RECURRING_TASK_DEFAULTS.interval,
             dayOfWeek: input.dayOfWeek ?? null,
             dayOfMonth: input.dayOfMonth ?? null,
             startDate: input.startDate,
             endDate: input.endDate ?? null,
             projectId: input.projectId ?? null,
-            rolloverEnabled: input.rolloverEnabled ?? true,
+            rolloverEnabled: input.rolloverEnabled ?? RECURRING_TASK_DEFAULTS.rolloverEnabled,
             createdAt: now,
             updatedAt: now,
         };

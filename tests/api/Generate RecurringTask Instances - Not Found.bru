@@ -1,0 +1,33 @@
+meta {
+  name: Generate RecurringTask Instances - Not Found
+  type: http
+  seq: 71
+}
+
+post {
+  url: {{baseUrl}}/api/recurring-tasks/nonexistent-id/generate
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "startDate": "2026-01-01",
+    "endDate": "2026-01-31"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("should return 404 Not Found", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("should return NOT_FOUND code", function() {
+    expect(res.getBody().error).to.be.a("string");
+    expect(res.getBody().code).to.equal("NOT_FOUND");
+  });
+}

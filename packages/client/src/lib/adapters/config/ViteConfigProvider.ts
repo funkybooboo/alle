@@ -39,7 +39,7 @@ export class ViteConfigProvider implements ConfigProvider {
         const parsed = Number(value);
 
         if (Number.isNaN(parsed)) {
-            throw new Error(`Configuration value for ${key} is not a valid number: ${value}`);
+            throw new ConfigError(key);
         }
 
         return parsed;
@@ -54,7 +54,7 @@ export class ViteConfigProvider implements ConfigProvider {
         if (value === 'true' || value === '1') return true;
         if (value === 'false' || value === '0') return false;
 
-        throw new Error(`Configuration value for ${key} is not a valid boolean: ${value}`);
+        throw new ConfigError(key);
     }
 
     /**

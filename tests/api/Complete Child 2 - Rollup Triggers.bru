@@ -1,0 +1,37 @@
+meta {
+  name: Complete Child 2 - Rollup Triggers
+  type: http
+  seq: 85
+}
+
+put {
+  url: {{baseUrl}}{{apiPrefix}}/tasks/{{rollupChild2Id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "completed": true
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.completed: eq true
+}
+
+tests {
+  test("should complete child 2", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().data.completed).to.equal(true);
+  });
+
+  test("parent SHOULD now be auto-completed (all children done)", async function() {
+    const parentRes = await bru.sendRequest({
+      url: bru.getEnvVar("baseUrl") + bru.getEnvVar("apiPrefix") + "/tasks/" + bru.getVar("rollupParentId"),
+      method: "GET",
+    });
+    expect(parentRes.getBody().data.completed).to.equal(true);
+  });
+}

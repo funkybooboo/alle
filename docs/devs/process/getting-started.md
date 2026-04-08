@@ -4,13 +4,20 @@ Welcome to Alle! This guide will walk you through setting up your development en
 
 ## Prerequisites
 
-Before you begin, make sure you have the latest version of [Bun](https://bun.sh) installed.
+Before you begin, make sure you have the following installed:
+
+- [mise](https://mise.jdx.dev) — the project's task runner and tool version manager
+- [Bun](https://bun.sh) — managed automatically by mise
 
 ```bash
-# Example of installing Bun on macOS with Homebrew
-brew tap oven-sh/bun
-brew install bun
+# Install mise (macOS with Homebrew)
+brew install mise
+
+# Activate mise in your shell (add to ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish)
+mise activate
 ```
+
+Once mise is installed, it will automatically use the correct Bun version defined in `mise.toml`.
 
 ## Installation
 
@@ -23,10 +30,10 @@ brew install bun
 
 2.  **Install dependencies:**
 
-    This project uses Bun for package management. The `bun install` command will install all dependencies for the entire monorepo.
+    This project uses Bun for package management. Run via mise to ensure the correct Bun version is used:
 
     ```bash
-    bun install
+    mise run install
     ```
 
 ## Configuration
@@ -72,22 +79,22 @@ You can run the client and server together or separately.
 
 ### Run Everything Together
 
-The `dev` script is the easiest way to get started. It starts both the client and server in parallel and automatically handles port conflicts.
+The `dev` task is the easiest way to get started. It starts both the client and server in parallel.
 
 ```bash
-bun run dev
+mise run dev
 ```
 
 You should see output from both the server (in blue) and the client (in green).
 
 ### Run Separately
 
-If you prefer to run the client and server in separate terminals, you can use the following commands:
+If you prefer to run the client and server in separate terminals:
 
 *   **Start the server:**
 
     ```bash
-    bun run server
+    mise run server
     ```
 
     The server will be running at `http://localhost:4000`.
@@ -95,7 +102,7 @@ If you prefer to run the client and server in separate terminals, you can use th
 *   **Start the client:**
 
     ```bash
-    bun run client
+    mise run client
     ```
 
     The client will be running at `http://localhost:3000`.
@@ -106,15 +113,47 @@ If you prefer to run the client and server in separate terminals, you can use th
 *   **Server**: `http://localhost:4000`
 *   **Health Check**: `http://localhost:4000/api/health`
 
-## Available Scripts
+## Available Tasks
 
-Here's a list of the most common scripts you'll use:
+All tasks are run via `mise run <task>`. Here's the full list:
 
-*   `bun run dev`: Start both client and server.
-*   `bun run client`: Start the client development server.
-*   `bun run server`: Start the server development server.
-*   `bun run kill-ports`: A utility script to kill any processes running on ports 3000 and 4000.
-*   `bun run validate`: Run all code quality checks (formatting, linting, and type-checking).
+### Dev servers
+| Task | Description |
+|------|-------------|
+| `mise run dev` | Start client and server in parallel |
+| `mise run client` | Start client dev server (port 3000) |
+| `mise run server` | Start server dev server (port 4000) |
+| `mise run storybook` | Start Storybook (port 6006) |
+
+### Code quality
+| Task | Description |
+|------|-------------|
+| `mise run format` | Format all files with Biome (auto-fix) |
+| `mise run lint` | Lint all files with Biome (auto-fix) |
+| `mise run biome-check` | Check lint + format without auto-fix (CI mode) |
+| `mise run type-check` | Type-check all packages |
+
+### Testing
+| Task | Description |
+|------|-------------|
+| `mise run test` | Run all unit tests |
+| `mise run test-watch` | Run unit tests in watch mode |
+| `mise run test-coverage` | Run unit tests with coverage |
+| `mise run test-e2e` | Run Playwright E2E tests |
+| `mise run test-api` | Run Bruno API tests against local server |
+| `mise run test-all` | Run API and E2E tests in parallel |
+
+### Build
+| Task | Description |
+|------|-------------|
+| `mise run build` | Build all packages |
+| `mise run build-storybook` | Build Storybook |
+
+### CI
+| Task | Description |
+|------|-------------|
+| `mise run ci` | Full CI pipeline locally (mirrors GitHub Actions) |
+| `mise run security` | Run security audit |
 
 ---
 

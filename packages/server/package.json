@@ -4,6 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "build": "bun build ./src/index.ts --outdir ./dist --target bun",
         "dev": "bun --watch src/index.ts",
         "start": "bun src/index.ts",
         "type-check": "tsc --noEmit",
@@ -13,9 +14,13 @@
     },
     "dependencies": {
         "@alle/shared": "workspace:*",
-        "@types/bun": "latest"
+        "@asteasolutions/zod-to-openapi": "^8.5.0",
+        "@types/bun": "latest",
+        "js-yaml": "^4.1.1",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
         "typescript": "^5.9.3"
     }
 }

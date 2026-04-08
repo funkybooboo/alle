@@ -1,0 +1,26 @@
+meta {
+  name: Get Project - Not Found
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{baseUrl}}/api/projects/nonexistent-id
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("should return 404 Not Found", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("should return error", function() {
+    expect(res.getBody().error).to.be.a("string");
+    expect(res.getBody().code).to.equal("NOT_FOUND");
+  });
+}

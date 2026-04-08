@@ -1,0 +1,32 @@
+meta {
+  name: Get Tasks - Someday
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/tasks?someday=true
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array", function() {
+    expect(res.getBody().data).to.be.an("array");
+  });
+
+  test("all returned tasks should have null date", function() {
+    const tasks = res.getBody().data;
+    tasks.forEach(function(task) {
+      expect(task.date).to.equal(null);
+    });
+  });
+}

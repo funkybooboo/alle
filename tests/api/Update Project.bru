@@ -1,0 +1,34 @@
+meta {
+  name: Update Project
+  type: http
+  seq: 36
+}
+
+put {
+  url: {{baseUrl}}/api/projects/{{projectId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Website Redesign v2"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.name: eq Website Redesign v2
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated project", function() {
+    const project = res.getBody().data;
+    expect(project.name).to.equal("Website Redesign v2");
+    expect(project.id).to.equal(bru.getVar("projectId"));
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Update UserPreferences
+  type: http
+  seq: 61
+}
+
+patch {
+  url: {{baseUrl}}/api/preferences
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "theme": "dark",
+    "showEmptyDays": false
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.theme: eq dark
+  res.body.data.showEmptyDays: eq false
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated preferences", function() {
+    const prefs = res.getBody().data;
+    expect(prefs.theme).to.equal("dark");
+    expect(prefs.showEmptyDays).to.equal(false);
+  });
+}

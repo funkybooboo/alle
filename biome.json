@@ -6,7 +6,8 @@
         "rules": {
             "recommended": true,
             "complexity": {
-                "noForEach": "off"
+                "noForEach": "off",
+                "useLiteralKeys": "off"
             },
             "style": {
                 "useImportType": "error",

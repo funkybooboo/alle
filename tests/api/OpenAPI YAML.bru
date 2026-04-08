@@ -1,0 +1,31 @@
+meta {
+  name: OpenAPI YAML
+  type: http
+  seq: 90
+}
+
+get {
+  url: {{baseUrl}}/openapi.yaml
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should contain openapi version", function() {
+    const body = res.getBody();
+    expect(body).to.include("openapi: 3.1.0");
+  });
+
+  test("should contain API info", function() {
+    const body = res.getBody();
+    expect(body).to.include("Alle Task API");
+  });
+}

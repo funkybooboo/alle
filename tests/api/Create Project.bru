@@ -1,0 +1,42 @@
+meta {
+  name: Create Project
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{baseUrl}}/api/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Website Redesign",
+    "description": "Redesign the company website"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.name: eq Website Redesign
+}
+
+tests {
+  test("should return 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return created project", function() {
+    const project = res.getBody().data;
+    expect(project.name).to.equal("Website Redesign");
+    expect(project.description).to.equal("Redesign the company website");
+    expect(project.isActive).to.equal(true);
+    expect(project.id).to.be.a("string");
+    expect(project.createdAt).to.be.a("string");
+  });
+
+  test("should save project ID for later tests", function() {
+    bru.setVar("projectId", res.getBody().data.id);
+  });
+}

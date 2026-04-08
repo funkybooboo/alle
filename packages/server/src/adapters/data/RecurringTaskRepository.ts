@@ -14,7 +14,6 @@ export interface RecurringTaskRepository {
     create(input: CreateRecurringTaskInput): Promise<RecurringTask>;
     update(id: string, input: UpdateRecurringTaskInput): Promise<RecurringTask | null>;
     delete(id: string): Promise<boolean>;
-    deleteAll(): Promise<void>;
     findStats(recurringTaskId: string): Promise<RecurringTaskStats | null>;
     upsertStats(stats: RecurringTaskStats): Promise<void>;
 }

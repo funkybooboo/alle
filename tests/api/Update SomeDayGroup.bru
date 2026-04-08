@@ -1,0 +1,34 @@
+meta {
+  name: Update SomeDayGroup
+  type: http
+  seq: 25
+}
+
+put {
+  url: {{baseUrl}}/api/someday-groups/{{someDayGroupId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Personal Projects Updated"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.name: eq Personal Projects Updated
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated group", function() {
+    const group = res.getBody().data;
+    expect(group.name).to.equal("Personal Projects Updated");
+    expect(group.id).to.equal(bru.getVar("someDayGroupId"));
+  });
+}

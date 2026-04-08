@@ -57,11 +57,6 @@ export interface TaskRepository {
     delete(id: string): Promise<boolean>;
 
     /**
-     * Delete all tasks (useful for testing)
-     */
-    deleteAll(): Promise<void>;
-
-    /**
      * Get tasks with no date (Someday / unscheduled)
      */
     findSomeday(): Promise<Task[]>;

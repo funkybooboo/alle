@@ -23,4 +23,16 @@ tests {
   test("should return status ok", function() {
     expect(res.getBody().data.status).to.equal("ok");
   });
+
+  test("should have X-Content-Type-Options header", function() {
+    expect(res.getHeader("x-content-type-options")).to.equal("nosniff");
+  });
+
+  test("should have X-Frame-Options header", function() {
+    expect(res.getHeader("x-frame-options")).to.equal("DENY");
+  });
+
+  test("should have Content-Security-Policy header", function() {
+    expect(res.getHeader("content-security-policy")).to.be.a("string");
+  });
 }

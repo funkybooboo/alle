@@ -1,0 +1,27 @@
+meta {
+  name: Get SomeDayGroup by ID
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{baseUrl}}/api/someday-groups/{{someDayGroupId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the group", function() {
+    const group = res.getBody().data;
+    expect(group.id).to.equal(bru.getVar("someDayGroupId"));
+    expect(group.name).to.equal("Personal Projects");
+  });
+}

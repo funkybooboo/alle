@@ -1,0 +1,25 @@
+meta {
+  name: Get All Projects
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{baseUrl}}/api/projects
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array", function() {
+    expect(res.getBody().data).to.be.an("array");
+  });
+}

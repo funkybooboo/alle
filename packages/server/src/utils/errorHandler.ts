@@ -5,49 +5,58 @@
  */
 
 import type { Logger } from '@alle/shared';
-import { type ApiError, AppError, NotFoundError, ValidationError } from '@alle/shared';
+import { AppError, NotFoundError, ValidationError } from '@alle/shared';
 import type { HttpResponse } from '../adapters/http/types';
+
+/**
+ * Standard error response body shape
+ */
+export interface ErrorResponseBody {
+    error: string;
+    code: string;
+    details?: unknown;
+}
 
 /**
  * Convert an error to an HTTP response
  * Handles both AppError instances and unexpected errors
  */
 export function errorToResponse(error: unknown, logger?: Logger): HttpResponse {
-    // Handle AppError instances
     if (error instanceof AppError) {
-        // Log operational errors as warnings
         if (error.isOperational && logger) {
             logger.warn(error.message, { statusCode: error.statusCode, data: error.data });
-        }
-        // Log non-operational errors (bugs) as errors
-        else if (!error.isOperational && logger) {
+        } else if (!error.isOperational && logger) {
             logger.error(error.message, error, { statusCode: error.statusCode });
         }
 
-        const apiError: ApiError = {
-            message: error.message,
+        const body: ErrorResponseBody = {
+            error: error.message,
+            code: error.code,
         };
+        if (error.data !== undefined) {
+            body.details = error.data;
+        }
 
         return {
             status: error.statusCode,
             headers: {},
-            body: { error: apiError },
+            body: body,
         };
     }
 
-    // Handle unexpected errors (bugs)
     if (logger) {
         logger.error('Unexpected error', error);
     }
 
-    const apiError: ApiError = {
-        message: 'Internal server error',
+    const body: ErrorResponseBody = {
+        error: 'Internal server error',
+        code: 'INTERNAL_SERVER_ERROR',
     };
 
     return {
         status: 500,
         headers: {},
-        body: { error: apiError },
+        body: body,
     };
 }
 

@@ -99,25 +99,25 @@ This release defines the full data model that powers the entire application — 
 
 This release creates the REST API for all entities. The API is designed to be clean, well-documented, and accessible from both browsers and the command line (curl-friendly).
 
-- [ ] **Schema-first OpenAPI:** Define the OpenAPI 3.1 spec first in `packages/server/openapi.yaml`. Generate Zod validators from the spec. Implement endpoints against the spec. The spec is the source of truth.
-- [ ] **Task API:** Full CRUD endpoints for tasks, including filtering by date, tag, completion status, and Someday group.
-- [ ] **SomeDayGroup API:** CRUD endpoints for managing Someday groups.
-- [ ] **Project API:** CRUD endpoints for projects, plus activate/deactivate and task distribution.
-- [ ] **RecurringTask API:** CRUD for recurring task templates; endpoint to generate instances for a date range.
-- [ ] **Tag API:** Derive tags from task data; endpoint to list all tags, rename, merge.
-- [ ] **UserPreferences API:** GET and PATCH endpoints for reading and updating user preferences.
-- [ ] **Content negotiation (curl-friendly):** All endpoints inspect the `Accept` header:
+- [x] **Schema-first OpenAPI:** Zod schemas in `packages/server/src/openapi/schemas/` are the single source of truth. The OpenAPI 3.1 spec is generated at startup via `@asteasolutions/zod-to-openapi` and served at `/openapi.yaml` and `/openapi.json`. All request validation in route handlers uses the same schemas — no duplication.
+- [x] **Task API:** Full CRUD endpoints for tasks, including filtering by date, tag, completion status, and Someday group.
+- [x] **SomeDayGroup API:** CRUD endpoints for managing Someday groups.
+- [x] **Project API:** CRUD endpoints for projects, plus activate/deactivate.
+- [x] **RecurringTask API:** CRUD for recurring task templates; endpoint to generate instances for a date range.
+- [x] **Tag API:** Derive tags from task data; endpoint to list all tags, rename, merge.
+- [x] **UserPreferences API:** GET and PATCH endpoints for reading and updating user preferences.
+- [x] **Content negotiation (curl-friendly):** All endpoints inspect the `Accept` header:
     - `application/json` (or no header from a browser) → JSON response (default)
     - `text/plain` or absent `Accept` (curl default) → human-readable plain text response
     - Example: `GET /tasks/today` with `Accept: text/plain` returns a plain-text task list
-- [ ] **Security headers:** All responses include:
+- [x] **Security headers:** All responses include:
     - `X-Content-Type-Options: nosniff`
     - `X-Frame-Options: DENY`
     - `Content-Security-Policy` (strict baseline; tightened in v2.4.0)
     - `Strict-Transport-Security` (HSTS; enforced in production)
-- [ ] **Rate limiting:** Simple token-bucket rate limiter on all endpoints from day one. Configurable via environment variable.
-- [ ] **Input validation:** Zod validators on all request bodies and query params, generated from the OpenAPI spec.
-- [ ] **Export/Import adapter interfaces:** Define `ExportAdapter<T>` and `ImportAdapter<T>` interfaces in `packages/shared`. Implemented in v0.8.0.
+- [x] **Rate limiting:** Simple token-bucket rate limiter on all endpoints from day one. Configurable via environment variable.
+- [x] **Input validation:** Zod validators on all request bodies and query params, generated from the OpenAPI spec.
+- [x] **Export/Import adapter interfaces:** Define `ExportAdapter<T>` and `ImportAdapter<T>` interfaces in `packages/shared`. Implemented in v0.8.0.
 
 ### Technical Notes & Considerations
 - RESTful design throughout. Consistent error response shape: `{ error: string; code: string; details?: unknown }`.

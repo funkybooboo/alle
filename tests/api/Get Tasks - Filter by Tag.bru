@@ -1,0 +1,32 @@
+meta {
+  name: Get Tasks - Filter by Tag
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}{{apiPrefix}}/tasks?tag=work
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array", function() {
+    expect(res.getBody().data).to.be.an("array");
+  });
+
+  test("all returned tasks should have the work tag", function() {
+    const tasks = res.getBody().data;
+    tasks.forEach(function(task) {
+      expect(task.tags).to.include("work");
+    });
+  });
+}

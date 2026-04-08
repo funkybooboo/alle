@@ -89,7 +89,7 @@ interface SomeDayGroup {
   id: string
   name: string
   description: string | null
-  tag: string | null
+  tag: string                    // required — used for cross-app filtering
   position: number
   createdAt: string
 }
@@ -105,13 +105,23 @@ interface Project {
   completedAt: string | null
 }
 
+type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
 interface RecurringTask {
   id: string
   text: string
-  recurrenceRule: string    // rrule.js format
+  notes: string | null
+  tags: string[]
+  frequency: RecurringFrequency
+  interval: number               // e.g. every 2 weeks → frequency: 'weekly', interval: 2
+  dayOfWeek: number | null       // 0–6 for weekly recurrence
+  dayOfMonth: number | null      // 1–31 for monthly recurrence
   startDate: string
   endDate: string | null
+  projectId: string | null
+  rolloverEnabled: boolean
   createdAt: string
+  updatedAt: string
 }
 
 interface RecurringTaskStats {
@@ -122,25 +132,23 @@ interface RecurringTaskStats {
   lastCompletedDate: string | null
 }
 
+interface ActiveFilters {
+  tags: string[]
+  projectId: string | null
+  priority: string | null
+  showCompleted: boolean
+}
+
+// Single-row entity — id is always 'default' in single-user mode
 interface UserPreferences {
-  id: string
-  userId: string | null            // null in single-user mode
+  id: 'default'
   theme: 'light' | 'dark' | 'system'
-  accentScheme: string | null
-  fontSize: 'small' | 'medium' | 'large'
-  taskDensity: 'compact' | 'comfortable'
-  completionAnimation: 'fade' | 'gray' | 'hide'
-  deleteConfirmation: boolean
-  rolloverEnabled: boolean
-  rolloverTime: 'midnight' | '9am' | 'manual'
-  showEmptyDays: boolean
-  persistFilters: boolean
-  someDayDefaultOpen: boolean
   locale: string                   // e.g. 'en', 'fr', 'es'
-  someDayPanelWidth: number | null
-  lastScrollDate: string | null
-  activeFilters: string[]
-  keyboardOverrides: Record<string, string>
+  someDayPanelWidth: number
+  someDayPanelCollapsed: boolean
+  rolloverEnabled: boolean
+  showEmptyDays: boolean
+  activeFilters: ActiveFilters
   updatedAt: string
 }
 ```
@@ -150,6 +158,8 @@ interface UserPreferences {
 ## Extensibility: Interface Inventory
 
 Every major subsystem has an interface in `packages/shared`. Adapters implement the interface. New implementations can be swapped in without changing application code.
+
+The table below includes both current and planned adapters. Current adapters are in-memory; future phases add SQLite, PostgreSQL, and more.
 
 | Interface | Adapters |
 |-----------|----------|

@@ -1,0 +1,25 @@
+meta {
+  name: Get All RecurringTasks
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{baseUrl}}/api/recurring-tasks
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array", function() {
+    expect(res.getBody().data).to.be.an("array");
+  });
+}

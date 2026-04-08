@@ -1,0 +1,32 @@
+meta {
+  name: OpenAPI JSON
+  type: http
+  seq: 91
+}
+
+get {
+  url: {{baseUrl}}/openapi.json
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should be valid JSON with openapi field", function() {
+    const body = res.getBody();
+    expect(body.openapi).to.equal("3.1.0");
+  });
+
+  test("should contain info object", function() {
+    const body = res.getBody();
+    expect(body.info).to.be.an("object");
+    expect(body.info.title).to.equal("Alle Task API");
+  });
+}

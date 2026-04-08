@@ -1,0 +1,27 @@
+meta {
+  name: Get RecurringTask by ID
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{baseUrl}}/api/recurring-tasks/{{recurringTaskId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the recurring task", function() {
+    const rt = res.getBody().data;
+    expect(rt.id).to.equal(bru.getVar("recurringTaskId"));
+    expect(rt.text).to.equal("Weekly review");
+  });
+}

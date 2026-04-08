@@ -1,0 +1,30 @@
+meta {
+  name: Get UserPreferences
+  type: http
+  seq: 60
+}
+
+get {
+  url: {{baseUrl}}/api/preferences
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return preferences object", function() {
+    const prefs = res.getBody().data;
+    expect(prefs).to.be.an("object");
+    expect(prefs.id).to.equal("default");
+    expect(prefs.theme).to.be.a("string");
+    expect(prefs.locale).to.be.a("string");
+    expect(prefs.activeFilters).to.be.an("object");
+  });
+}

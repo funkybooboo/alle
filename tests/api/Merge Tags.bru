@@ -1,0 +1,34 @@
+meta {
+  name: Merge Tags
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{baseUrl}}/api/tags/merge
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "sources": ["tag1", "tag2"],
+    "target": "merged-tag"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated count", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property("updated");
+    expect(data.updated).to.be.a("number");
+  });
+}

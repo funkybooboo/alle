@@ -18,18 +18,18 @@ Alle is a **monorepo** built with a modern tech stack that's designed for a grea
 
 ## ⚡️ Getting Started
 
-Ready to jump in? Here's how to get Alle up and running on your local machine.
+Ready to jump in? This project uses [mise](https://mise.jdx.dev) as its task runner and tool version manager. Install it first, then:
 
 1.  **Install dependencies**:
 
     ```bash
-    bun install
+    mise run install
     ```
 
 2.  **Run the development servers**:
 
     ```bash
-    bun run dev
+    mise run dev
     ```
 
 That's it! The client will be running at `http://localhost:3000` and the server at `http://localhost:4000`.

@@ -1,0 +1,30 @@
+meta {
+  name: Create Child Task 2 for Rollup
+  type: http
+  seq: 83
+}
+
+post {
+  url: {{baseUrl}}{{apiPrefix}}/tasks
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Child task 2",
+    "date": "2026-01-20",
+    "parentId": "{{rollupParentId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("should create child task 2", function() {
+    expect(res.getStatus()).to.equal(201);
+    bru.setVar("rollupChild2Id", res.getBody().data.id);
+  });
+}

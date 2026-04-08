@@ -1,0 +1,30 @@
+meta {
+  name: Create Temp RecurringTask
+  type: http
+  seq: 79
+}
+
+post {
+  url: {{baseUrl}}/api/recurring-tasks
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Temp RT for validation test",
+    "frequency": "daily",
+    "startDate": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("should create recurring task and store temp ID", function() {
+    expect(res.getStatus()).to.equal(201);
+    bru.setVar("tempRtId", res.getBody().data.id);
+  });
+}

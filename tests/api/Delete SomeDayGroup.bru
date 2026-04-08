@@ -1,0 +1,26 @@
+meta {
+  name: Delete SomeDayGroup
+  type: http
+  seq: 26
+}
+
+delete {
+  url: {{baseUrl}}/api/someday-groups/{{someDayGroupId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.success: eq true
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return success", function() {
+    expect(res.getBody().data.success).to.equal(true);
+  });
+}

@@ -9,15 +9,24 @@
  * - Type-safe request/response handling
  */
 
+import { pathToRegex } from '../../utils/pathUtils';
 import type { HttpServer, HttpServerConfig } from './HttpServer';
-import type { HttpRequest, HttpResponse, RouteHandler } from './types';
+import type { Guard, HttpRequest, HttpResponse, Middleware, RouteHandler } from './types';
+
+interface RouteEntry {
+    method: string;
+    regex: RegExp;
+    handler: RouteHandler;
+}
 
 /**
  * HTTP server implementation using Bun.serve()
  */
 export class BunHttpServer implements HttpServer {
     private server: ReturnType<typeof Bun.serve> | null = null;
-    private routes: Map<string, RouteHandler> = new Map();
+    private routes: RouteEntry[] = [];
+    private guards: Guard[] = [];
+    private middlewares: Middleware[] = [];
     private config: HttpServerConfig;
 
     /**
@@ -36,12 +45,27 @@ export class BunHttpServer implements HttpServer {
     }
 
     /**
-     * Register a route handler
-     * Routes are stored in a Map with key format: "METHOD:path"
+     * Register a route handler. The path pattern is compiled to a RegExp at
+     * registration time so matching is O(n) but with no per-request regex compilation.
      */
     route(method: string, path: string, handler: RouteHandler): void {
-        const key = `${method}:${path}`;
-        this.routes.set(key, handler);
+        this.routes.push({ method, regex: pathToRegex(path), handler });
+    }
+
+    /**
+     * Register a guard that runs before the route handler.
+     * If the guard returns a response, the request is short-circuited.
+     */
+    addGuard(guard: Guard): void {
+        this.guards.push(guard);
+    }
+
+    /**
+     * Register a middleware function that runs after the route handler.
+     * Middlewares run in registration order.
+     */
+    use(middleware: Middleware): void {
+        this.middlewares.push(middleware);
     }
 
     /**
@@ -53,7 +77,6 @@ export class BunHttpServer implements HttpServer {
             port,
             fetch: async (req: Request) => {
                 const url = new URL(req.url);
-                const key = `${req.method}:${url.pathname}`;
 
                 // Handle CORS preflight requests
                 if (req.method === 'OPTIONS') {
@@ -64,38 +87,12 @@ export class BunHttpServer implements HttpServer {
                     return new Response(null, responseInit);
                 }
 
-                // Find matching route (exact match first, then pattern match)
-                let handler = this.routes.get(key);
+                // Find matching route — first registration wins
+                const entry = this.routes.find(
+                    r => r.method === req.method && r.regex.test(url.pathname),
+                );
 
-                // If no exact match, try pattern matching for routes with path parameters
-                if (!handler) {
-                    for (const [routeKey, routeHandler] of this.routes.entries()) {
-                        // Check if this is a parameterized route (METHOD:path format where path contains :param)
-                        const colonIndex = routeKey.indexOf(':');
-                        if (colonIndex > 0) {
-                            const routeMethod = routeKey.substring(0, colonIndex);
-                            const routePath = routeKey.substring(colonIndex + 1);
-
-                            // Only check routes with matching method
-                            if (routeMethod !== req.method) continue;
-
-                            // Check if route path contains parameter syntax (e.g., :id)
-                            if (routePath.includes(':')) {
-                                // Convert route pattern to regex
-                                // e.g., "/api/tasks/:id" -> /^\/api\/tasks\/([^/]+)$/
-                                const pattern = routePath.replace(/:[^/]+/g, '([^/]+)');
-                                const regex = new RegExp(`^${pattern}$`);
-
-                                if (regex.test(url.pathname)) {
-                                    handler = routeHandler;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (!handler) {
+                if (!entry) {
                     // Build response init, only including headers if they exist (exactOptionalPropertyTypes compliance)
                     const responseInit: ResponseInit =
                         this.config.corsHeaders !== undefined
@@ -113,8 +110,21 @@ export class BunHttpServer implements HttpServer {
                     text: () => req.text(),
                 };
 
+                // Run guards (before handler) — first match short-circuits
+                for (const guard of this.guards) {
+                    const guardResponse = guard(httpReq);
+                    if (guardResponse !== null) {
+                        return this.toNativeResponse(guardResponse);
+                    }
+                }
+
                 // Execute handler
-                const response = await handler(httpReq);
+                let response = await entry.handler(httpReq);
+
+                // Apply middlewares in registration order
+                for (const middleware of this.middlewares) {
+                    response = middleware(httpReq, response);
+                }
 
                 // Convert our response to Bun Response
                 return this.toNativeResponse(response);
@@ -146,8 +156,8 @@ export class BunHttpServer implements HttpServer {
     private toNativeResponse(response: HttpResponse): Response {
         const headers = { ...this.config.corsHeaders, ...response.headers };
 
-        // If body is an object, send as JSON
-        if (typeof response.body === 'object' && response.body !== null) {
+        // If body is an object or array, send as JSON
+        if (typeof response.body === 'object') {
             return Response.json(response.body, {
                 status: response.status,
                 headers,

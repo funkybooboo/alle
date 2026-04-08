@@ -1,0 +1,29 @@
+meta {
+  name: Root
+  type: http
+  seq: 78
+}
+
+get {
+  url: {{baseUrl}}/
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should have X-Content-Type-Options header", function() {
+    expect(res.getHeader("x-content-type-options")).to.equal("nosniff");
+  });
+
+  test("should have X-Frame-Options header", function() {
+    expect(res.getHeader("x-frame-options")).to.equal("DENY");
+  });
+}

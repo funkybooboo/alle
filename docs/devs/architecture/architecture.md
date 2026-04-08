@@ -40,6 +40,14 @@ A cornerstone of our architecture is the **adapter pattern**. This pattern allow
     *   **`BunHttpServer`** (server): An implementation using Bun's native HTTP server.
 *   **`TaskRepository`**: Abstracts data persistence for tasks.
     *   **`InMemoryTaskRepository`** (server): An in-memory implementation for development and testing.
+*   **`ProjectRepository`**: Abstracts data persistence for projects.
+    *   **`InMemoryProjectRepository`** (server): An in-memory implementation.
+*   **`RecurringTaskRepository`**: Abstracts data persistence for recurring task templates and stats.
+    *   **`InMemoryRecurringTaskRepository`** (server): An in-memory implementation.
+*   **`SomeDayGroupRepository`**: Abstracts data persistence for Someday panel groups.
+    *   **`InMemorySomeDayGroupRepository`** (server): An in-memory implementation.
+*   **`UserPreferencesRepository`**: Abstracts data persistence for user settings.
+    *   **`InMemoryUserPreferencesRepository`** (server): An in-memory singleton implementation.
 
 ### Benefits of the Adapter Pattern
 

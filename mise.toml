@@ -6,9 +6,12 @@ bun = "1.3.10"
 PORT = "4000"
 CORS_ORIGIN = "*"
 NODE_ENV = "development"
+RATE_LIMIT_RPM = "600"
 # Client
 VITE_API_URL = "http://localhost:4000"
 VITE_PORT = "3000"
+
+# -- Dev servers ---------------------------------------------------------------
 
 [tasks.dev]
 description = "Start client and server in parallel"
@@ -26,29 +29,39 @@ run = "bun run server"
 description = "Start Storybook (port 6006)"
 run = "bun run storybook"
 
-[tasks.build]
-description = "Build the client"
-run = "bun --cwd packages/client build"
+# -- Dependencies --------------------------------------------------------------
+
+[tasks.install]
+description = "Install all dependencies"
+run = "bun install"
+
+[tasks.install-ci]
+description = "Install all dependencies (frozen lockfile)"
+run = "bun install --frozen-lockfile"
+
+[tasks.install-playwright]
+description = "Install Playwright browsers"
+run = "bunx playwright install"
+
+# -- Code quality --------------------------------------------------------------
 
 [tasks.format]
-description = "Format all files with Biome"
+description = "Format all files with Biome (auto-fix)"
 run = "bun run format"
 
 [tasks.lint]
-description = "Lint and auto-fix all files with Biome"
+description = "Lint all files with Biome (auto-fix)"
 run = "bun run lint"
 
-[tasks.check]
-description = "Format and lint all files with Biome"
-run = "bun run check"
+[tasks.biome-check]
+description = "Check lint and format with Biome (no auto-fix, CI mode)"
+run = "bun run check:ci"
 
 [tasks.type-check]
 description = "Type-check all packages"
 run = "bun run type-check"
 
-[tasks.validate]
-description = "Run Biome CI and type-check (used in pre-commit)"
-run = "bun run validate"
+# -- Tests ---------------------------------------------------------------------
 
 [tasks.test]
 description = "Run all unit tests"
@@ -63,7 +76,7 @@ description = "Run unit tests with coverage"
 run = "bun run test:coverage"
 
 [tasks.test-e2e]
-description = "Run Playwright E2E tests (requires dev server running)"
+description = "Run Playwright E2E tests"
 run = "bun run test:e2e"
 
 [tasks.test-api]
@@ -71,44 +84,49 @@ description = "Run Bruno API tests against local server"
 run = "bun run test:api"
 
 [tasks.test-all]
-description = "Run API and E2E tests in parallel"
+description = "Run API and E2E tests in parallel (requires servers running)"
 run = "bun run test:all"
 
-[tasks.install]
-description = "Install all dependencies"
-run = "bun install"
+# -- Build ---------------------------------------------------------------------
 
-[tasks.ci]
-description = "Run all CI checks locally (quality, unit tests, build, security)"
+[tasks.build]
+description = "Build all packages (shared + server via bun build, client via vite)"
 run = """
-bun install --frozen-lockfile
-bun run lint:check
-bun run format:check
-bun run type-check
-bun run test:unit
-bun run --cwd packages/client build
-bun audit || echo "warning: security vulnerabilities found - review required"
+cd packages/shared && bun run build
+cd ../server && bun run build
+cd ../client && bun run build
 """
 
-[tasks.ci-full]
-description = "Run all CI checks including E2E and API tests (requires servers)"
+[tasks.build-storybook]
+description = "Build Storybook"
+dir = "packages/client"
+run = "bun run build-storybook"
+
+# -- CI ------------------------------------------------------------------------
+
+[tasks.security]
+description = "Run security audit"
+run = "bun audit"
+
+[tasks.ci]
+description = "Run all CI checks (mirrors GitHub Actions ci.yml)"
+depends = ["install-ci"]
 run = """
-bun install --frozen-lockfile
-bun run lint:check
-bun run format:check
-bun run type-check
-bun run test:unit
-bunx playwright install
+mise run biome-check
+mise run type-check
+mise run test
+mise run install-playwright
 kill $(lsof -ti:3000,4000) 2>/dev/null || true
-bun run server &
+(cd packages/server && bun run start) &
 SERVER_PID=$!
-bunx wait-on tcp:localhost:4000 --timeout 30000
-bun run client &
+bunx wait-on http-get://localhost:4000/api/health --timeout 30000
+(cd packages/client && bun run dev) &
 CLIENT_PID=$!
-bunx wait-on tcp:localhost:3000 --timeout 30000
-bun run test:e2e:no-server
-bun run test:api
+bunx wait-on http-get://localhost:3000 --timeout 30000
+mise run test-e2e
+mise run test-api
 kill $SERVER_PID $CLIENT_PID 2>/dev/null || true
-bun run --cwd packages/client build
+mise run build
+mise run build-storybook
 bun audit || echo "warning: security vulnerabilities found - review required"
 """

@@ -12,6 +12,7 @@
  */
 
 import type { CreateTaskInput, DateProvider, Task, UpdateTaskInput } from '@alle/shared';
+import { TASK_DEFAULTS } from './defaults';
 import type { TaskRepository } from './TaskRepository';
 
 /**
@@ -106,9 +107,9 @@ export class InMemoryTaskRepository implements TaskRepository {
             date: input.date,
             createdAt: now,
             updatedAt: now,
-            tags: input.tags ?? [],
+            tags: input.tags ?? [...TASK_DEFAULTS.tags],
             parentId: input.parentId ?? null,
-            rolloverEnabled: input.rolloverEnabled ?? false,
+            rolloverEnabled: input.rolloverEnabled ?? TASK_DEFAULTS.rolloverEnabled,
             someDayGroupId: input.someDayGroupId ?? null,
             projectId: input.projectId ?? null,
             position: input.position ?? null,

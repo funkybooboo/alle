@@ -20,7 +20,8 @@ tests {
   });
 
   test("should return error message", function() {
-    expect(res.getBody().error).to.be.an("object");
-    expect(res.getBody().error.message).to.include("not found");
+    expect(res.getBody().error).to.be.a("string");
+    expect(res.getBody().code).to.equal("NOT_FOUND");
+    expect(res.getBody().error).to.include("not found");
   });
 }

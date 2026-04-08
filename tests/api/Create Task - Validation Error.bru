@@ -27,7 +27,7 @@ tests {
   });
 
   test("should return validation error", function() {
-    expect(res.getBody().error).to.be.an("object");
-    expect(res.getBody().error.message).to.be.a("string");
+    expect(res.getBody().error).to.be.a("string");
+    expect(res.getBody().code).to.equal("VALIDATION_ERROR");
   });
 }

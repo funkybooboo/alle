@@ -1,0 +1,41 @@
+meta {
+  name: Generate RecurringTask Instances
+  type: http
+  seq: 46
+}
+
+post {
+  url: {{baseUrl}}/api/recurring-tasks/{{recurringTaskId}}/generate
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "startDate": "2026-01-05",
+    "endDate": "2026-01-26"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array of tasks", function() {
+    const tasks = res.getBody().data;
+    expect(tasks).to.be.an("array");
+    expect(tasks.length).to.be.greaterThan(0);
+  });
+
+  test("generated tasks should have the correct text", function() {
+    const tasks = res.getBody().data;
+    tasks.forEach(function(task) {
+      expect(task.text).to.equal("Weekly review updated");
+    });
+  });
+}

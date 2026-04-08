@@ -1,0 +1,29 @@
+meta {
+  name: Get All Tags
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{baseUrl}}/api/tags
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return sorted array of strings", function() {
+    const tags = res.getBody().data;
+    expect(tags).to.be.an("array");
+    tags.forEach(function(tag) {
+      expect(tag).to.be.a("string");
+    });
+  });
+}

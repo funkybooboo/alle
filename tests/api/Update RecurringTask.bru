@@ -1,0 +1,32 @@
+meta {
+  name: Update RecurringTask
+  type: http
+  seq: 45
+}
+
+put {
+  url: {{baseUrl}}/api/recurring-tasks/{{recurringTaskId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Weekly review updated"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.text: eq Weekly review updated
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated recurring task", function() {
+    expect(res.getBody().data.text).to.equal("Weekly review updated");
+  });
+}

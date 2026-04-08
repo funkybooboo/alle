@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import Page from './+page.svelte';
+import Page from '../routes/+page.svelte';
 
 const meta: Meta<typeof Page> = {
     title: 'App/Main',

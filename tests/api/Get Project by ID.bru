@@ -1,0 +1,27 @@
+meta {
+  name: Get Project by ID
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{baseUrl}}/api/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return the project", function() {
+    const project = res.getBody().data;
+    expect(project.id).to.equal(bru.getVar("projectId"));
+    expect(project.name).to.equal("Website Redesign");
+  });
+}

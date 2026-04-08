@@ -1,0 +1,29 @@
+meta {
+  name: Get Active Projects
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{baseUrl}}/api/projects?active=true
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("should return 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return array of active projects", function() {
+    const projects = res.getBody().data;
+    expect(projects).to.be.an("array");
+    projects.forEach(function(p) {
+      expect(p.isActive).to.equal(true);
+    });
+  });
+}

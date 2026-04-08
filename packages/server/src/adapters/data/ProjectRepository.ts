@@ -10,5 +10,4 @@ export interface ProjectRepository {
     create(input: CreateProjectInput): Promise<Project>;
     update(id: string, input: UpdateProjectInput): Promise<Project | null>;
     delete(id: string): Promise<boolean>;
-    deleteAll(): Promise<void>;
 }
