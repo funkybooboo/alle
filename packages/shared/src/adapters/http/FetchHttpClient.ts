@@ -20,6 +20,10 @@ export class FetchHttpClient implements HttpClient {
         return this.request<T>('PUT', url, body, options);
     }
 
+    async patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
+        return this.request<T>('PATCH', url, body, options);
+    }
+
     async delete<T>(url: string, options?: RequestOptions): Promise<T> {
         return this.request<T>('DELETE', url, undefined, options);
     }

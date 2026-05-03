@@ -24,6 +24,7 @@ export interface Task {
     startTime: string | null; // "HH:MM" or null (all-day)
     endTime: string | null; // "HH:MM" or null (all-day or open-ended)
     reminder: { time: string; channels: ('push' | 'email')[] } | null; // stub — implemented in v2.2.0
+    deletedAt: string | null; // ISO 8601 timestamp; null = not deleted. Soft-deleted tasks are purged after 7 days
 }
 
 /**

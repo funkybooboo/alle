@@ -11,6 +11,7 @@ describe('UserPreferences types', () => {
             someDayPanelCollapsed: false,
             rolloverEnabled: true,
             showEmptyDays: true,
+            deleteConfirmation: 'instant',
             activeFilters: {
                 tags: [],
                 projectId: null,

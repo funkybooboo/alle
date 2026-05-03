@@ -20,6 +20,7 @@ export interface UserPreferences {
     someDayPanelCollapsed: boolean;
     rolloverEnabled: boolean;
     showEmptyDays: boolean;
+    deleteConfirmation: 'instant' | 'confirm';
     activeFilters: ActiveFilters;
     updatedAt: string;
 }

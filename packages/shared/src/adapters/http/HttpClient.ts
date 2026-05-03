@@ -53,6 +53,16 @@ export interface HttpClient {
     put<T>(url: string, body: unknown, options?: RequestOptions): Promise<T>;
 
     /**
+     * Make a PATCH request
+     * @param url - The URL to request (can be relative or absolute)
+     * @param body - The request body (will be JSON stringified)
+     * @param options - Optional request options
+     * @returns Promise that resolves to the parsed response data
+     * @throws HttpClientError if the request fails or returns non-2xx status
+     */
+    patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T>;
+
+    /**
      * Make a DELETE request
      * @param url - The URL to request (can be relative or absolute)
      * @param options - Optional request options

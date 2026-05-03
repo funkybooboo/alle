@@ -20,6 +20,9 @@ export const API_ROUTES = {
     // Tasks
     TASKS: '/api/tasks',
     TASK_BY_ID: (id: string) => `/api/tasks/${id}`,
+    TASK_RESTORE: (id: string) => `/api/tasks/${id}/restore`,
+    TASK_TRASH: '/api/tasks/trash',
+    TASK_PURGE: '/api/tasks/purge',
 
     // Someday groups
     SOMEDAY_GROUPS: '/api/someday-groups',
