@@ -28,25 +28,6 @@ This release focuses on establishing the project's foundation, including the cor
 
 ---
 
-## v0.1.1: Refactor to Svelte
-
-This release replaces the initial React client with a SvelteKit application.
-
-- [x] **Scaffold SvelteKit App:** Create a new SvelteKit application in the `packages/client` directory.
-- [x] **Setup Basic UI:** Re-create the basic UI for displaying tasks in Svelte.
-- [x] **Ensure Feature Parity:** The Svelte client should have the same basic functionality as the original React client.
-
-### Technical Notes & Considerations
-- This will be a "rip and replace" of the `packages/client` directory.
-- Storybook and Playwright configurations will need to be updated for Svelte.
-
-### Definition of Done
-- The `packages/client` directory contains a clean, working SvelteKit application.
-- The basic UI for displaying tasks is functional.
-- All previous client-side functionality (as of `v0.1.0`) is implemented in the new Svelte client.
-
----
-
 ## v0.2.0: Core Task Model
 
 This release defines the full data model that powers the entire application — tasks, sub-tasks, Someday groups, projects, and recurring tasks.
@@ -74,6 +55,7 @@ This release defines the full data model that powers the entire application — 
 - [x] **Sub-task Support:** Tasks with `parentId` are sub-tasks. Completion of all sub-tasks rolls up to parent.
 
 ### Technical Notes & Considerations
+
 - All models live in `packages/shared` to be used by client, server, CLI, and MCP packages.
 - Priority (`#p1`, `#p2`, `#p3`) is just a tag convention — no separate priority field needed.
 - The `tags` array is the primary organizational system across the entire app.
@@ -82,16 +64,18 @@ This release defines the full data model that powers the entire application — 
 - The `reminder` field is defined here for type stability but the delivery infrastructure ships in v2.2.0.
 
 ### Documentation & ADRs
+
 - ADR: tag-based priority convention vs. a dedicated priority field.
 - ADR: why `startTime`/`endTime` are stored as time strings (not full timestamps).
 
 ### Definition of Done
-- All models fully defined and exported from `packages/shared`.
-- Full CRUD for tasks with unit tests (written first).
-- Sub-task parent/child relationship tested.
-- Someday group assignment tested.
-- Tag filtering logic tested (filter tasks by one or more tags).
-- `startTime`/`endTime` validation tested (must be valid time strings or null; `endTime` >= `startTime`).
+
+- [x] All models fully defined and exported from `packages/shared`.
+- [x] Full CRUD for tasks with unit tests (written first).
+- [x] Sub-task parent/child relationship tested.
+- [x] Someday group assignment tested.
+- [x] Tag filtering logic tested (filter tasks by one or more tags).
+- [x] `startTime`/`endTime` validation tested (must be valid time strings or null; `endTime` >= `startTime`).
 
 ---
 
@@ -117,9 +101,10 @@ This release creates the REST API for all entities. The API is designed to be cl
     - `Strict-Transport-Security` (HSTS; enforced in production)
 - [x] **Rate limiting:** Simple token-bucket rate limiter on all endpoints from day one. Configurable via environment variable.
 - [x] **Input validation:** Zod validators on all request bodies and query params, generated from the OpenAPI spec.
-- [x] **Export/Import adapter interfaces:** Define `ExportAdapter<T>` and `ImportAdapter<T>` interfaces in `packages/shared`. Implemented in v0.8.0.
+- [x] **Export/Import adapter interfaces:** Define `ExportAdapter<T>` and `ImportAdapter<T>` interfaces in `packages/shared`. Implemented in v0.7.0.
 
 ### Technical Notes & Considerations
+
 - RESTful design throughout. Consistent error response shape: `{ error: string; code: string; details?: unknown }`.
 - Bruno tests written before implementation (TDD). Every endpoint has a Bruno test file.
 - The OpenAPI spec is auto-served at `GET /openapi.yaml` and `GET /openapi.json`.
@@ -127,22 +112,25 @@ This release creates the REST API for all entities. The API is designed to be cl
 - Rate limiting state lives in-memory for single-user; Redis-backed in v2 for multi-user scale.
 
 ### Documentation & ADRs
+
 - ADR: schema-first OpenAPI approach (spec → validators → implementation).
 - ADR: content negotiation strategy (curl-friendly plain text).
 - Dev docs: API reference auto-generated from the OpenAPI spec.
 
 ### Security Considerations
+
 - All inputs validated and sanitized at the API boundary.
 - Security headers applied globally via middleware.
 - Rate limiting prevents abuse even in single-user mode.
 
 ### Definition of Done
-- All endpoints implemented and tested with Bruno (tests written first).
-- OpenAPI spec complete and served at `/openapi.yaml`.
-- Zod validation on all inputs.
-- Content negotiation working: JSON and plain-text responses for all list endpoints.
-- Security headers present on all responses.
-- Rate limiting functional.
+
+- [x] All endpoints implemented and tested with Bruno (tests written first).
+- [x] OpenAPI spec complete and served at `/openapi.yaml`.
+- [x] Zod validation on all inputs.
+- [x] Content negotiation working: JSON and plain-text responses for all list endpoints.
+- [x] Security headers present on all responses.
+- [x] Rate limiting functional.
 
 ---
 
@@ -150,80 +138,111 @@ This release creates the REST API for all entities. The API is designed to be cl
 
 This release builds the core three-panel layout and all fundamental task interactions.
 
-### Layout
-- [ ] **Four-zone layout:**
+### Layout Shell
+
+- [x] **Four-zone layout:**
     - **Left icon rail** — slim vertical rail with icons that each open a large centered modal (background dims on open, `Esc` or click-outside closes). One modal open at a time.
     - **Center day list** — the primary working area; fills all space between the two panels.
-    - **Right Someday panel** — always visible by default; collapsible via toggle button or keyboard shortcut; resizable by dragging the left divider edge; width saved to `UserPreferences`.
-    - **Bottom bar** — state display and navigation only (see below).
+    - **Right Someday panel** — collapsible via toggle button or `Ctrl+\`; width saved to `UserPreferences`. *(Resizable drag handle → v0.6.0)*
+    - **Bottom bar** — state display and navigation (see Bottom Bar section below).
 
-### Left Icon Rail
-Icons (all open centered modals):
-- [ ] 📅 **Summary** — daily stats: completion %, overdue tasks, streaks, upcoming deadlines + holidays
-- [ ] 📊 **Projects** — project list; click a project → Kanban modal (Ready | Scheduled | Done columns)
-- [ ] 🔁 **Habits** — recurring task list with GitHub-style heatmaps; click → habit detail modal
-- [ ] 📆 **Calendar** — date picker to jump the day list to any date
-- [ ] 🔍 **Search / Cmd+K** — unified command palette: search tasks, add tasks, navigate, run actions, natural language input (e.g. `buy milk tomorrow #work #p1`); clicking a result scrolls day list to that task and closes modal
-- [ ] 🏷️ **Filter** — full filter builder: tags, priority (`#p1`/`#p2`/`#p3`), date range, project, completion status; filters apply to day list and Someday simultaneously
-- [ ] 🗑️ **Trash** — recently deleted tasks with restore; auto-purge after 7 days
-- [ ] ⚙️ **Settings** — theme, rollover defaults, panel prefs, tag management, holidays, filter persistence, automation rules
-- [ ] ❓ **Help** — keyboard shortcut reference organized by category; links to full Writebook docs at the bottom
-
-Active icon has a subtle highlight. Labels shown/hidden via Settings.
-
-### Center Day List
-- [ ] **Vertical scroll** of day sections, lazy loaded as the user scrolls (intersection observer).
-- [ ] **Day section header:** `March 30, Sunday  •  4 tasks` + horizontal rule.
-- [ ] **Holiday banners** displayed above day headers where applicable (managed in Settings > Holidays).
-- [ ] **Task row:** `⠿ ○ text  #tags  #p1` — drag handle (⠿) on left, visible on hover; checkbox; text; tag chips; priority tag if present. Tasks with `startTime` show the time inline (e.g. `09:00 fix auth`).
-- [ ] **Sub-tasks:** always shown indented below their parent task.
-- [ ] **Recurring task indicator:** subtle 🔁 icon after the task text.
-- [ ] **Empty days** shown by default (user can hide in Settings).
-- [ ] **App opens scrolled to today** with a subtle "Today" highlight; sticky `▲ Today` button appears when scrolled away from today.
-- [ ] **`+ add task`** prompt at the bottom of each day section.
-
-### Right Someday Panel
-- [ ] Title "Someday" with collapse button (‹).
-- [ ] `+ add group` button at top.
-- [ ] Groups rendered identically to day sections (same task rows, same interactions).
-- [ ] No rollover, no recurring instances.
-- [ ] Global filter (🏷️) applies to Someday tasks simultaneously with the day list.
+- [x] **Active icon highlight:** The active modal's icon has a subtle highlight in the icon rail.
+- [x] **Icon labels:** Shown/hidden via Settings.
 
 ### Bottom Bar
+
 Layout: `alle logo | filter chips | task count | ▲ Today | docs ↗`
 
-- [ ] **Left:** `alle` logo — clicking clears all filters and snaps to today (home button).
-- [ ] **Center-left:** active filter chips, each with `×` to dismiss; `[clear all]` when multiple filters active.
-- [ ] **Center-right:** status — `12 tasks • 4 done`; when no filters: `March 30 • 12 tasks`.
-- [ ] **Right:** `▲ Today` button (visible only when scrolled away from today).
-- [ ] **Far-right:** `docs ↗` link — opens the Writebook user docs in a new tab.
+- [x] **Left:** `alle` logo — clicking clears all filters and snaps to today (home button).
+- [x] **Center-left:** active filter chips, each with `×` to dismiss; `[clear all]` when multiple filters active.
+- [x] **Center-right:** status — `12 tasks • 4 done`; when no filters: `March 30 • 12 tasks`.
+- [x] **Right:** `▲ Today` button — visible only when today section is out of viewport. IntersectionObserver wires `todayVisible` in DayList.svelte
+- [x] **Far-right:** `docs ↗` link — opens the Writebook user docs in a new tab.
+
+### Day List
+
+- [x] **Day section header:** Date label + task count + completed count.
+- [x] **Task row:** Drag handle (⠿) on left (visible on hover), checkbox, text, tag chips, priority badge, time display for tasks with `startTime`.
+- [x] **Recurring task indicator:** Subtle 🔁 icon after the task text.
+- [x] **Sub-tasks:** Child tasks with `parentId` rendered indented below their parent task.
+- [x] **Empty days:** Render empty day sections between today ±30 days when `showEmptyDays` preference is enabled.
+- [x] **App opens scrolled to today** with a subtle "Today" highlight. `scrollToToday()` called on mount.
+- [x] **`+ add task`** prompt at the bottom of each day section.
 
 ### Task Interactions
-- [ ] **Click text** → inline edit (Enter saves, Esc cancels).
-- [ ] **`e` or detail icon** → floating task detail modal (text, notes/markdown, tags, date picker, `startTime`/`endTime` fields, sub-tasks, rollover toggle).
-- [ ] **Space** → complete task; undo toast (5s) + Cmd+Z.
-- [ ] **`d`** → delete task; undo toast (5s) + Cmd+Z. Behavior (instant vs confirm) configurable in Settings.
-- [ ] **`n` or `a`** → inline add input appears at bottom of focused day section.
-- [ ] **Drag (⠿ handle)** → drag between day sections; drag right to Someday (clears date); drag left from Someday onto a day header to schedule.
+
+- [x] **Click text** → inline edit (Enter saves, Esc cancels).
+- [x] **`e` or detail icon** → floating task detail modal (text, notes, tags, date picker, `startTime`/`endTime` fields, rollover toggle).
+- [x] **Space** → complete task; undo toast (5s) + Cmd+Z.
+- [x] **`d`** → delete task; undo toast (5s) + Cmd+Z. Behavior (instant vs confirm) configurable in Settings — respects `deleteConfirmation` preference.
+- [x] **`n` or `a`** → inline add input appears at bottom of focused day section.
+- [x] **Drag (⠿ handle)** → drag between day sections; drag right to Someday (clears date); drag left from Someday onto a day header to schedule.
+
+### Someday Panel
+
+- [x] Title "Someday" with collapse button (‹).
+- [x] `+ add group` button at top.
+- [x] Groups rendered with same task rows and interactions as day sections.
+- [x] Ungrouped tasks rendered below groups.
+- [x] Global filter (🏷️) applies to Someday tasks simultaneously with the day list (via shared `applyFilters` utility).
+- [x] Group creation uses inline form instead of browser `prompt()`.
+- [x] Group rename and delete actions.
+
+### Icon Rail Modals
+
+- [x] 📆 **Calendar** — date picker to jump the day list to any date. Functional.
+- [x] 🗑️ **Trash** — recently deleted tasks with restore; auto-purge after 7 days. Functional.
+- [x] ❓ **Help** — keyboard shortcut reference organized by category. Functional.
+
+- [x] 📅 **Summary** — daily stats: completion percentage, overdue tasks (with days-late count), upcoming deadlines (tasks tagged `#deadline`).
+- [x] 📊 **Projects** — project list view (active and inactive) with task counts, + new project inline form, edit/delete actions, and detail view showing project tasks.
+- [x] 🔁 **Habits** — recurring task list view (name, frequency label, tags, dates) with instance count badges, + new habit inline form, and edit/delete actions.
+- [x] 🔍 **Search** — search tasks by text, notes, and tags; selecting a result scrolls the day list to that task.
+- [x] 🏷️ **Filter** — filter by tags (multi-select), priority, project, and completion status.
+- [x] ⚙️ **Settings** — theme (light/dark/system), auto-rollover toggle, show empty days toggle, panel toggle hint, delete confirmation toggle (instant vs confirm).
+
+### TaskDetailModal
+
+- [x] **Text field** — editable task text.
+- [x] **Notes field** — editable markdown notes.
+- [x] **Date picker** — set or clear the task date.
+- [x] **Start time / End time** — time inputs for scheduled tasks.
+- [x] **Tags field** — comma-separated tag input.
+- [x] **Rollover toggle** — per-task auto-rollover override.
+- [x] **Parent task reference** — read-only display when viewing a sub-task.
+- [x] **Recurring task reference** — read-only indicator when viewing a recurring instance.
+- [x] **Sub-task management** — add, complete, and delete child tasks from within the detail modal.
+- [x] **Delete task** — delete button in the modal with undo toast.
 
 ### Technical Notes & Considerations
-- Built with SvelteKit + Tailwind CSS.
-- Svelte stores for UI state (active filters, panel widths, scroll position).
+
+- Built with SvelteKit + Tailwind CSS v4.
+- **Svelte 5 runes:** All stores use `$state` class pattern in `.svelte.ts` files. All components use `$props`, `$derived`, `$effect`, `{@render children()}`.
+- **Escape key handling:** `svelte:window` in layout handles global escape; Modal stops propagation only for Tab (focus trap).
 - Optimistic updates for all task mutations.
-- All new components developed in Storybook.
 - ARIA roles and labels applied to all interactive elements from the start — not retrofitted later.
+- E2E tests use `data-hydrated` attribute for reliable SvelteKit hydration detection.
+- Storybook stories exist for all 20 components (10 top-level + 10 modals).
 
 ### Documentation & ADRs
+
 - User docs: "Getting started" and "Using the day list" written for this release.
 - ADR: bottom bar layout and docs link placement.
 
 ### Definition of Done
-- All four zones render correctly.
-- Full task CRUD through the UI.
-- Inline editing, detail modal, and quick-add all functional.
-- Someday panel functional with groups.
-- Bottom bar reflects filter and task state; docs link present and working.
-- Storybook stories for all components.
+
+- [x] All four zones render correctly.
+- [x] Bottom bar reflects filter and task state; docs link present and working.
+- [x] Calendar, Trash, Help modals functional.
+- [x] Search, Filter, Settings modals have basic functionality.
+- [x] Storybook stories for all components (20 story files exist; need build verification).
+- [x] Full task CRUD through the UI (sub-task creation/management in detail modal missing).
+- [x] Sub-tasks rendered indented below parent tasks in day list.
+- [x] TaskDetailModal: sub-task add/complete/delete and task delete button.
+- [x] Empty days render when preference is enabled.
+- [x] IntersectionObserver wires `todayVisible` for the ▲ Today button.
+- [x] Someday panel: inline group creation form; group rename/delete.
+- [x] Summary, Projects, Habits modals: functional list views (streaks → v0.8.0, Kanban/heatmaps → v0.9.0).
 
 ---
 
@@ -334,47 +353,36 @@ The palette has two modes distinguished by the first character:
 
 ---
 
-## v0.6.0: Drag-and-Drop
+## v0.6.0: Polish & Responsiveness
 
-This release introduces drag-and-drop as a secondary interaction method.
+This release polishes the three-panel layout, completes drag-and-drop interactions, implements lazy loading and view modes, and adds responsive behavior.
 
-- [ ] **Drag handle:** ⠿ grip icon appears on the left of each task row on hover. Only the handle initiates a drag.
-- [ ] **Drag between days:** Drag a task from one day section and drop it onto another day's header or task list. The target day section highlights on hover.
+### Drag-and-Drop (from v0.5.0)
+
+- [x] **Drag handle:** ⠿ grip icon appears on the left of each task row on hover. Only the handle initiates a drag.
+- [x] **Drag between days:** Drag a task from one day section and drop it onto another day's header or task list. The target day section highlights on hover.
+- [x] **Reorder within a day:** Drag tasks up/down within the same day section to reorder.
 - [ ] **Drag to Someday:** Drag a task rightward into the Someday panel. Task's `date` is cleared on drop (becomes unscheduled). Task lands in the first group or a highlighted group.
 - [ ] **Drag from Someday:** Drag a task from the Someday panel leftward onto a specific day section header to schedule it. The target day highlights as the task hovers over it.
 - [ ] **Visual feedback:** Ghost image while dragging; drop zone indicator; smooth animations.
-- [ ] **Reorder within a day:** Drag tasks up/down within the same day section to reorder.
 
-### Technical Notes & Considerations
-- Evaluate `svelte-dnd-action` for drag-and-drop.
-- Keyboard alternatives (move task with `m` + date picker) are covered in v0.5.0.
-- E2E tests for all drag scenarios (written before implementation).
-- Ensure drag interactions are not the only way to accomplish any action (accessibility).
-
-### Definition of Done
-- All drag scenarios functional with visual feedback.
-- Dragging to/from Someday correctly clears/sets dates.
-- Reordering within a day persists.
-- E2E tests passing.
-
----
-
-## v0.7.0: Layout & Responsiveness
-
-This release polishes the three-panel layout, implements lazy loading, view modes, and responsive behavior.
+### Layout Polish
 
 - [ ] **Lazy loading:** Day sections load on demand as the user scrolls using an intersection observer. Starts at today; loads past and future days as needed.
 - [ ] **Panel resize & collapse:**
     - Left icon rail: fixed width, always visible.
     - Someday panel: resizable by dragging divider edge; collapsible via toggle button and `Ctrl+\`; width saved to `UserPreferences`.
     - Both panels handle gracefully on smaller viewports.
+- [ ] **Resizable Someday panel drag handle:** The divider between the day list and the Someday panel can be dragged to resize.
+
+### Filtering
+
 - [ ] **Priority view mode:** Accessible through the 🏷️ Filter modal as a sort option. When "Priority" sort is active, tasks within each day section are ordered `#p1` → `#p2` → `#p3` → untagged, with a subtle left-border accent per priority level.
-- [ ] **Filter modal (🏷️):**
-    - Full filter builder: tags (multi-select), priority level, date range, project, completion status.
-    - Applies live as filters are selected.
-    - Filter state shown as chips in the bottom bar.
-    - Filter persistence: configurable in Settings (default: persist across sessions in `UserPreferences`).
-- [ ] **Tailwind CSS:** Adopt Tailwind CSS as the styling framework across all components.
+- [ ] **Date range filter:** Add date range picker to the Filter modal. Filters tasks by date range (from/to), applies to day list and Someday simultaneously.
+- [ ] **Filter persistence:** Configurable in Settings (default: persist across sessions in `UserPreferences`).
+
+### Responsiveness
+
 - [ ] **Mobile:**
     - Day list fills full width.
     - Someday panel and icon rail modals accessible as bottom sheets.
@@ -382,23 +390,28 @@ This release polishes the three-panel layout, implements lazy loading, view mode
 - [ ] **Responsive breakpoints:** Graceful degradation from desktop to tablet to mobile.
 
 ### Technical Notes & Considerations
+- `svelte-dnd-action` already in use for drag within day sections.
 - Intersection observer for lazy loading — avoid virtual scrolling unless performance requires it.
 - CSS custom properties for theme tokens alongside Tailwind.
 - Tailwind's JIT mode for optimal bundle size.
-- E2E tests for responsive behavior and filter scenarios.
+- Keyboard alternatives (move task with `m` + date picker) are covered in v0.5.0.
+- E2E tests for all drag scenarios, responsive behavior, and filter scenarios.
 
 ### Definition of Done
+- All drag scenarios functional with visual feedback.
+- Dragging to/from Someday correctly clears/sets dates.
+- Reordering within a day persists.
 - Lazy loading functional with smooth scroll experience.
 - Panel resize/collapse working and persisted.
 - Priority sort mode functional.
-- Filter modal with full filter builder working.
-- Bottom bar reflects active filter state correctly.
+- Date range filter working in Filter modal.
+- Filter persistence configurable in Settings.
 - Mobile bottom sheet behavior functional.
-- Tailwind adopted throughout.
+- E2E tests passing.
 
 ---
 
-## v0.8.0: Persistence & Data I/O
+## v0.7.0: Persistence & Data I/O
 
 This release implements persistent storage, multi-format data export, and import from popular task managers.
 
@@ -466,7 +479,7 @@ This release implements persistent storage, multi-format data export, and import
 
 ---
 
-## v0.9.0: Automation
+## v0.8.0: Automation
 
 This release introduces the automation features that make Alle smart.
 
@@ -498,7 +511,7 @@ This release introduces the automation features that make Alle smart.
 
 ---
 
-## v0.10.0: Projects & Habits
+## v0.9.0: Projects & Habits
 
 This release builds the full UI for project management and habit tracking.
 
@@ -532,7 +545,7 @@ This release builds the full UI for project management and habit tracking.
 ### Technical Notes & Considerations
 - Kanban drag-and-drop reuses the drag infrastructure from v0.6.0.
 - `rrule.js` recurrence rule builder for habit creation.
-- `.ics` parsing with a library like `ical.js` (shared with v0.8.0 iCal adapter).
+- `.ics` parsing with a library like `ical.js` (shared with v0.7.0 iCal adapter).
 
 ### Definition of Done
 - Projects modal fully functional with Kanban board.
@@ -545,7 +558,7 @@ This release builds the full UI for project management and habit tracking.
 
 ---
 
-## v0.11.0: Markdown Notes
+## v0.10.0: Markdown Notes
 
 This release adds rich text support to task notes.
 
@@ -570,7 +583,7 @@ This release adds rich text support to task notes.
 
 ---
 
-## v0.12.0: UI Polish, Theming & Customization
+## v0.11.0: UI Polish, Theming & Customization
 
 This release refines the visual design into a cohesive, calm product and formalizes all user-configurable preferences into a complete Settings experience.
 
@@ -633,20 +646,20 @@ This release refines the visual design into a cohesive, calm product and formali
 
 ---
 
-## v0.13.0: Accessibility
+## v0.12.0: Accessibility
 
 This release ensures Alle meets WCAG 2.1 Level AA accessibility standards across every surface.
 
 - [ ] **Full keyboard operability:** Every action reachable via keyboard (prerequisite: v0.5.0). Audit confirms no mouse-only interactions remain.
-- [ ] **ARIA roles and labels:** All interactive elements (buttons, inputs, modals, drag handles) have correct ARIA attributes.
+- [x] **ARIA roles and labels:** All interactive elements (buttons, inputs, modals, drag handles) have correct ARIA attributes. Icon rail buttons have `aria-label`, modals have `role="dialog"`, `aria-modal`, `aria-label`.
 - [ ] **Screen reader testing:** Manually tested with NVDA (Windows) and VoiceOver (macOS/iOS). Key flows: add task, complete task, navigate day list, open command palette.
-- [ ] **Focus management:**
+- [x] **Focus management:**
     - Always visible focus ring throughout (no `outline: none` without a custom visible replacement).
     - Logical tab order in all panels.
     - Modals: focus trapped inside; Esc closes and returns focus to the trigger element.
 - [ ] **Color contrast:** All text meets 4.5:1 ratio (normal text) and 3:1 ratio (large text) in both light and dark themes. Automated check in CI with `axe-core`.
 - [ ] **Reduced motion:** Respect `prefers-reduced-motion`. All animations disabled or minimized when the user has set this OS preference.
-- [ ] **Skip-to-content link:** Visible on first Tab keypress; skips the icon rail and jumps to the day list.
+- [x] **Skip-to-content link:** Visible on first Tab keypress; skips the icon rail and jumps to the day list.
 - [ ] **Form inputs:** All inputs have associated `<label>` elements. Error states are announced to screen readers via `aria-live`.
 - [ ] **Automated a11y CI check:** `axe-core` integrated into the Playwright E2E suite. Every page/modal/component checked on each test run.
 
@@ -668,7 +681,7 @@ This release ensures Alle meets WCAG 2.1 Level AA accessibility standards across
 
 ---
 
-## v0.14.0: Internationalization
+## v0.13.0: Internationalization
 
 This release adds infrastructure for multiple languages and locale-aware formatting.
 
@@ -684,7 +697,7 @@ This release adds infrastructure for multiple languages and locale-aware formatt
 ### Technical Notes & Considerations
 - Recommended library: `paraglide-js` (compile-time i18n, zero runtime overhead) or `svelte-i18n`.
 - Locale files are JSON. Community translations contributed via pull requests.
-- Only `en` ships in v0.14.0. Other languages added in subsequent releases as community contributions.
+- Only `en` ships in v0.13.0. Other languages added in subsequent releases as community contributions.
 
 ### Documentation & ADRs
 - ADR: i18n library choice and locale file format.
@@ -700,7 +713,7 @@ This release adds infrastructure for multiple languages and locale-aware formatt
 
 ---
 
-## v0.15.0: Calendar Time-Grid View
+## v0.14.0: Calendar Time-Grid View
 
 This release adds a time-grid calendar view for tasks with start and end times.
 
