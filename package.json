@@ -32,8 +32,8 @@
         "test:coverage:shared": "bun --cwd packages/shared test --coverage",
         "test:coverage:server": "bun --cwd packages/server test --coverage",
         "test:coverage:client": "bun --cwd packages/client test --coverage",
-        "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
-        "test:e2e:no-server": "playwright test --config tests/e2e/playwright.config.ts",
+        "test:e2e": "playwright test",
+        "test:e2e:no-server": "PLAYWRIGHT_NO_SERVER=1 playwright test",
         "test:api": "cd tests/api && bunx @usebruno/cli run . --env local",
         "test:all": "concurrently -n api,e2e -c magenta,cyan \"bun run test:api\" \"bun run test:e2e:no-server\"",
         "storybook": "bun --cwd packages/client storybook",
@@ -44,11 +44,16 @@
     },
     "devDependencies": {
         "@biomejs/biome": "2.4.10",
-        "@commitlint/cli": "^20.5.0",
+        "@commitlint/cli": "^20.5.2",
         "@commitlint/config-conventional": "^20.5.0",
         "@playwright/test": "^1.59.1",
         "concurrently": "^9.2.1",
         "husky": "^9.1.7",
-        "wait-on": "^9.0.4"
+        "wait-on": "^9.0.5"
+    },
+    "dependencies": {
+        "@sveltejs/adapter-node": "^5.5.4",
+        "@sveltejs/kit": "^2.58.0",
+        "vite": "^8.0.10"
     }
 }

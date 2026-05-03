@@ -87,6 +87,21 @@ run = "bun run test:api"
 description = "Run API and E2E tests in parallel (requires servers running)"
 run = "bun run test:all"
 
+# -- Clean ---------------------------------------------------------------------
+
+[tasks.clean]
+description = "Remove all build artifacts, caches, and node_modules"
+run = """
+find . -type d -name node_modules -prune -exec rm -rf {} +
+find . -type d -name dist -prune -exec rm -rf {} +
+find . -type d -name build -prune -exec rm -rf {} +
+find . -type d -name .vite -prune -exec rm -rf {} +
+find . -type d -name .biome-cache -prune -exec rm -rf {} +
+find . -type d -name coverage -prune -exec rm -rf {} +
+find . -name '*.tsbuildinfo' -delete
+rm -rf storybook-static *storybook.log
+"""
+
 # -- Build ---------------------------------------------------------------------
 
 [tasks.build]
