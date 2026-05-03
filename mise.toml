@@ -142,6 +142,14 @@ mise run test-e2e
 mise run test-api
 kill $SERVER_PID $CLIENT_PID 2>/dev/null || true
 mise run build
+CLIENT_SIZE=$(du -sb packages/client/dist 2>/dev/null | cut -f1 || echo "0")
+MAX_SIZE=524288
+echo "Client bundle size: $CLIENT_SIZE bytes"
+if [ $CLIENT_SIZE -gt $MAX_SIZE ]; then
+  echo "Client bundle exceeds $MAX_SIZE bytes (512KB)"
+  exit 1
+fi
+echo "Client bundle size OK"
 mise run build-storybook
-bun audit || echo "warning: security vulnerabilities found - review required"
+mise run security || echo "warning: security vulnerabilities found - review required"
 """
