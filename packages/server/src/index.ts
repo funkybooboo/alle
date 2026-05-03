@@ -14,8 +14,8 @@ import { createSecurityHeadersMiddleware } from './middleware/securityHeaders';
 import { registerAllRoutes } from './routes/index';
 
 const PORT = container.config.getNumber('PORT', 4000);
-const NODE_ENV = container.config.get('NODE_ENV', 'development');
-const RATE_LIMIT_RPM = container.config.getNumber('RATE_LIMIT_RPM', 60);
+const NODE_ENV = container.config.get('NODE_ENV', 'production');
+const RATE_LIMIT_RPM = container.config.getNumber('RATE_LIMIT_RPM', 300);
 
 const server = container.httpServer;
 const logger = container.logger;

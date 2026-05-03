@@ -30,6 +30,10 @@ const TaskQuerySchema = z.object({
         .optional(),
     someDayGroupId: z.string().optional(),
     someday: z.enum(['true']).optional(),
+    includeDeleted: z
+        .enum(['true', 'false'])
+        .transform(v => v === 'true')
+        .optional(),
 });
 
 export function registerTaskRoutes(
@@ -59,6 +63,11 @@ export function registerTaskRoutes(
 
             if (query.completed !== undefined) {
                 tasks = tasks.filter(t => t.completed === query.completed);
+            }
+
+            if (query.includeDeleted) {
+                const deleted = await taskRepo.findDeleted();
+                tasks = [...tasks, ...deleted];
             }
 
             if (negotiate(req.headers['accept']) === 'text') {
@@ -123,7 +132,7 @@ export function registerTaskRoutes(
         }, logger),
     );
 
-    // DELETE /api/tasks/:id
+    // DELETE /api/tasks/:id (soft-delete)
     server.route(
         'DELETE',
         '/api/tasks/:id',
@@ -133,6 +142,39 @@ export function registerTaskRoutes(
             const deleted = await taskRepo.delete(id);
             if (!deleted) throw notFoundError('Task', id);
             return successResponse({ success: true });
+        }, logger),
+    );
+
+    // POST /api/tasks/:id/restore
+    server.route(
+        'POST',
+        '/api/tasks/:id/restore',
+        withErrorHandling(async req => {
+            const id = extractPathParam(req.url, '/api/tasks/:id/restore');
+            if (!id) throw new BadRequestError('Invalid task ID');
+            const task = await taskRepo.restore(id);
+            if (!task) throw notFoundError('Task', id);
+            return successResponse(task);
+        }, logger),
+    );
+
+    // DELETE /api/tasks/purge
+    server.route(
+        'DELETE',
+        '/api/tasks/purge',
+        withErrorHandling(async _req => {
+            const purged = await taskRepo.purgeDeleted();
+            return successResponse({ purged });
+        }, logger),
+    );
+
+    // GET /api/tasks/trash
+    server.route(
+        'GET',
+        '/api/tasks/trash',
+        withErrorHandling(async _req => {
+            const tasks = await taskRepo.findDeleted();
+            return successResponse(tasks);
         }, logger),
     );
 }

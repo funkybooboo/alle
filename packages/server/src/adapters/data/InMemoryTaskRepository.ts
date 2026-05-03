@@ -1,34 +1,15 @@
-/**
- * In-memory implementation of TaskRepository
- *
- * Simple in-memory store using a Map for fast lookups.
- * Data is lost when the server restarts — intended for development
- * and as the baseline before the SQLite adapter ships in v0.8.0.
- *
- * To switch to a persistent store:
- * 1. Create SQLiteTaskRepository.ts implementing TaskRepository
- * 2. Change one line in container.ts
- * 3. Business logic stays unchanged
- */
-
 import type { CreateTaskInput, DateProvider, Task, UpdateTaskInput } from '@alle/shared';
 import { TASK_DEFAULTS } from './defaults';
 import type { TaskRepository } from './TaskRepository';
 
-/**
- * In-memory task repository using a Map
- */
 export class InMemoryTaskRepository implements TaskRepository {
     private tasks: Map<string, Task> = new Map();
     private idCounter = 0;
 
     constructor(private dateProvider: DateProvider) {}
 
-    /**
-     * Get all tasks, sorted by date (nulls last) then creation time
-     */
     async findAll(): Promise<Task[]> {
-        return Array.from(this.tasks.values()).sort((a, b) => {
+        return this.activeTasks().sort((a, b) => {
             if (a.date === null && b.date === null) return a.createdAt.localeCompare(b.createdAt);
             if (a.date === null) return 1;
             if (b.date === null) return -1;
@@ -38,63 +19,43 @@ export class InMemoryTaskRepository implements TaskRepository {
         });
     }
 
-    /**
-     * Get tasks by date
-     */
     async findByDate(date: string): Promise<Task[]> {
-        return Array.from(this.tasks.values())
+        return this.activeTasks()
             .filter(task => task.date === date)
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
 
-    /**
-     * Get tasks with date: null (Someday / unscheduled)
-     */
     async findSomeday(): Promise<Task[]> {
-        return Array.from(this.tasks.values())
+        return this.activeTasks()
             .filter(task => task.date === null)
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
 
-    /**
-     * Get tasks belonging to a specific Someday group
-     */
     async findBySomeDayGroup(groupId: string): Promise<Task[]> {
-        return Array.from(this.tasks.values())
+        return this.activeTasks()
             .filter(task => task.someDayGroupId === groupId)
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
 
-    /**
-     * Get direct children of a parent task
-     */
     async findChildren(parentId: string): Promise<Task[]> {
-        return Array.from(this.tasks.values())
+        return this.activeTasks()
             .filter(task => task.parentId === parentId)
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
 
-    /**
-     * Get tasks matching any of the given tags (OR semantics).
-     * Returns all tasks when tags array is empty.
-     */
     async findByTags(tags: string[]): Promise<Task[]> {
         if (tags.length === 0) return this.findAll();
-        return Array.from(this.tasks.values())
+        return this.activeTasks()
             .filter(task => tags.some(t => task.tags.includes(t)))
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
 
-    /**
-     * Get a single task by ID
-     */
     async findById(id: string): Promise<Task | null> {
-        return this.tasks.get(id) ?? null;
+        const task = this.tasks.get(id);
+        if (!task || task.deletedAt !== null) return null;
+        return task;
     }
 
-    /**
-     * Create a new task with all fields, using sensible defaults
-     */
     async create(input: CreateTaskInput): Promise<Task> {
         const now = this.dateProvider.timestamp();
         const id = (++this.idCounter).toString();
@@ -122,20 +83,16 @@ export class InMemoryTaskRepository implements TaskRepository {
             startTime: input.startTime ?? null,
             endTime: input.endTime ?? null,
             reminder: input.reminder ?? null,
+            deletedAt: null,
         };
 
         this.tasks.set(id, task);
         return task;
     }
 
-    /**
-     * Update an existing task
-     */
     async update(id: string, input: UpdateTaskInput): Promise<Task | null> {
         const existing = this.tasks.get(id);
-        if (!existing) {
-            return null;
-        }
+        if (!existing || existing.deletedAt !== null) return null;
 
         const updated: Task = {
             ...existing,
@@ -147,18 +104,69 @@ export class InMemoryTaskRepository implements TaskRepository {
         return updated;
     }
 
-    /**
-     * Delete a task
-     */
     async delete(id: string): Promise<boolean> {
+        const existing = this.tasks.get(id);
+        if (!existing) return false;
+        if (existing.deletedAt !== null) return false;
+
+        const softDeleted: Task = {
+            ...existing,
+            deletedAt: this.dateProvider.timestamp(),
+            updatedAt: this.dateProvider.timestamp(),
+        };
+
+        this.tasks.set(id, softDeleted);
+        return true;
+    }
+
+    async forceDelete(id: string): Promise<boolean> {
         return this.tasks.delete(id);
     }
 
-    /**
-     * Delete all tasks
-     */
+    async restore(id: string): Promise<Task | null> {
+        const existing = this.tasks.get(id);
+        if (!existing || existing.deletedAt === null) return null;
+
+        const restored: Task = {
+            ...existing,
+            deletedAt: null,
+            updatedAt: this.dateProvider.timestamp(),
+        };
+
+        this.tasks.set(id, restored);
+        return restored;
+    }
+
+    async findDeleted(maxAgeDays: number = 7): Promise<Task[]> {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - maxAgeDays);
+
+        return Array.from(this.tasks.values())
+            .filter(task => task.deletedAt !== null)
+            .sort((a, b) => (b.deletedAt ?? '').localeCompare(a.deletedAt ?? ''));
+    }
+
+    async purgeDeleted(maxAgeDays: number = 7): Promise<number> {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - maxAgeDays);
+        const cutoffStr = cutoff.toISOString();
+
+        let purged = 0;
+        for (const [id, task] of this.tasks) {
+            if (task.deletedAt !== null && task.deletedAt < cutoffStr) {
+                this.tasks.delete(id);
+                purged++;
+            }
+        }
+        return purged;
+    }
+
     async deleteAll(): Promise<void> {
         this.tasks.clear();
         this.idCounter = 0;
+    }
+
+    private activeTasks(): Task[] {
+        return Array.from(this.tasks.values()).filter(t => t.deletedAt === null);
     }
 }

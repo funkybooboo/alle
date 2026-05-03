@@ -22,6 +22,7 @@ function defaultPreferences(timestamp: string): UserPreferences {
         someDayPanelCollapsed: false,
         rolloverEnabled: true,
         showEmptyDays: true,
+        deleteConfirmation: 'instant',
         activeFilters: { ...DEFAULT_ACTIVE_FILTERS },
         updatedAt: timestamp,
     };

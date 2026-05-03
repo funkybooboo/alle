@@ -16,66 +16,20 @@ import type { CreateTaskInput, Task, UpdateTaskInput } from '@alle/shared';
  * Task repository interface
  */
 export interface TaskRepository {
-    /**
-     * Get all tasks
-     */
     findAll(): Promise<Task[]>;
-
-    /**
-     * Get tasks by date
-     * @param date - ISO 8601 date string (YYYY-MM-DD)
-     */
     findByDate(date: string): Promise<Task[]>;
-
-    /**
-     * Get a single task by ID
-     * @param id - Task ID
-     * @returns Task if found, null otherwise
-     */
     findById(id: string): Promise<Task | null>;
-
-    /**
-     * Create a new task
-     * @param input - Task creation data
-     * @returns Created task with generated ID and timestamps
-     */
     create(input: CreateTaskInput): Promise<Task>;
-
-    /**
-     * Update an existing task
-     * @param id - Task ID
-     * @param input - Fields to update
-     * @returns Updated task if found, null otherwise
-     */
     update(id: string, input: UpdateTaskInput): Promise<Task | null>;
-
-    /**
-     * Delete a task
-     * @param id - Task ID
-     * @returns true if deleted, false if not found
-     */
     delete(id: string): Promise<boolean>;
-
-    /**
-     * Get tasks with no date (Someday / unscheduled)
-     */
     findSomeday(): Promise<Task[]>;
-
-    /**
-     * Get tasks belonging to a specific Someday group
-     */
     findBySomeDayGroup(groupId: string): Promise<Task[]>;
-
-    /**
-     * Get direct children of a parent task
-     */
     findChildren(parentId: string): Promise<Task[]>;
-
-    /**
-     * Get tasks matching any of the given tags (OR semantics).
-     * Returns all tasks when tags array is empty.
-     */
     findByTags(tags: string[]): Promise<Task[]>;
+    forceDelete(id: string): Promise<boolean>;
+    restore(id: string): Promise<Task | null>;
+    findDeleted(maxAgeDays?: number): Promise<Task[]>;
+    purgeDeleted(maxAgeDays?: number): Promise<number>;
 }
 
 /**
