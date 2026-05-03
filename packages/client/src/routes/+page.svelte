@@ -1,50 +1,48 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { API_ROUTES, type ApiResponse, type Task } from '@alle/shared';
-    import { container } from '$lib/container';
-
-    let status = 'Loading...';
-    let tasks: Task[] = [];
+    import { taskStore, preferencesStore, someDayGroupStore } from '$lib/stores';
+    import DayList from '$lib/components/DayList.svelte';
 
     onMount(() => {
-        container.httpClient
-            .get<ApiResponse<{ status: string }>>(API_ROUTES.HEALTH)
-            .then(data => {
-                status = `Server: ${data.data.status}`;
-            })
-            .catch(() => {
-                status = 'Server not running';
-            });
-
-        container.httpClient
-            .get<ApiResponse<Task[]>>(API_ROUTES.TASKS)
-            .then(data => {
-                tasks = data.data;
-            })
-            .catch(() => {
-                tasks = [];
-            });
+        preferencesStore.load();
+        taskStore.fetchAll();
+        someDayGroupStore.fetchAll();
     });
 </script>
 
-<div
-    style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui, sans-serif; flex-direction: column; gap: 1rem;"
->
-    <h1>Alle - Task App</h1>
-    <p>{status}</p>
-    {#if tasks.length === 0}
-        <p style="color: #888;">No tasks yet.</p>
-    {:else}
-        <ul style="list-style: none; padding: 0; margin: 0; min-width: 300px;">
-            {#each tasks as task}
-                <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-                    <span style="margin-right: 0.5rem;">{task.completed ? '✓' : '○'}</span>
-                    <span style={task.completed ? 'text-decoration: line-through; color: #888;' : ''}>{task.text}</span>
-                    {#if task.date}
-                        <span style="margin-left: 0.5rem; color: #888; font-size: 0.85em;">({task.date})</span>
-                    {/if}
-                </li>
-            {/each}
-        </ul>
-    {/if}
-</div>
+<svelte:head>
+    <title>Alle - Task App</title>
+</svelte:head>
+
+{#if taskStore.loading && taskStore.tasks.length === 0}
+    <div class="loading">
+        <p>Loading tasks...</p>
+    </div>
+{:else if taskStore.error}
+    <div class="error">
+        <p>Something went wrong: {taskStore.error}</p>
+        <button onclick={() => taskStore.fetchAll()}>Retry</button>
+    </div>
+{:else}
+    <DayList />
+{/if}
+
+<style>
+    .loading, .error {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        color: var(--color-text-muted);
+    }
+
+    .error button {
+        margin-left: 12px;
+        padding: 4px 12px;
+        background: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
