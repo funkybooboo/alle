@@ -40,8 +40,12 @@ coverage/
 .nyc_output/
 lcov-report/
 *.lcov
-/tests/e2e/playwright-report/
-/tests/e2e/test-results/
+/test-results/
+playwright-report/
+playwright/.cache/
+packages/client/test-results/
+packages/client/e2e/
+tests/e2e/test-results/
 
 # ------------------------------------------------------------------------------
 # Log Files
