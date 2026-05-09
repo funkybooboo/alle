@@ -27,6 +27,7 @@ function defaultPreferences(timestamp: string): UserPreferences {
         activeFilters: { ...DEFAULT_ACTIVE_FILTERS },
         tagKinds: [...DEFAULT_TAG_KINDS],
         tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
+        notificationPosition: 'bottom-right',
         updatedAt: timestamp,
     };
 }

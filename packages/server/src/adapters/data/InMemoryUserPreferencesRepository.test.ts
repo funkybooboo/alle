@@ -40,8 +40,6 @@ describe('InMemoryUserPreferencesRepository', () => {
             await repo.update({
                 activeFilters: {
                     tags: ['work', 'p1'],
-                    projectId: null,
-                    priority: null,
                     showCompleted: true,
                 },
             });
@@ -74,7 +72,8 @@ describe('InMemoryUserPreferencesRepository', () => {
             });
             const prefs = await repo.get();
             expect(prefs.tagKinds.length).toBe(2);
-            expect(prefs.tagKinds[1]?.name).toBe('Context');
+            const contextKind = prefs.tagKinds.find(k => k.id === 'context');
+            expect(contextKind?.name).toBe('Context');
             expect(prefs.tagKindMap?.['work']).toBe('context');
         });
 
@@ -137,35 +136,18 @@ describe('InMemoryUserPreferencesRepository', () => {
         });
     });
 
-    describe('activeFilters with projectId and priority', () => {
-        test('persists projectId filter', async () => {
+    describe('activeFilters', () => {
+        test('persists tag filters', async () => {
             const repo = makeRepo();
             await repo.update({
                 activeFilters: {
-                    tags: [],
-                    projectId: 'proj-123',
-                    priority: null,
-                    showCompleted: true,
+                    tags: ['work', 'p1', 'project:build-alle'],
+                    showCompleted: false,
                 },
             });
             const prefs = await repo.get();
-            expect(prefs.activeFilters.projectId).toBe('proj-123');
-            expect(prefs.activeFilters.priority).toBeNull();
-        });
-
-        test('persists priority filter', async () => {
-            const repo = makeRepo();
-            await repo.update({
-                activeFilters: {
-                    tags: [],
-                    projectId: null,
-                    priority: 'p1',
-                    showCompleted: true,
-                },
-            });
-            const prefs = await repo.get();
-            expect(prefs.activeFilters.priority).toBe('p1');
-            expect(prefs.activeFilters.projectId).toBeNull();
+            expect(prefs.activeFilters.tags).toEqual(['work', 'p1', 'project:build-alle']);
+            expect(prefs.activeFilters.showCompleted).toBe(false);
         });
     });
 });

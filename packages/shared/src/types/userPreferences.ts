@@ -1,5 +1,11 @@
 export type ThemeType = 'light' | 'dark' | 'system';
 export type DeleteConfirmationType = 'instant' | 'confirm';
+export type NotificationPosition =
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'top-right'
+    | 'top-left';
 
 export type TagKindBehavior = 'single' | 'multiple';
 
@@ -14,8 +20,6 @@ export interface TagKind {
 
 export interface ActiveFilters {
     tags: string[];
-    projectId: string | null;
-    priority: string | null;
     showCompleted: boolean;
 }
 
@@ -33,6 +37,7 @@ export interface UserPreferences {
     activeFilters: ActiveFilters;
     tagKinds: TagKind[];
     tagKindMap: Record<string, string>;
+    notificationPosition: NotificationPosition;
     updatedAt: string;
 }
 

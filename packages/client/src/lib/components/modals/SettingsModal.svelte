@@ -1,6 +1,7 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
     import { preferencesStore } from '$lib/stores';
+    import type { NotificationPosition } from '@alle/shared';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
@@ -8,12 +9,14 @@
     let showEmptyDays = $state(preferencesStore.showEmptyDays);
     let rolloverEnabled = $state(preferencesStore.rolloverEnabled);
     let deleteConfirmation = $state(preferencesStore.deleteConfirmation);
+    let notificationPosition = $state(preferencesStore.notificationPosition);
 
     $effect(() => {
         themeSelection = preferencesStore.theme;
         showEmptyDays = preferencesStore.showEmptyDays;
         rolloverEnabled = preferencesStore.rolloverEnabled;
         deleteConfirmation = preferencesStore.deleteConfirmation;
+        notificationPosition = preferencesStore.notificationPosition;
     });
 
     function handleThemeChange(e: Event) {
@@ -33,6 +36,11 @@
     function handleDeleteConfirmationChange(e: Event) {
         const value = (e.target as HTMLSelectElement).value as 'instant' | 'confirm';
         preferencesStore.setDeleteConfirmation(value);
+    }
+
+    function handleNotificationPositionChange(e: Event) {
+        const value = (e.target as HTMLSelectElement).value as NotificationPosition;
+        preferencesStore.setNotificationPosition(value);
     }
 </script>
 
@@ -65,6 +73,20 @@
                 <select class="select" value={deleteConfirmation} onchange={handleDeleteConfirmationChange} aria-labelledby="delete-confirm-label" id="delete-confirm-select">
                     <option value="instant">Instant delete</option>
                     <option value="confirm">Ask before deleting</option>
+                </select>
+            </label>
+        </fieldset>
+
+        <fieldset class="section">
+            <legend class="section-heading">Notifications</legend>
+            <label class="field">
+                <span class="label" id="notif-position-label">Position</span>
+                <select class="select" value={notificationPosition} onchange={handleNotificationPositionChange} aria-labelledby="notif-position-label" id="notif-position-select">
+                    <option value="bottom-right">Bottom right</option>
+                    <option value="bottom-left">Bottom left</option>
+                    <option value="bottom-center">Bottom center</option>
+                    <option value="top-right">Top right</option>
+                    <option value="top-left">Top left</option>
                 </select>
             </label>
         </fieldset>

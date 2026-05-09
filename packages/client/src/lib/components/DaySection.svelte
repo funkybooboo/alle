@@ -33,6 +33,7 @@
 
     function handleConsider(e: CustomEvent) {
         localTasks = e.detail.items;
+        uiStore.startDrag();
     }
 
     function handleFinalize(e: CustomEvent) {
@@ -53,10 +54,11 @@
                 taskStore.update(task.id, updates);
             }
         }
+        uiStore.endDrag();
     }
 </script>
 
-<section {id} class="day-section" class:today={isToday} role="listitem" aria-label={label}>
+<section {id} class="day-section" class:today={isToday} class:dragging={uiStore.isDragging} role="listitem" aria-label={label}>
     <SectionHeader
         sectionId={sectionId}
         title={label}
@@ -89,12 +91,12 @@
 
 <style>
     .day-section {
-        margin-bottom: 24px;
+        margin-bottom: 16px;
     }
 
     .day-section.today {
         background: var(--color-accent-light);
-        margin: -8px -12px 24px -12px;
+        margin: -8px -12px 16px -12px;
         padding: 8px 12px;
         border-radius: 8px;
     }
@@ -105,6 +107,11 @@
     }
 
     .drop-placeholder {
+        min-height: 4px;
+        transition: min-height 0.15s ease;
+    }
+
+    .dragging .drop-placeholder {
         min-height: 36px;
     }
 
@@ -126,7 +133,14 @@
         border-radius: 4px;
         width: 100%;
         text-align: left;
-        transition: color 0.15s, background-color 0.15s;
+        transition: color 0.15s, background-color 0.15s, opacity 0.15s;
+        opacity: 0;
+    }
+
+    .day-section:hover .add-task-btn,
+    .day-section.today .add-task-btn,
+    .day-section.dragging .add-task-btn {
+        opacity: 1;
     }
 
     .add-task-btn:hover {

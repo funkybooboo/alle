@@ -1,6 +1,7 @@
 import type {
     ActiveFilters,
     DeleteConfirmationType,
+    NotificationPosition,
     TagKind,
     ThemeType,
     UserPreferences,
@@ -29,12 +30,11 @@ class PreferencesStore {
     collapsedSections = $state<string[]>([...DEFAULT_COLLAPSED_SECTIONS]);
     activeFilters = $state<ActiveFilters>({
         tags: [],
-        projectId: null,
-        priority: null,
         showCompleted: true,
     });
     tagKinds = $state<TagKind[]>([...DEFAULT_TAG_KINDS]);
     tagKindMap = $state<Record<string, string>>({ ...DEFAULT_TAG_KIND_MAP });
+    notificationPosition = $state<NotificationPosition>('bottom-right');
     updatedAt = $state(new Date().toISOString());
 
     isSectionCollapsed(sectionId: string): boolean {
@@ -72,18 +72,8 @@ class PreferencesStore {
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
-    setProject(projectId: string | null) {
-        this.activeFilters = { ...this.activeFilters, projectId };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
-    setPriority(priority: string | null) {
-        this.activeFilters = { ...this.activeFilters, priority };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
     clearAll() {
-        this.activeFilters = { tags: [], projectId: null, priority: null, showCompleted: true };
+        this.activeFilters = { tags: [], showCompleted: true };
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
@@ -91,8 +81,6 @@ class PreferencesStore {
         let count = 0;
         if (this.activeFilters.tags?.length > 0) count += this.activeFilters.tags.length;
         if (!this.activeFilters.showCompleted) count++;
-        if (this.activeFilters.projectId) count++;
-        if (this.activeFilters.priority) count++;
         return count;
     }
 
@@ -114,6 +102,7 @@ class PreferencesStore {
             this.activeFilters = prefs.activeFilters;
             this.tagKinds = prefs.tagKinds ?? [...DEFAULT_TAG_KINDS];
             this.tagKindMap = prefs.tagKindMap ?? { ...DEFAULT_TAG_KIND_MAP };
+            this.notificationPosition = prefs.notificationPosition ?? 'bottom-right';
             this.updatedAt = prefs.updatedAt;
         } catch {
             // Use defaults
@@ -187,6 +176,11 @@ class PreferencesStore {
         this.tagKinds = tagKinds;
         this.tagKindMap = tagKindMap;
         preferencesService.update({ tagKinds, tagKindMap }).catch(() => {});
+    }
+
+    setNotificationPosition(position: NotificationPosition) {
+        this.notificationPosition = position;
+        preferencesService.update({ notificationPosition: position }).catch(() => {});
     }
 }
 

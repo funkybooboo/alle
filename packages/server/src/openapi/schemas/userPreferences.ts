@@ -36,6 +36,13 @@ export const UserPreferencesSchema = registry.register(
             activeFilters: ActiveFiltersSchema,
             tagKinds: z.array(TagKindSchema),
             tagKindMap: z.record(z.string(), z.string()),
+            notificationPosition: z.enum([
+                'bottom-right',
+                'bottom-left',
+                'bottom-center',
+                'top-right',
+                'top-left',
+            ]),
             updatedAt: z.string(),
         })
         .openapi('UserPreferences'),
@@ -57,6 +64,9 @@ export const UpdateUserPreferencesSchema = registry.register(
             activeFilters: ActiveFiltersSchema.optional(),
             tagKinds: z.array(TagKindSchema).optional(),
             tagKindMap: z.record(z.string(), z.string()).optional(),
+            notificationPosition: z
+                .enum(['bottom-right', 'bottom-left', 'bottom-center', 'top-right', 'top-left'])
+                .optional(),
         })
         .openapi('UpdateUserPreferencesInput'),
 );

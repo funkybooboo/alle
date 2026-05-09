@@ -16,7 +16,7 @@
     let editGroupName = $state('');
     let editGroupInput: HTMLInputElement | undefined = $state();
 
-    let isDragging = $state(false);
+    let isResizing = $state(false);
 
     const MIN_PANEL_WIDTH = 200;
     const MAX_PANEL_WIDTH = 600;
@@ -132,6 +132,7 @@
 
     function handleGroupConsider(groupId: string, e: CustomEvent) {
         groupLocalTasks[groupId] = e.detail.items;
+        uiStore.startDrag();
     }
 
     function handleGroupFinalize(groupId: string, e: CustomEvent) {
@@ -153,10 +154,12 @@
                 taskStore.update(task.id, updates);
             }
         }
+        uiStore.endDrag();
     }
 
     function handleGroupHeaderConsider(e: CustomEvent) {
         localGroups = e.detail.items;
+        uiStore.startDrag();
     }
 
     function handleGroupHeaderFinalize(e: CustomEvent) {
@@ -167,6 +170,7 @@
                 someDayGroupStore.update(group.id, { position: i });
             }
         }
+        uiStore.endDrag();
     }
 
     
@@ -175,7 +179,7 @@
         e.preventDefault();
         const startX = e.clientX;
         const startWidth = preferencesStore.someDayPanelWidth;
-        isDragging = true;
+        isResizing = true;
 
         function onMouseMove(e: MouseEvent) {
             const deltaX = startX - e.clientX;
@@ -184,7 +188,7 @@
         }
 
         function onMouseUp() {
-            isDragging = false;
+            isResizing = false;
             if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
                 preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
             } else if (preferencesStore.someDayPanelWidth > 0) {
@@ -212,7 +216,7 @@
 
     function handleCollapsedDragStart(e: MouseEvent) {
         e.preventDefault();
-        isDragging = true;
+        isResizing = true;
         const startX = e.clientX;
 
         function onMouseMove(e: MouseEvent) {
@@ -223,7 +227,7 @@
         }
 
         function onMouseUp() {
-            isDragging = false;
+            isResizing = false;
             if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
                 preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
             } else {
@@ -283,7 +287,7 @@
                     {@const sectionId = `someday-${group.id}`}
                     {@const isGroupCollapsed = preferencesStore.isSectionCollapsed(sectionId)}
 
-                    <div class="someday-group" role="listitem">
+                    <div class="someday-group" class:dragging={uiStore.isDragging} role="listitem">
                         {#if editingGroupId === group.id}
                             <div class="group-rename-row">
                                 <input
@@ -551,6 +555,11 @@
     }
 
     .drop-placeholder {
+        min-height: 4px;
+        transition: min-height 0.15s ease;
+    }
+
+    .dragging .drop-placeholder {
         min-height: 36px;
     }
 
@@ -566,7 +575,13 @@
         cursor: pointer;
         padding: 4px 0;
         text-align: left;
-        transition: color 0.15s;
+        transition: color 0.15s, opacity 0.15s;
+        opacity: 0;
+    }
+
+    .someday-group:hover .add-task-btn,
+    .dragging .add-task-btn {
+        opacity: 1;
     }
 
     .add-task-btn:hover {

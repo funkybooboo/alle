@@ -1,7 +1,7 @@
 import type { ConnectionStatus } from '@alle/shared';
 import { container } from '$lib/container';
-import { notificationStore } from './notificationStore.svelte';
 import { websocketService } from '$lib/services/websocketService';
+import { notificationStore } from './notificationStore.svelte';
 
 class ConnectionStore {
     status = $state<ConnectionStatus>('disconnected');

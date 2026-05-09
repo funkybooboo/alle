@@ -92,6 +92,7 @@ export {
 export type {
     ActiveFilters,
     DeleteConfirmationType,
+    NotificationPosition,
     TagKind,
     TagKindBehavior,
     ThemeType,

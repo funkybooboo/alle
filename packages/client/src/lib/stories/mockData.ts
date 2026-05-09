@@ -1,11 +1,4 @@
-import type {
-    ActiveFilters,
-    Project,
-    RecurringTask,
-    SomeDayGroup,
-    Task,
-    UserPreferences,
-} from '@alle/shared';
+import type { Project, RecurringTask, SomeDayGroup, Task, UserPreferences } from '@alle/shared';
 import { DEFAULT_TAG_KIND_MAP, DEFAULT_TAG_KINDS } from '@alle/shared';
 
 export const mockTask: Task = {
@@ -156,9 +149,10 @@ export const mockPreferences: UserPreferences = {
     activeFilters: {
         tags: [],
         showCompleted: false,
-    } as ActiveFilters,
+    },
     tagKinds: [...DEFAULT_TAG_KINDS],
     tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
+    notificationPosition: 'bottom-right' as const,
     updatedAt: '2026-04-27T00:00:00Z',
 };
 
