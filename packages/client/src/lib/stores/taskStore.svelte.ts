@@ -1,6 +1,7 @@
-import type { CreateTaskInput, Task, UpdateTaskInput } from '@alle/shared';
+import type { CreateTaskInput, Task, UpdateTaskInput, WsServerMessage } from '@alle/shared';
 import { container } from '$lib/container';
 import { type TaskQueryParams, TaskService } from '$lib/services/taskService';
+import { websocketService } from '$lib/services/websocketService';
 
 const taskService = new TaskService(container.httpClient);
 
@@ -9,6 +10,7 @@ class TaskStore {
     loading = $state(false);
     error = $state<string | null>(null);
     #fetchPromise: Promise<void> | null = null;
+    #messageUnsubscribe: (() => void) | null = null;
 
     get scheduledTasks() {
         return this.tasks.filter(t => t.date !== null && !t.completed);
@@ -20,6 +22,41 @@ class TaskStore {
 
     get somedayTasks() {
         return this.tasks.filter(t => t.date === null);
+    }
+
+    initWebSocket(): void {
+        this.#messageUnsubscribe = websocketService.onMessage((message: WsServerMessage) => {
+            const myClientId = websocketService.getClientId();
+            if (message.originClientId === myClientId) return;
+
+            switch (message.type) {
+                case 'task:created':
+                    if (message.payload.task) {
+                        this.tasks = [...this.tasks, message.payload.task];
+                    }
+                    break;
+                case 'task:updated':
+                    if (message.payload.task) {
+                        this.tasks = this.tasks.map(t =>
+                            t.id === message.payload.task.id ? message.payload.task : t,
+                        );
+                    }
+                    break;
+                case 'task:deleted':
+                    this.tasks = this.tasks.filter(t => t.id !== message.payload.id);
+                    break;
+                case 'task:restored':
+                    if (message.payload.task) {
+                        this.tasks = [...this.tasks, message.payload.task];
+                    }
+                    break;
+            }
+        });
+    }
+
+    destroyWebSocket(): void {
+        this.#messageUnsubscribe?.();
+        this.#messageUnsubscribe = null;
     }
 
     async fetchAll(params?: TaskQueryParams) {

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { taskStore, uiStore } from '$lib/stores';
-    import { isPriorityTag, TASK_CONSTRAINTS } from '@alle/shared';
+    import { TASK_CONSTRAINTS } from '@alle/shared';
     import type { Task } from '@alle/shared';
     import { Icon } from 'svelte-icons-pack';
     import { LuCheck, LuCircle, LuRepeat, LuFileText, LuX } from 'svelte-icons-pack/lu';
@@ -8,8 +8,6 @@
     let { task, dateStr = '' }: { task: Task; dateStr?: string } = $props();
 
     let isEditing = $derived(uiStore.editingTaskId === task.id);
-    let priorityTag = $derived(task.tags.find(t => isPriorityTag(t)));
-    let otherTags = $derived(task.tags.filter(t => t !== priorityTag));
     let hasStartTime = $derived(task.startTime !== null);
 
     let editText = $state('');
@@ -118,11 +116,7 @@
             <span class="recurring-icon" title="Recurring task"><Icon src={LuRepeat} /></span>
         {/if}
 
-        {#if priorityTag}
-            <span class="priority-badge priority-{priorityTag}">#{priorityTag}</span>
-        {/if}
-
-        {#each otherTags as tag}
+        {#each task.tags as tag}
             <span class="tag-chip">#{tag}</span>
         {/each}
 
@@ -244,28 +238,6 @@
     .recurring-icon :global(svg) {
         width: 13px;
         height: 13px;
-    }
-
-    .priority-badge {
-        font-size: 11px;
-        padding: 1px 6px;
-        border-radius: 10px;
-        font-weight: 600;
-    }
-
-    .priority-p1 {
-        background: var(--color-danger-light);
-        color: var(--color-danger);
-    }
-
-    .priority-p2 {
-        background: var(--color-warning-light);
-        color: var(--color-warning);
-    }
-
-    .priority-p3 {
-        background: var(--color-accent-light);
-        color: var(--color-accent);
     }
 
     .tag-chip {

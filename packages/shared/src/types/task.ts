@@ -13,6 +13,7 @@ export interface Task {
     parentId: string | null;
     rolloverEnabled: boolean;
     someDayGroupId: string | null;
+    /** @deprecated Use project tag instead. Kept for migration. */
     projectId: string | null;
     position: number | null;
     state: 'ready' | 'scheduled' | 'done' | null;

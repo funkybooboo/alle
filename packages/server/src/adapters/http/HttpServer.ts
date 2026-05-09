@@ -61,4 +61,10 @@ export interface HttpServer {
      * @returns Port number if server is running, null otherwise
      */
     getPort(): number | null;
+
+    /**
+     * Set the connection manager for WebSocket support.
+     * Must be called before start() to enable WebSocket upgrades.
+     */
+    setConnectionManager(cm: import('../ws/ConnectionManager').ConnectionManager): void;
 }

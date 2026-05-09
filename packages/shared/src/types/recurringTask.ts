@@ -17,6 +17,7 @@ export interface RecurringTask {
     dayOfMonth: number | null; // 1–31 for monthly recurrence
     startDate: string;
     endDate: string | null;
+    /** @deprecated Use project tag instead. Kept for migration. */
     projectId: string | null;
     rolloverEnabled: boolean;
     createdAt: string;

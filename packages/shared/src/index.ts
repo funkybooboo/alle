@@ -109,7 +109,6 @@ export type {
     WsClientMessage,
     WsServerEventType,
     WsServerMessage,
-    WsServerPayloads,
 } from './types/websocket';
 export {
     WS_PING_INTERVAL_MS,

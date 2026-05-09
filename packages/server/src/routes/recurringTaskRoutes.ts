@@ -17,6 +17,7 @@ import {
     UpdateRecurringTaskSchema,
 } from '../openapi/schemas/recurringTask';
 import { formatRecurringTasksAsText } from '../presentation/formatters';
+import type { EventBus } from '../services/EventBus';
 import type { RecurringTaskService } from '../services/RecurringTaskService';
 import { notFoundError } from '../utils/errorHandler';
 import { extractPathParam } from '../utils/pathUtils';
@@ -27,6 +28,7 @@ export function registerRecurringTaskRoutes(
     server: HttpServer,
     recurringTaskRepo: RecurringTaskRepository,
     recurringTaskService: RecurringTaskService,
+    eventBus: EventBus,
     logger: Logger,
 ): void {
     // GET /api/recurring-tasks
@@ -90,6 +92,7 @@ export function registerRecurringTaskRoutes(
         'POST',
         API_ROUTES.RECURRING_TASK_GENERATE_PATTERN,
         withErrorHandling(async req => {
+            const originClientId = req.headers['x-client-id'];
             const id = extractPathParam(req.url, API_ROUTES.RECURRING_TASK_GENERATE_PATTERN);
             if (!id) throw new BadRequestError('Invalid recurring task ID');
 
@@ -97,6 +100,11 @@ export function registerRecurringTaskRoutes(
             const { startDate, endDate } = parseBody(GenerateInstancesSchema, raw);
 
             const created = await recurringTaskService.generateInstances(id, startDate, endDate);
+            eventBus.publish(
+                'recurringTask:generated',
+                { tasks: created, recurringTaskId: id },
+                originClientId,
+            );
             return successResponse(created);
         }, logger),
     );

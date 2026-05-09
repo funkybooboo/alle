@@ -11,6 +11,9 @@ export const ProjectSchema = registry.register(
         .object({
             id: z.string(),
             name: z.string(),
+            tag: z.string().openapi({
+                description: 'The tag that links tasks to this project (e.g. "project:build-alle")',
+            }),
             description: z.string().nullable(),
             startDate: z.string().nullable().openapi({ description: 'ISO 8601 date (YYYY-MM-DD)' }),
             dueDate: z.string().nullable().openapi({ description: 'ISO 8601 date (YYYY-MM-DD)' }),
@@ -26,6 +29,10 @@ export const CreateProjectSchema = registry.register(
     z
         .object({
             name: z.string().min(1).max(200),
+            tag: z
+                .string()
+                .optional()
+                .openapi({ description: 'Auto-generated from name if omitted' }),
             description: z.string().nullable().optional(),
             startDate: z.string().nullable().optional(),
             dueDate: z.string().nullable().optional(),
@@ -38,6 +45,7 @@ export const UpdateProjectSchema = registry.register(
     z
         .object({
             name: z.string().min(1).max(200).optional(),
+            tag: z.string().optional(),
             description: z.string().nullable().optional(),
             startDate: z.string().nullable().optional(),
             dueDate: z.string().nullable().optional(),

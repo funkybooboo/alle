@@ -155,8 +155,6 @@ export const mockPreferences: UserPreferences = {
     collapsedSections: [],
     activeFilters: {
         tags: [],
-        projectId: null,
-        priority: null,
         showCompleted: false,
     } as ActiveFilters,
     tagKinds: [...DEFAULT_TAG_KINDS],

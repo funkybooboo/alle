@@ -7,6 +7,10 @@ export function applyFilters(tasks: Task[], filters: ActiveFilters): Task[] {
         result = result.filter(t => filters.tags.some(tag => t.tags.includes(tag)));
     }
 
+    if (!filters.showCompleted) {
+        result = result.filter(t => !t.completed);
+    }
+
     if (filters.projectId) {
         result = result.filter(t => t.projectId === filters.projectId);
     }
@@ -14,10 +18,6 @@ export function applyFilters(tasks: Task[], filters: ActiveFilters): Task[] {
     if (filters.priority) {
         const priority = filters.priority;
         result = result.filter(t => t.tags.includes(priority));
-    }
-
-    if (!filters.showCompleted) {
-        result = result.filter(t => !t.completed);
     }
 
     return result;

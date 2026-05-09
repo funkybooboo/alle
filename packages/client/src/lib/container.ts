@@ -54,6 +54,15 @@ export class Container {
         }
         return this._dateProvider;
     }
+
+    setClientId(clientId: string | null): void {
+        const http = this.httpClient as FetchHttpClient;
+        if (clientId) {
+            http.setDefaultHeaders({ 'X-Client-ID': clientId });
+        } else {
+            http.removeDefaultHeader('X-Client-ID');
+        }
+    }
 }
 
 export const container = new Container();

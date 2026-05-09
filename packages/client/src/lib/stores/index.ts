@@ -1,3 +1,5 @@
+export { connectionStore } from './connectionStore.svelte';
+export { notificationStore } from './notificationStore.svelte';
 export { preferencesStore } from './preferencesStore.svelte';
 export { projectStore } from './projectStore.svelte';
 export { recurringTaskStore } from './recurringTaskStore.svelte';

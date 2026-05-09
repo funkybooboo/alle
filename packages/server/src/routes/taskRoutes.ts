@@ -13,6 +13,7 @@ import type { TaskRepository } from '../adapters/data/TaskRepository';
 import type { HttpServer } from '../adapters/http/HttpServer';
 import { CreateTaskSchema, TaskQuerySchema, UpdateTaskSchema } from '../openapi/schemas/task';
 import { formatTasksAsText } from '../presentation/formatters';
+import type { EventBus } from '../services/EventBus';
 import type { TaskService } from '../services/TaskService';
 import { notFoundError } from '../utils/errorHandler';
 import { extractPathParam } from '../utils/pathUtils';
@@ -23,6 +24,7 @@ export function registerTaskRoutes(
     server: HttpServer,
     taskRepo: TaskRepository,
     taskService: TaskService,
+    eventBus: EventBus,
     logger: Logger,
 ): void {
     // GET /api/tasks
@@ -42,8 +44,10 @@ export function registerTaskRoutes(
         API_ROUTES.TASKS,
         withErrorHandling(async req => {
             const raw = await req.json<unknown>();
+            const originClientId = req.headers['x-client-id'];
             const input = parseBody(CreateTaskSchema, raw) as unknown as CreateTaskInput;
             const task = await taskRepo.create(input);
+            eventBus.publish('task:created', { task }, originClientId);
             return successResponse(task, 201);
         }, logger),
     );
@@ -68,10 +72,12 @@ export function registerTaskRoutes(
         withErrorHandling(async req => {
             const id = extractPathParam(req.url, API_ROUTES.TASK_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid task ID');
+            const originClientId = req.headers['x-client-id'];
             const raw = await req.json<unknown>();
             const input = parseBody(UpdateTaskSchema, raw) as unknown as UpdateTaskInput;
             const task = await taskService.completeTask(id, input);
             if (!task) throw notFoundError('Task', id);
+            eventBus.publish('task:updated', { task }, originClientId);
             return successResponse(task);
         }, logger),
     );
@@ -83,8 +89,10 @@ export function registerTaskRoutes(
         withErrorHandling(async req => {
             const id = extractPathParam(req.url, API_ROUTES.TASK_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid task ID');
+            const originClientId = req.headers['x-client-id'];
             const deleted = await taskRepo.delete(id);
             if (!deleted) throw notFoundError('Task', id);
+            eventBus.publish('task:deleted', { id }, originClientId);
             return successResponse({ success: true });
         }, logger),
     );
@@ -96,8 +104,10 @@ export function registerTaskRoutes(
         withErrorHandling(async req => {
             const id = extractPathParam(req.url, API_ROUTES.TASK_RESTORE_PATTERN);
             if (!id) throw new BadRequestError('Invalid task ID');
+            const originClientId = req.headers['x-client-id'];
             const task = await taskRepo.restore(id);
             if (!task) throw notFoundError('Task', id);
+            eventBus.publish('task:restored', { task }, originClientId);
             return successResponse(task);
         }, logger),
     );

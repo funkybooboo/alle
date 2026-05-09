@@ -1,13 +1,22 @@
 <script lang="ts">
     import '../app.css';
     import { onMount } from 'svelte';
-    import { preferencesStore, someDayGroupStore, tagStore, uiStore, taskStore } from '$lib/stores';
+    import {
+        connectionStore,
+        preferencesStore,
+        projectStore,
+        someDayGroupStore,
+        tagStore,
+        uiStore,
+        taskStore,
+    } from '$lib/stores';
     import { container } from '$lib/container';
     import IconRail from '$lib/components/IconRail.svelte';
     import SomedayPanel from '$lib/components/SomedayPanel.svelte';
     import BottomBar from '$lib/components/BottomBar.svelte';
     import ModalHost from '$lib/components/ModalHost.svelte';
     import ToastContainer from '$lib/components/ToastContainer.svelte';
+    import NotificationContainer from '$lib/components/NotificationContainer.svelte';
 
     let { children } = $props();
 
@@ -26,13 +35,26 @@
             applyTheme(preferencesStore.theme);
         });
         tagStore.fetchAll();
+        projectStore.fetchAll();
         document.querySelector('.app-shell')?.setAttribute('data-hydrated', 'true');
+
+        connectionStore.init();
+        taskStore.initWebSocket();
+        tagStore.initWebSocket();
+        projectStore.initWebSocket();
 
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             if (preferencesStore.theme === 'system') {
                 applyTheme('system');
             }
         });
+
+        return () => {
+            connectionStore.destroy();
+            taskStore.destroyWebSocket();
+            tagStore.destroyWebSocket();
+            projectStore.destroyWebSocket();
+        };
     });
 
     $effect(() => {
@@ -116,6 +138,7 @@
 
 <ModalHost />
 <ToastContainer />
+<NotificationContainer />
 
 <style>
     .app-shell {

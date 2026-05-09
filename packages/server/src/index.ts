@@ -20,6 +20,10 @@ const RATE_LIMIT_RPM = container.config.getNumber('RATE_LIMIT_RPM', DEFAULT_RATE
 const server = container.httpServer;
 const logger = container.logger;
 
+// Wire up WebSocket support
+server.setConnectionManager(container.connectionManager);
+container.wsManager.start();
+
 // Guards run BEFORE the route handler (can short-circuit)
 server.addGuard(createRateLimiterGuard(RATE_LIMIT_RPM));
 
@@ -43,4 +47,5 @@ registerAllRoutes(server, container);
 await server.start(PORT);
 const port = server.getPort();
 if (port === null) throw new Error('Server failed to start — port is null');
-logger.info(`🚀 Server running at http://localhost:${port}`);
+logger.info(`Server running at http://localhost:${port}`);
+logger.info(`WebSocket available at ws://localhost:${port}`);

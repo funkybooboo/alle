@@ -1,4 +1,5 @@
 import type { CreateProjectInput, DateProvider, Project, UpdateProjectInput } from '@alle/shared';
+import { slugify } from '@alle/shared';
 import type { ProjectRepository } from './ProjectRepository';
 
 export class InMemoryProjectRepository implements ProjectRepository {
@@ -23,9 +24,11 @@ export class InMemoryProjectRepository implements ProjectRepository {
 
     async create(input: CreateProjectInput): Promise<Project> {
         const id = (++this.idCounter).toString();
+        const tag = input.tag ?? `project:${slugify(input.name)}`;
         const project: Project = {
             id,
             name: input.name,
+            tag,
             description: input.description ?? null,
             startDate: input.startDate ?? null,
             dueDate: input.dueDate ?? null,

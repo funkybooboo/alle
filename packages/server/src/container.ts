@@ -34,10 +34,15 @@ import type { TaskRepository } from './adapters/data/TaskRepository';
 import type { UserPreferencesRepository } from './adapters/data/UserPreferencesRepository';
 import { BunHttpServer } from './adapters/http/BunHttpServer';
 import type { HttpServer } from './adapters/http/HttpServer';
+import { BunWebSocketServer } from './adapters/ws/BunWebSocketServer';
+import { ConnectionManager } from './adapters/ws/ConnectionManager';
+import type { WebSocketServer } from './adapters/ws/WebSocketServer';
+import { EventBus } from './services/EventBus';
 import { ProjectService } from './services/ProjectService';
 import { RecurringTaskService } from './services/RecurringTaskService';
 import { TagService } from './services/TagService';
 import { TaskService } from './services/TaskService';
+import { WebSocketManager } from './services/WebSocketManager';
 
 /**
  * Dependency injection container
@@ -176,6 +181,41 @@ export class Container {
             this._projectService = new ProjectService(this.projectRepository);
         }
         return this._projectService;
+    }
+
+    private _eventBus: EventBus | null = null;
+    private _connectionManager: ConnectionManager | null = null;
+    private _wsManager: WebSocketManager | null = null;
+    private _wsServer: WebSocketServer | null = null;
+
+    get eventBus(): EventBus {
+        if (!this._eventBus) {
+            this._eventBus = new EventBus();
+        }
+        return this._eventBus;
+    }
+
+    get connectionManager(): ConnectionManager {
+        if (!this._connectionManager) {
+            this._connectionManager = new ConnectionManager();
+        }
+        return this._connectionManager;
+    }
+
+    get wsManager(): WebSocketManager {
+        if (!this._wsManager) {
+            this._wsServer = new BunWebSocketServer(this.connectionManager);
+            this._wsManager = new WebSocketManager(this._wsServer, this.eventBus);
+        }
+        return this._wsManager;
+    }
+
+    get wsServer(): WebSocketServer {
+        if (!this._wsServer) {
+            this._wsServer = new BunWebSocketServer(this.connectionManager);
+            this._wsManager = new WebSocketManager(this._wsServer, this.eventBus);
+        }
+        return this._wsServer;
     }
 
     /**

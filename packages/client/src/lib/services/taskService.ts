@@ -62,6 +62,7 @@ export interface TaskQueryParams {
     date?: string;
     tag?: string;
     someDayGroupId?: string;
+    /** @deprecated Use tag-based filtering instead */
     projectId?: string;
     includeDeleted?: boolean;
 }

@@ -26,13 +26,13 @@
     let selectedProjectId = $state<string | null>(null);
     let selectedProject = $derived(projectStore.projects.find(p => p.id === selectedProjectId));
     let projectTasks = $derived(
-        selectedProjectId
-            ? taskStore.tasks.filter(t => t.projectId === selectedProjectId)
+        selectedProjectId && selectedProject
+            ? taskStore.tasks.filter(t => t.tags.includes(selectedProject!.tag))
             : [],
     );
 
-    function getTaskCount(projectId: string): number {
-        return taskStore.tasks.filter(t => t.projectId === projectId).length;
+    function getTaskCount(tag: string): number {
+        return taskStore.tasks.filter(t => t.tags.includes(tag)).length;
     }
 
     function handleNewKeydown(e: KeyboardEvent) {
@@ -233,7 +233,7 @@
                                     {#if project.dueDate}
                                         <span>Due: {project.dueDate}</span>
                                     {/if}
-                                    <span class="task-count">{getTaskCount(project.id)} task{getTaskCount(project.id) !== 1 ? 's' : ''}</span>
+<span class="task-count">{getTaskCount(project.tag)} task{getTaskCount(project.tag) !== 1 ? 's' : ''}</span>
                                 </div>
                             </div>
                         {/if}
@@ -258,7 +258,7 @@
                                 <div class="project-desc">{project.description}</div>
                             {/if}
                             <div class="project-meta">
-                                <span class="task-count">{getTaskCount(project.id)} task{getTaskCount(project.id) !== 1 ? 's' : ''}</span>
+                                <span class="task-count">{getTaskCount(project.tag)} task{getTaskCount(project.tag) !== 1 ? 's' : ''}</span>
                             </div>
                         </div>
                     {/each}

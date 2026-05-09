@@ -18,6 +18,7 @@ class UIStore {
     editingTaskId = $state<string | null>(null);
     addingTo = $state<string | null>(null);
     todayVisible = $state(true);
+    isDragging = $state(false);
     toastMessage = $state<string | null>(null);
     toastAction = $state<{ label: string; fn: () => void } | null>(null);
     #toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -46,6 +47,14 @@ class UIStore {
         this.todayVisible = visible;
     }
 
+    startDrag() {
+        this.isDragging = true;
+    }
+
+    endDrag() {
+        this.isDragging = false;
+    }
+
     showToast(
         message: string,
         action?: { label: string; fn: () => void },
@@ -72,6 +81,7 @@ class UIStore {
         this.editingTaskId = null;
         this.addingTo = null;
         this.todayVisible = true;
+        this.isDragging = false;
         this.toastMessage = null;
         this.toastAction = null;
     }

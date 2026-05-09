@@ -1,11 +1,29 @@
 import type { TaskRepository } from '../adapters/data/TaskRepository';
 
+export interface TagInfoResult {
+    name: string;
+    count: number;
+}
+
 export class TagService {
     constructor(private taskRepo: TaskRepository) {}
 
     async listTags(): Promise<string[]> {
         const tasks = await this.taskRepo.findAll();
         return [...new Set(tasks.flatMap(t => t.tags))].sort();
+    }
+
+    async listTagInfo(): Promise<TagInfoResult[]> {
+        const tasks = await this.taskRepo.findAll();
+        const counts = new Map<string, number>();
+        for (const task of tasks) {
+            for (const tag of task.tags) {
+                counts.set(tag, (counts.get(tag) ?? 0) + 1);
+            }
+        }
+        return [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     async renameTag(from: string, to: string): Promise<number> {

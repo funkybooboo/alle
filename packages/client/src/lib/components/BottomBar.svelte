@@ -45,13 +45,13 @@
         {/each}
         {#if preferencesStore.activeFilters.projectId}
             <span class="chip">
-                Project
+                {preferencesStore.activeFilters.projectId}
                 <button class="chip-remove" onclick={() => preferencesStore.setProject(null)} aria-label="Remove project filter"><Icon src={LuX} /></button>
             </span>
         {/if}
         {#if preferencesStore.activeFilters.priority}
             <span class="chip">
-                #{preferencesStore.activeFilters.priority}
+                {preferencesStore.activeFilters.priority}
                 <button class="chip-remove" onclick={() => preferencesStore.setPriority(null)} aria-label="Remove priority filter"><Icon src={LuX} /></button>
             </span>
         {/if}

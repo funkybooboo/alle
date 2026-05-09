@@ -20,15 +20,33 @@ export function registerAllRoutes(server: HttpServer, container: Container): voi
     const logger: Logger = container.logger;
 
     registerOpenApiRoutes(server);
-    registerTaskRoutes(server, container.taskRepository, container.taskService, logger);
-    registerSomeDayGroupRoutes(server, container.someDayGroupRepository, logger);
-    registerProjectRoutes(server, container.projectRepository, container.projectService, logger);
+    registerTaskRoutes(
+        server,
+        container.taskRepository,
+        container.taskService,
+        container.eventBus,
+        logger,
+    );
+    registerSomeDayGroupRoutes(
+        server,
+        container.someDayGroupRepository,
+        container.eventBus,
+        logger,
+    );
+    registerProjectRoutes(
+        server,
+        container.projectRepository,
+        container.projectService,
+        container.eventBus,
+        logger,
+    );
     registerRecurringTaskRoutes(
         server,
         container.recurringTaskRepository,
         container.recurringTaskService,
+        container.eventBus,
         logger,
     );
-    registerTagRoutes(server, container.tagService, logger);
+    registerTagRoutes(server, container.tagService, container.eventBus, logger);
     registerUserPreferencesRoutes(server, container.userPreferencesRepository, logger);
 }

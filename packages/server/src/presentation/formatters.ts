@@ -53,6 +53,11 @@ export function formatTagsAsText(tags: string[]): string {
     return tags.join('\n');
 }
 
+export function formatTagInfoAsText(tags: { name: string; count: number }[]): string {
+    if (tags.length === 0) return 'No tags found.';
+    return tags.map(t => `${t.name} (${t.count})`).join('\n');
+}
+
 export function formatPreferencesAsText(prefs: UserPreferences): string {
     return [
         `theme: ${prefs.theme}`,

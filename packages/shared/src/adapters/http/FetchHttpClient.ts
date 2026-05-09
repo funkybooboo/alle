@@ -3,9 +3,18 @@ import { HttpClientError } from './HttpClient';
 
 export class FetchHttpClient implements HttpClient {
     private baseUrl: string;
+    private defaultHeaders: Record<string, string> = {};
 
     constructor(baseUrl: string = '') {
         this.baseUrl = baseUrl;
+    }
+
+    setDefaultHeaders(headers: Record<string, string>): void {
+        this.defaultHeaders = { ...this.defaultHeaders, ...headers };
+    }
+
+    removeDefaultHeader(key: string): void {
+        delete this.defaultHeaders[key];
     }
 
     async get<T>(url: string, options?: RequestOptions): Promise<T> {
@@ -37,6 +46,7 @@ export class FetchHttpClient implements HttpClient {
         const fullUrl: string = this.baseUrl + url;
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
+            ...this.defaultHeaders,
             ...options?.headers,
         };
 

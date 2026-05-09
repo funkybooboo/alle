@@ -16,6 +16,7 @@ import {
     UpdateSomeDayGroupSchema,
 } from '../openapi/schemas/someDayGroup';
 import { formatGroupsAsText } from '../presentation/formatters';
+import type { EventBus } from '../services/EventBus';
 import { notFoundError } from '../utils/errorHandler';
 import { extractPathParam } from '../utils/pathUtils';
 import { respondNegotiated, successResponse, withErrorHandling } from '../utils/routeHelpers';
@@ -24,6 +25,7 @@ import { parseBody } from '../utils/validate';
 export function registerSomeDayGroupRoutes(
     server: HttpServer,
     someDayGroupRepo: SomeDayGroupRepository,
+    eventBus: EventBus,
     logger: Logger,
 ): void {
     // GET /api/someday-groups
@@ -41,12 +43,14 @@ export function registerSomeDayGroupRoutes(
         'POST',
         API_ROUTES.SOMEDAY_GROUPS,
         withErrorHandling(async req => {
+            const originClientId = req.headers['x-client-id'];
             const raw = await req.json<unknown>();
             const input = parseBody(
                 CreateSomeDayGroupSchema,
                 raw,
             ) as unknown as CreateSomeDayGroupInput;
             const group = await someDayGroupRepo.create(input);
+            eventBus.publish('someDayGroup:created', { group }, originClientId);
             return successResponse(group, 201);
         }, logger),
     );
@@ -71,6 +75,7 @@ export function registerSomeDayGroupRoutes(
         withErrorHandling(async req => {
             const id = extractPathParam(req.url, API_ROUTES.SOMEDAY_GROUP_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid group ID');
+            const originClientId = req.headers['x-client-id'];
             const raw = await req.json<unknown>();
             const input = parseBody(
                 UpdateSomeDayGroupSchema,
@@ -78,6 +83,7 @@ export function registerSomeDayGroupRoutes(
             ) as unknown as UpdateSomeDayGroupInput;
             const group = await someDayGroupRepo.update(id, input);
             if (!group) throw notFoundError('SomeDayGroup', id);
+            eventBus.publish('someDayGroup:updated', { group }, originClientId);
             return successResponse(group);
         }, logger),
     );
@@ -89,8 +95,10 @@ export function registerSomeDayGroupRoutes(
         withErrorHandling(async req => {
             const id = extractPathParam(req.url, API_ROUTES.SOMEDAY_GROUP_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid group ID');
+            const originClientId = req.headers['x-client-id'];
             const deleted = await someDayGroupRepo.delete(id);
             if (!deleted) throw notFoundError('SomeDayGroup', id);
+            eventBus.publish('someDayGroup:deleted', { id }, originClientId);
             return successResponse({ success: true });
         }, logger),
     );

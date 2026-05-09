@@ -1,87 +1,109 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
-    import { preferencesStore, tagStore, projectStore } from '$lib/stores';
-    import { PRIORITY_TAGS } from '@alle/shared';
+    import { preferencesStore, tagStore } from '$lib/stores';
+    import { resolveTagKind } from '@alle/shared';
     import { onMount } from 'svelte';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
     let safeTags = $derived(tagStore?.tags ?? []);
     let safeFilterTags = $derived(preferencesStore?.activeFilters.tags ?? []);
-    let safeProjectId = $derived(preferencesStore?.activeFilters.projectId ?? null);
-    let safePriority = $derived(preferencesStore?.activeFilters.priority ?? null);
     let safeShowCompleted = $derived(preferencesStore?.activeFilters.showCompleted ?? true);
+    let tagKinds = $derived(preferencesStore?.tagKinds ?? []);
+    let tagKindMap = $derived(preferencesStore?.tagKindMap ?? {});
+
+    let groupedTags = $derived(() => {
+        const groups = new Map<string, { kind: typeof tagKinds[number] | null; tags: string[] }>();
+        const kindOrder = [...tagKinds].sort((a, b) => a.sortOrder - b.sortOrder);
+        const seenKinds = new Set<string>();
+
+        for (const kind of kindOrder) {
+            const tags: string[] = [];
+            for (const tag of safeTags) {
+                if (resolveTagKind(tag, tagKinds, tagKindMap)?.id === kind.id) {
+                    tags.push(tag);
+                }
+            }
+            if (tags.length > 0) {
+                groups.set(kind.id, { kind, tags });
+                seenKinds.add(kind.id);
+            }
+        }
+
+        const uncategorized: string[] = [];
+        for (const tag of safeTags) {
+            const resolved = resolveTagKind(tag, tagKinds, tagKindMap);
+            if (!resolved) {
+                uncategorized.push(tag);
+            }
+        }
+        if (uncategorized.length > 0) {
+            groups.set('__uncategorized__', { kind: null, tags: uncategorized });
+        }
+
+        return groups;
+    });
 
     onMount(() => {
         tagStore.fetchAll();
-        projectStore.fetchAll();
     });
 </script>
 
 <Modal title="Filter" onclose={onclose}>
     <div class="filter">
-        <fieldset class="section" aria-labelledby="filter-tags-heading">
-            <legend class="section-heading" id="filter-tags-heading">Tags</legend>
-            {#if safeTags.length > 0}
-                <div class="tag-grid" role="group" aria-label="Tag filters">
-                    {#each safeTags as tag}
+        {#each [...groupedTags().values()] as group}
+            <fieldset class="section" aria-labelledby="filter-heading-{group.kind?.id ?? 'other'}">
+                <legend class="section-heading" id="filter-heading-{group.kind?.id ?? 'other'}">
+                    {group.kind?.name ?? 'Other tags'}
+                </legend>
+                {#if group.kind?.behavior === 'single'}
+                    <div class="single-options" role="radiogroup" aria-label="{group.kind.name} filter">
                         <button
-                            class="tag-option"
-                            class:active={safeFilterTags.includes(tag)}
-                            onclick={() => preferencesStore.toggleTag(tag)}
-                            aria-pressed={safeFilterTags.includes(tag)}
+                            class="single-option"
+                            class:active={!safeFilterTags.some(t => group.tags.includes(t))}
+                            onclick={() => {
+                                const current = safeFilterTags.filter(t => !group.tags.includes(t));
+                                preferencesStore.setTags(current);
+                            }}
+                            role="radio"
+                            aria-checked={!safeFilterTags.some(t => group.tags.includes(t))}
                         >
-                            #{tag}
+                            All
                         </button>
-                    {/each}
-                </div>
-            {:else}
-                <p class="hint">No tags yet. Add tags to tasks to filter by them.</p>
-            {/if}
-        </fieldset>
-
-        <fieldset class="section" aria-labelledby="filter-priority-heading">
-            <legend class="section-heading" id="filter-priority-heading">Priority</legend>
-            <div class="priority-options" role="radiogroup" aria-label="Priority filter">
-                {#each [null, ...PRIORITY_TAGS] as p}
-                    <button
-                        class="priority-option"
-                        class:active={safePriority === p}
-                        onclick={() => preferencesStore.setPriority(p)}
-                        role="radio"
-                        aria-checked={safePriority === p}
-                    >
-                        {p ? `#${p}` : 'All'}
-                    </button>
-                {/each}
-            </div>
-        </fieldset>
-
-        <fieldset class="section" aria-labelledby="filter-project-heading">
-            <legend class="section-heading" id="filter-project-heading">Project</legend>
-            <div class="project-options" role="radiogroup" aria-label="Project filter">
-                <button
-                    class="project-option"
-                    class:active={safeProjectId === null}
-                    onclick={() => preferencesStore.setProject(null)}
-                    role="radio"
-                    aria-checked={safeProjectId === null}
-                >
-                    All projects
-                </button>
-                {#each projectStore.projects as project}
-                    <button
-                        class="project-option"
-                        class:active={safeProjectId === project.id}
-                        onclick={() => preferencesStore.setProject(project.id)}
-                        role="radio"
-                        aria-checked={safeProjectId === project.id}
-                    >
-                        {project.name}
-                    </button>
-                {/each}
-            </div>
-        </fieldset>
+                        {#each group.tags as tag}
+                            <button
+                                class="single-option"
+                                class:active={safeFilterTags.includes(tag)}
+                                onclick={() => {
+                                    const current = safeFilterTags.filter(t => !group.tags.includes(t));
+                                    if (!safeFilterTags.includes(tag)) {
+                                        current.push(tag);
+                                    }
+                                    preferencesStore.setTags(current);
+                                }}
+                                role="radio"
+                                aria-checked={safeFilterTags.includes(tag)}
+                            >
+                                #{tag}
+                            </button>
+                        {/each}
+                    </div>
+                {:else}
+                    <div class="tag-grid" role="group" aria-label="{group.kind?.name ?? 'Other'} tag filters">
+                        {#each group.tags as tag}
+                            <button
+                                class="tag-option"
+                                class:active={safeFilterTags.includes(tag)}
+                                onclick={() => preferencesStore.toggleTag(tag)}
+                                aria-pressed={safeFilterTags.includes(tag)}
+                            >
+                                #{tag}
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
+            </fieldset>
+        {/each}
 
         <fieldset class="section" aria-labelledby="filter-status-heading">
             <legend class="section-heading" id="filter-status-heading">Status</legend>
@@ -151,13 +173,13 @@
         color: var(--color-accent);
     }
 
-    .priority-options, .project-options {
+    .single-options {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
     }
 
-    .priority-option, .project-option {
+    .single-option {
         background: var(--color-iron-100);
         border: 1px solid var(--color-border);
         border-radius: 6px;
@@ -168,11 +190,11 @@
         transition: all 0.15s;
     }
 
-    .priority-option:hover, .project-option:hover {
+    .single-option:hover {
         background: var(--color-iron-200);
     }
 
-    .priority-option.active, .project-option.active {
+    .single-option.active {
         background: var(--color-accent-light);
         border-color: var(--color-accent);
         color: var(--color-accent);

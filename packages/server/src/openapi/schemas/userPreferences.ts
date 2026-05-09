@@ -16,8 +16,6 @@ const TagKindSchema = z.object({
 
 const ActiveFiltersSchema = z.object({
     tags: z.array(z.string()),
-    projectId: z.string().nullable(),
-    priority: z.string().nullable(),
     showCompleted: z.boolean(),
 });
 
