@@ -2,12 +2,13 @@
     import TaskRow from './TaskRow.svelte';
     import InlineAddTask from './InlineAddTask.svelte';
     import type { Task } from '@alle/shared';
-    import { uiStore, taskStore, getTasksByDate } from '$lib/stores';
+    import { uiStore, taskStore } from '$lib/stores';
+    import { container } from '$lib/container';
     import { dndzone } from 'svelte-dnd-action';
 
     let { id, dateStr, label, tasks }: { id: string; dateStr: string; label: string; tasks: Task[] } = $props();
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = container.dateProvider.today();
     let isToday = $derived(dateStr === todayStr);
     let taskCount = $derived(tasks.length);
     let completedCount = $derived(tasks.filter(t => t.completed).length);

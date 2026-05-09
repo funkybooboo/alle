@@ -1,4 +1,8 @@
-import type { RecurringTask } from '@alle/shared';
+import type {
+    CreateRecurringTaskInput,
+    RecurringTask,
+    UpdateRecurringTaskInput,
+} from '@alle/shared';
 import { container } from '$lib/container';
 import { RecurringTaskService } from '$lib/services/recurringTaskService';
 
@@ -16,19 +20,7 @@ class RecurringTaskStore {
         }
     }
 
-    async create(input: {
-        text: string;
-        frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-        startDate: string;
-        notes?: string | null;
-        tags?: string[];
-        interval?: number;
-        dayOfWeek?: number | null;
-        dayOfMonth?: number | null;
-        endDate?: string | null;
-        projectId?: string | null;
-        rolloverEnabled?: boolean;
-    }) {
+    async create(input: CreateRecurringTaskInput) {
         try {
             const task = await recurringTaskService.create(input);
             this.tasks = [...this.tasks, task];
@@ -38,10 +30,7 @@ class RecurringTaskStore {
         }
     }
 
-    async update(
-        id: string,
-        input: Partial<Omit<RecurringTask, 'id' | 'createdAt' | 'updatedAt'>>,
-    ) {
+    async update(id: string, input: UpdateRecurringTaskInput) {
         try {
             const updated = await recurringTaskService.update(id, input);
             this.tasks = this.tasks.map(t => (t.id === id ? updated : t));

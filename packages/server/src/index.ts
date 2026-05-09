@@ -6,7 +6,7 @@
  * one line in container.ts — business logic stays unchanged.
  */
 
-import type { ApiResponse } from '@alle/shared';
+import { API_ROUTES, type ApiResponse, DEFAULT_RATE_LIMIT_RPM } from '@alle/shared';
 import type { HttpResponse } from './adapters/http/types';
 import { container } from './container';
 import { createRateLimiterGuard } from './middleware/rateLimiter';
@@ -15,7 +15,7 @@ import { registerAllRoutes } from './routes/index';
 
 const PORT = container.config.getNumber('PORT', 4000);
 const NODE_ENV = container.config.get('NODE_ENV', 'production');
-const RATE_LIMIT_RPM = container.config.getNumber('RATE_LIMIT_RPM', 300);
+const RATE_LIMIT_RPM = container.config.getNumber('RATE_LIMIT_RPM', DEFAULT_RATE_LIMIT_RPM);
 
 const server = container.httpServer;
 const logger = container.logger;
@@ -32,7 +32,7 @@ server.route('GET', '/', async (): Promise<HttpResponse> => {
 });
 
 // Health check
-server.route('GET', '/api/health', async (): Promise<HttpResponse> => {
+server.route('GET', API_ROUTES.HEALTH, async (): Promise<HttpResponse> => {
     const response: ApiResponse<{ status: string }> = { data: { status: 'ok' } };
     return { status: 200, headers: {}, body: response };
 });

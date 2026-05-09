@@ -1,5 +1,5 @@
 import type { CreateTaskInput, DateProvider, Task, UpdateTaskInput } from '@alle/shared';
-import { TASK_DEFAULTS } from './defaults';
+import { PURGE_RETENTION_DAYS, TASK_DEFAULTS } from '@alle/shared';
 import type { TaskRepository } from './TaskRepository';
 
 export class InMemoryTaskRepository implements TaskRepository {
@@ -137,7 +137,7 @@ export class InMemoryTaskRepository implements TaskRepository {
         return restored;
     }
 
-    async findDeleted(maxAgeDays: number = 7): Promise<Task[]> {
+    async findDeleted(maxAgeDays: number = PURGE_RETENTION_DAYS): Promise<Task[]> {
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - maxAgeDays);
 
@@ -146,7 +146,7 @@ export class InMemoryTaskRepository implements TaskRepository {
             .sort((a, b) => (b.deletedAt ?? '').localeCompare(a.deletedAt ?? ''));
     }
 
-    async purgeDeleted(maxAgeDays: number = 7): Promise<number> {
+    async purgeDeleted(maxAgeDays: number = PURGE_RETENTION_DAYS): Promise<number> {
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - maxAgeDays);
         const cutoffStr = cutoff.toISOString();

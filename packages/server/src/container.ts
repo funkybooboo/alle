@@ -34,6 +34,10 @@ import type { TaskRepository } from './adapters/data/TaskRepository';
 import type { UserPreferencesRepository } from './adapters/data/UserPreferencesRepository';
 import { BunHttpServer } from './adapters/http/BunHttpServer';
 import type { HttpServer } from './adapters/http/HttpServer';
+import { ProjectService } from './services/ProjectService';
+import { RecurringTaskService } from './services/RecurringTaskService';
+import { TagService } from './services/TagService';
+import { TaskService } from './services/TaskService';
 
 /**
  * Dependency injection container
@@ -49,6 +53,10 @@ export class Container {
     private _userPreferencesRepository: UserPreferencesRepository | null = null;
     private _logger: Logger | null = null;
     private _dateProvider: DateProvider | null = null;
+    private _taskService: TaskService | null = null;
+    private _tagService: TagService | null = null;
+    private _recurringTaskService: RecurringTaskService | null = null;
+    private _projectService: ProjectService | null = null;
 
     /**
      * Get the configuration provider
@@ -137,6 +145,37 @@ export class Container {
             );
         }
         return this._userPreferencesRepository;
+    }
+
+    get taskService(): TaskService {
+        if (!this._taskService) {
+            this._taskService = new TaskService(this.taskRepository);
+        }
+        return this._taskService;
+    }
+
+    get tagService(): TagService {
+        if (!this._tagService) {
+            this._tagService = new TagService(this.taskRepository);
+        }
+        return this._tagService;
+    }
+
+    get recurringTaskService(): RecurringTaskService {
+        if (!this._recurringTaskService) {
+            this._recurringTaskService = new RecurringTaskService(
+                this.recurringTaskRepository,
+                this.taskRepository,
+            );
+        }
+        return this._recurringTaskService;
+    }
+
+    get projectService(): ProjectService {
+        if (!this._projectService) {
+            this._projectService = new ProjectService(this.projectRepository);
+        }
+        return this._projectService;
     }
 
     /**

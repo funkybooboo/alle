@@ -1,4 +1,4 @@
-import type { SomeDayGroup } from '@alle/shared';
+import type { CreateSomeDayGroupInput, SomeDayGroup, UpdateSomeDayGroupInput } from '@alle/shared';
 import { container } from '$lib/container';
 import { SomeDayGroupService } from '$lib/services/someDayGroupService';
 
@@ -20,12 +20,7 @@ class SomeDayGroupStore {
         }
     }
 
-    async create(input: {
-        name: string;
-        tag: string;
-        position: number;
-        description?: string | null;
-    }) {
+    async create(input: CreateSomeDayGroupInput) {
         try {
             const group = await someDayGroupService.create(input);
             this.groups = [...this.groups, group].sort((a, b) => a.position - b.position);
@@ -35,15 +30,7 @@ class SomeDayGroupStore {
         }
     }
 
-    async update(
-        id: string,
-        input: Partial<{
-            name: string;
-            description: string | null;
-            tag: string;
-            position: number;
-        }>,
-    ) {
+    async update(id: string, input: UpdateSomeDayGroupInput) {
         try {
             const updated = await someDayGroupService.update(id, input);
             this.groups = this.groups.map(g => (g.id === id ? updated : g));

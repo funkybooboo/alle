@@ -15,11 +15,13 @@ export const Default: Story = {};
 export const WithFilters: Story = {
     parameters: {
         stores: {
-            filterStore: {
-                tags: ['work', 'p1'],
-                projectId: null,
-                priority: null,
-                showCompleted: false,
+            preferencesStore: {
+                activeFilters: {
+                    tags: ['work', 'p1'],
+                    projectId: null,
+                    priority: null,
+                    showCompleted: false,
+                },
             },
         },
     },

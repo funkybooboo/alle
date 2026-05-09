@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { preferencesStore, someDayGroupStore, uiStore, taskStore, filterStore } from '$lib/stores';
+    import { preferencesStore, someDayGroupStore, uiStore, taskStore } from '$lib/stores';
     import { applyFilters } from '$lib/filters';
     import TaskRow from './TaskRow.svelte';
     import InlineAddTask from './InlineAddTask.svelte';
@@ -23,7 +23,7 @@
 
     let isCollapsed = $derived(preferencesStore.someDayPanelWidth < COLLAPSED_THRESHOLD);
 
-    let filteredSomedayTasks = $derived(applyFilters(taskStore.somedayTasks, filterStore));
+    let filteredSomedayTasks = $derived(applyFilters(taskStore.somedayTasks, preferencesStore.activeFilters));
 
     let groupLocalTasks = $state<Record<string, Task[]>>({});
     let groupTasksKeys = $state<Record<string, string>>({});

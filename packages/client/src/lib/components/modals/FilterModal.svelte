@@ -1,15 +1,16 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
-    import { filterStore, tagStore, projectStore } from '$lib/stores';
+    import { preferencesStore, tagStore, projectStore } from '$lib/stores';
+    import { PRIORITY_TAGS } from '@alle/shared';
     import { onMount } from 'svelte';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
     let safeTags = $derived(tagStore?.tags ?? []);
-    let safeFilterTags = $derived(filterStore?.tags ?? []);
-    let safeProjectId = $derived(filterStore?.projectId ?? null);
-    let safePriority = $derived(filterStore?.priority ?? null);
-    let safeShowCompleted = $derived(filterStore?.showCompleted ?? true);
+    let safeFilterTags = $derived(preferencesStore?.activeFilters.tags ?? []);
+    let safeProjectId = $derived(preferencesStore?.activeFilters.projectId ?? null);
+    let safePriority = $derived(preferencesStore?.activeFilters.priority ?? null);
+    let safeShowCompleted = $derived(preferencesStore?.activeFilters.showCompleted ?? true);
 
     onMount(() => {
         tagStore.fetchAll();
@@ -27,7 +28,7 @@
                         <button
                             class="tag-option"
                             class:active={safeFilterTags.includes(tag)}
-                            onclick={() => filterStore.toggleTag(tag)}
+                            onclick={() => preferencesStore.toggleTag(tag)}
                             aria-pressed={safeFilterTags.includes(tag)}
                         >
                             #{tag}
@@ -42,11 +43,11 @@
         <fieldset class="section" aria-labelledby="filter-priority-heading">
             <legend class="section-heading" id="filter-priority-heading">Priority</legend>
             <div class="priority-options" role="radiogroup" aria-label="Priority filter">
-                {#each [null, 'p1', 'p2', 'p3'] as p}
+                {#each [null, ...PRIORITY_TAGS] as p}
                     <button
                         class="priority-option"
                         class:active={safePriority === p}
-                        onclick={() => filterStore.setPriority(p)}
+                        onclick={() => preferencesStore.setPriority(p)}
                         role="radio"
                         aria-checked={safePriority === p}
                     >
@@ -62,7 +63,7 @@
                 <button
                     class="project-option"
                     class:active={safeProjectId === null}
-                    onclick={() => filterStore.setProject(null)}
+                    onclick={() => preferencesStore.setProject(null)}
                     role="radio"
                     aria-checked={safeProjectId === null}
                 >
@@ -72,7 +73,7 @@
                     <button
                         class="project-option"
                         class:active={safeProjectId === project.id}
-                        onclick={() => filterStore.setProject(project.id)}
+                        onclick={() => preferencesStore.setProject(project.id)}
                         role="radio"
                         aria-checked={safeProjectId === project.id}
                     >
@@ -88,14 +89,14 @@
                 <input
                     type="checkbox"
                     checked={safeShowCompleted}
-                    onchange={(e) => filterStore.setShowCompleted(e.currentTarget.checked)}
+                    onchange={(e) => preferencesStore.setShowCompleted(e.currentTarget.checked)}
                     id="filter-show-completed"
                 />
                 <span>Show completed tasks</span>
             </label>
         </fieldset>
 
-        <button class="clear-btn" onclick={() => filterStore.clearAll()}>
+        <button class="clear-btn" onclick={() => preferencesStore.clearAll()}>
             Clear all filters
         </button>
     </div>

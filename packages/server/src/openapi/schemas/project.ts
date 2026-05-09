@@ -45,3 +45,7 @@ export const UpdateProjectSchema = registry.register(
         })
         .openapi('UpdateProjectInput'),
 );
+
+export const ProjectQuerySchema = z.object({
+    active: z.enum(['true', 'false']).optional(),
+});

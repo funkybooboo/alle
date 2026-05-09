@@ -1,13 +1,6 @@
-import type { Task } from '@alle/shared';
+import type { ActiveFilters, Task } from '@alle/shared';
 
-export interface FilterState {
-    tags: string[];
-    projectId: string | null;
-    priority: string | null;
-    showCompleted: boolean;
-}
-
-export function applyFilters(tasks: Task[], filters: FilterState): Task[] {
+export function applyFilters(tasks: Task[], filters: ActiveFilters): Task[] {
     let result = tasks;
 
     if (filters.tags.length > 0) {

@@ -15,8 +15,10 @@ export const Default: Story = {
     parameters: {
         stores: {
             taskStore: { tasks: mockTasks, loading: false, error: null },
-            filterStore: { tags: [], projectId: null, priority: null, showCompleted: false },
-            preferencesStore: { showEmptyDays: true },
+            preferencesStore: {
+                activeFilters: { tags: [], projectId: null, priority: null, showCompleted: false },
+                showEmptyDays: true,
+            },
             uiStore: { focusedTaskId: null, addingTo: null },
         },
     },

@@ -94,44 +94,29 @@ class TaskStore {
     restore(task: Task) {
         this.tasks = [...this.tasks, task];
     }
+
+    async getTrash(): Promise<Task[]> {
+        return taskService.getTrash();
+    }
+
+    async softDelete(id: string): Promise<boolean> {
+        return this.remove(id);
+    }
+
+    async restoreFromTrash(id: string): Promise<Task | null> {
+        try {
+            const task = await taskService.restore(id);
+            this.tasks = [...this.tasks, task];
+            return task;
+        } catch (e) {
+            this.error = e instanceof Error ? e.message : 'Failed to restore task';
+            return null;
+        }
+    }
+
+    async purge(): Promise<number> {
+        return taskService.purge();
+    }
 }
 
 export const taskStore = new TaskStore();
-
-export function getTasksByDate(tasks: Task[]): Map<string, Task[]> {
-    const map = new Map<string, Task[]>();
-    const sorted = [...tasks].sort((a, b) => {
-        const posA = a.position ?? Infinity;
-        const posB = b.position ?? Infinity;
-        if (posA !== posB) return posA - posB;
-        return a.createdAt.localeCompare(b.createdAt);
-    });
-    const placed = new Set<string>();
-
-    for (const task of sorted) {
-        if (task.parentId === null) {
-            const key = task.date ?? '__someday__';
-            const group = map.get(key) ?? [];
-            group.push(task);
-            placed.add(task.id);
-            const children = sorted.filter(c => c.parentId === task.id);
-            for (const child of children) {
-                group.push(child);
-                placed.add(child.id);
-            }
-            map.set(key, group);
-        }
-    }
-
-    for (const task of sorted) {
-        if (!placed.has(task.id)) {
-            const key = task.date ?? '__someday__';
-            const group = map.get(key) ?? [];
-            group.push(task);
-            placed.add(task.id);
-            map.set(key, group);
-        }
-    }
-
-    return map;
-}

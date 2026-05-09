@@ -1,6 +1,6 @@
 <script lang="ts">
     import { taskStore, uiStore } from '$lib/stores';
-    import { TASK_CONSTRAINTS } from '@alle/shared';
+    import { isPriorityTag, TASK_CONSTRAINTS } from '@alle/shared';
     import type { Task } from '@alle/shared';
     import { Icon } from 'svelte-icons-pack';
     import { LuCheck, LuCircle, LuRepeat, LuFileText, LuX } from 'svelte-icons-pack/lu';
@@ -8,7 +8,7 @@
     let { task, dateStr = '' }: { task: Task; dateStr?: string } = $props();
 
     let isEditing = $derived(uiStore.editingTaskId === task.id);
-    let priorityTag = $derived(task.tags.find(t => t.startsWith('p') && (t === 'p1' || t === 'p2' || t === 'p3')));
+    let priorityTag = $derived(task.tags.find(t => isPriorityTag(t)));
     let otherTags = $derived(task.tags.filter(t => t !== priorityTag));
     let hasStartTime = $derived(task.startTime !== null);
 

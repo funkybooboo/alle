@@ -246,6 +246,60 @@ Layout: `alle logo | filter chips | task count | ▲ Today | docs ↗`
 
 ---
 
+## v0.4.1: Architecture Clean-Up
+
+Refactoring pass to fix API mismatches, extract shared types/constants/utilities, add server service layer, and clean up client architecture.
+
+### Client/Server API Bug Fixes
+- [x] Fix `tagService.getAll()` — wrong response type shape (`{data: {tags: string[]}}` → `ApiResponse<string[]>`)
+- [x] Fix `tagService.rename()` — wrong HTTP method (PUT→POST), wrong body fields (`{oldName,newName}`→`{from,to}`), wrong response type
+- [x] Fix `tagService.merge()` — wrong HTTP method (PUT→POST), wrong body shape (`{sourceTag,targetTag}`→`{sources:string[],target}`), wrong response type
+- [x] Fix `projectService.activate()`/`deactivate()` — wrong HTTP method (PUT→POST)
+- [x] Fix `tagStore` — re-fetch tags after rename/merge instead of using stale return value
+
+### Shared Package — Types, Constants, Utilities
+- [x] Add `ErrorResponseBody`, `TaskQueryParams`, `RenameTagRequest/Response`, `MergeTagRequest/Response` to `shared/types/api.ts`
+- [x] Add `ThemeType`, `DeleteConfirmationType` to `shared/types/userPreferences.ts`
+- [x] Add `USER_PREFERENCES_DEFAULTS`, `TASK_DEFAULTS`, `RECURRING_TASK_DEFAULTS`, `PURGE_RETENTION_DAYS`, `DEFAULT_DAY_RANGE`, `DEFAULT_TOAST_DURATION_MS`, `DEFAULT_RATE_LIMIT_RPM`, `PRIORITY_TAGS`, `SOMEDAY_KEY`, weekday/month name constants, `CONTENT_TYPE_TEXT`, `MAX_SEARCH_RESULTS`, route patterns to `shared/constants.ts`
+- [x] Add `RateLimitError`, `createNotFoundError`, `createValidationError` to shared errors
+- [x] Create `shared/utils/` with `isPriorityTag`, `parseTags`, `formatTags`, `slugify`, `groupTasksByDate`, `isOverdue`, `hasDeadlineTag`, `formatFrequency`
+- [x] Delete `server/adapters/data/defaults.ts` — replaced by shared constants
+- [x] Fix `preferencesStore` — remove local `ActiveFilters` type, use `ThemeType`/`DeleteConfirmationType` from shared, use `USER_PREFERENCES_DEFAULTS`
+- [x] Fix `filters.ts` — replace local `FilterState` with `ActiveFilters` from shared
+
+### Server Service Layer
+- [x] Create `server/services/TaskService.ts` — listTasks, completeTask, getTrash, purge
+- [x] Create `server/services/TagService.ts` — listTags, renameTag, mergeTags
+- [x] Create `server/services/RecurringTaskService.ts` — generateInstances
+- [x] Create `server/services/ProjectService.ts` — listProjects
+- [x] Wire services into Container
+- [x] Add `respondNegotiated()` helper to `routeHelpers.ts`
+- [x] Refactor all route files to thin HTTP adapters calling services
+- [x] Move query Zod schemas from route files to `openapi/schemas/`
+- [x] Move `formatters.ts` to `server/presentation/formatters.ts`
+
+### Client Architecture Clean-Up
+- [x] Merge `filterStore` into `preferencesStore` — toggleTag, clearAll, setTags, setProject, setPriority, setShowCompleted, activeFilterCount getter
+- [x] Add `getTrash()`, `softDelete()`, `restoreFromTrash()`, `purge()` to `taskStore`
+- [x] Update `TrashModal` to use `taskStore` instead of direct `TaskService`
+- [x] Replace inline types in stores with shared input types (`CreateRecurringTaskInput`, `CreateProjectInput`, `CreateSomeDayGroupInput`, etc.)
+- [x] Replace hardcoded `'__someday__'` with `SOMEDAY_KEY`
+- [x] Replace hardcoded `'p1'`/`'p2'`/`'p3'` with `PRIORITY_TAGS` and `isPriorityTag()`
+- [x] Replace hardcoded `5000` toast duration with `DEFAULT_TOAST_DURATION_MS`
+- [x] Replace hardcoded `7` purge days with `PURGE_RETENTION_DAYS`
+- [x] Replace `new Date().toISOString().split('T')[0]` with `container.dateProvider.today()` (6 locations)
+- [x] Replace `groupTasksByDate` local function with shared utility
+- [x] Replace hardcoded month/day name arrays with shared constants
+
+### Server Route Constants & Content Negotiation
+- [x] Replace hardcoded route strings in server routes with `API_ROUTES` pattern constants
+- [x] Use `CONTENT_TYPE_TEXT` constant in `respondNegotiated()`
+- [x] Use `DEFAULT_RATE_LIMIT_RPM` in server config
+- [x] Use `PURGE_RETENTION_DAYS` in repository defaults
+- [x] Use `API_ROUTES.HEALTH` in server index
+
+---
+
 ## v0.5.0: Keyboard Navigation & Command Palette
 
 This release makes Alle fully operable without a mouse, and finalizes the complete keyboard shortcut system.

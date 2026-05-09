@@ -50,4 +50,77 @@ export const API_ROUTES = {
     // OpenAPI
     OPENAPI_YAML: '/openapi.yaml',
     OPENAPI_JSON: '/openapi.json',
+
+    // Route patterns (for server-side path param extraction)
+    TASK_ROUTE_PATTERN: '/api/tasks/:id',
+    TASK_RESTORE_PATTERN: '/api/tasks/:id/restore',
+    PROJECT_ROUTE_PATTERN: '/api/projects/:id',
+    PROJECT_ACTIVATE_PATTERN: '/api/projects/:id/activate',
+    PROJECT_DEACTIVATE_PATTERN: '/api/projects/:id/deactivate',
+    RECURRING_TASK_ROUTE_PATTERN: '/api/recurring-tasks/:id',
+    RECURRING_TASK_GENERATE_PATTERN: '/api/recurring-tasks/:id/generate',
+    SOMEDAY_GROUP_ROUTE_PATTERN: '/api/someday-groups/:id',
 } as const;
+
+export const USER_PREFERENCES_DEFAULTS = {
+    theme: 'system' as const,
+    locale: 'en',
+    someDayPanelWidth: 280,
+    someDayPanelCollapsed: false,
+    rolloverEnabled: true,
+    showEmptyDays: true,
+    deleteConfirmation: 'instant' as const,
+    activeFilters: {
+        tags: [],
+        projectId: null as string | null,
+        priority: null as string | null,
+        showCompleted: true,
+    },
+} as const;
+
+export const TASK_DEFAULTS = {
+    rolloverEnabled: false,
+    tags: [] as string[],
+} as const;
+
+export const RECURRING_TASK_DEFAULTS = {
+    rolloverEnabled: true,
+    interval: 1,
+    tags: [] as string[],
+} as const;
+
+export const PURGE_RETENTION_DAYS = 7;
+export const DEFAULT_DAY_RANGE = 30;
+export const DEFAULT_TOAST_DURATION_MS = 5000;
+export const DEFAULT_RATE_LIMIT_RPM = 300;
+
+export const PRIORITY_TAGS = ['p1', 'p2', 'p3'] as const;
+export const SOMEDAY_KEY = '__someday__';
+
+export const WEEKDAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+export const WEEKDAY_NAMES = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+] as const;
+export const MONTH_NAMES = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+] as const;
+
+export const CONTENT_TYPE_TEXT = 'text/plain; charset=utf-8';
+export const MAX_SEARCH_RESULTS = 20;

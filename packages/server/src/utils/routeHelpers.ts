@@ -5,8 +5,9 @@
  * so every route file doesn't need its own copy.
  */
 
-import type { ApiResponse, Logger } from '@alle/shared';
+import { type ApiResponse, CONTENT_TYPE_TEXT, type Logger } from '@alle/shared';
 import type { HttpRequest, HttpResponse } from '../adapters/http/types';
+import { negotiate } from './contentNegotiation';
 import { errorToResponse } from './errorHandler';
 
 export type RouteHandlerFn = (req: HttpRequest) => Promise<HttpResponse>;
@@ -31,4 +32,20 @@ export function withErrorHandling(handler: RouteHandlerFn, logger: Logger): Rout
 export function successResponse<T>(data: T, status = 200): HttpResponse {
     const response: ApiResponse<T> = { data };
     return { status, headers: {}, body: response };
+}
+
+export function respondNegotiated<T>(
+    req: HttpRequest,
+    data: T,
+    formatAsText: (data: T) => string,
+    status = 200,
+): HttpResponse {
+    if (negotiate(req.headers['accept']) === 'text') {
+        return {
+            status,
+            headers: { 'Content-Type': CONTENT_TYPE_TEXT },
+            body: formatAsText(data),
+        };
+    }
+    return successResponse(data, status);
 }

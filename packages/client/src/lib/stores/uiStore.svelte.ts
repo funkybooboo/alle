@@ -1,3 +1,5 @@
+import { DEFAULT_TOAST_DURATION_MS } from '@alle/shared';
+
 export type ModalType =
     | 'summary'
     | 'projects'
@@ -44,7 +46,11 @@ class UIStore {
         this.todayVisible = visible;
     }
 
-    showToast(message: string, action?: { label: string; fn: () => void }, duration = 5000) {
+    showToast(
+        message: string,
+        action?: { label: string; fn: () => void },
+        duration = DEFAULT_TOAST_DURATION_MS,
+    ) {
         if (this.#toastTimer) clearTimeout(this.#toastTimer);
         this.toastMessage = message;
         this.toastAction = action ?? null;

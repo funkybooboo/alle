@@ -38,7 +38,7 @@ export class ProjectService {
     }
 
     async activate(id: string): Promise<Project> {
-        const response = await this.http.put<ApiResponse<Project>>(
+        const response = await this.http.post<ApiResponse<Project>>(
             API_ROUTES.PROJECT_ACTIVATE(id),
             {},
         );
@@ -46,7 +46,7 @@ export class ProjectService {
     }
 
     async deactivate(id: string): Promise<Project> {
-        const response = await this.http.put<ApiResponse<Project>>(
+        const response = await this.http.post<ApiResponse<Project>>(
             API_ROUTES.PROJECT_DEACTIVATE(id),
             {},
         );

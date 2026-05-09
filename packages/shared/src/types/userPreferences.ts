@@ -1,3 +1,6 @@
+export type ThemeType = 'light' | 'dark' | 'system';
+export type DeleteConfirmationType = 'instant' | 'confirm';
+
 /**
  * Active filter state — persisted per-user so filters survive page reloads
  */
@@ -14,13 +17,13 @@ export interface ActiveFilters {
  */
 export interface UserPreferences {
     id: 'default';
-    theme: 'light' | 'dark' | 'system';
+    theme: ThemeType;
     locale: string;
     someDayPanelWidth: number;
     someDayPanelCollapsed: boolean;
     rolloverEnabled: boolean;
     showEmptyDays: boolean;
-    deleteConfirmation: 'instant' | 'confirm';
+    deleteConfirmation: DeleteConfirmationType;
     activeFilters: ActiveFilters;
     updatedAt: string;
 }

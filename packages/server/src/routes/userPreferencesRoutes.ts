@@ -7,9 +7,8 @@ import { API_ROUTES, type UpdateUserPreferencesInput } from '@alle/shared';
 import type { UserPreferencesRepository } from '../adapters/data/UserPreferencesRepository';
 import type { HttpServer } from '../adapters/http/HttpServer';
 import { UpdateUserPreferencesSchema } from '../openapi/schemas/userPreferences';
-import { negotiate } from '../utils/contentNegotiation';
-import { formatPreferencesAsText } from '../utils/formatters';
-import { successResponse, withErrorHandling } from '../utils/routeHelpers';
+import { formatPreferencesAsText } from '../presentation/formatters';
+import { respondNegotiated, successResponse, withErrorHandling } from '../utils/routeHelpers';
 import { parseBody } from '../utils/validate';
 
 export function registerUserPreferencesRoutes(
@@ -23,14 +22,7 @@ export function registerUserPreferencesRoutes(
         API_ROUTES.USER_PREFERENCES,
         withErrorHandling(async req => {
             const prefs = await userPreferencesRepo.get();
-            if (negotiate(req.headers['accept']) === 'text') {
-                return {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                    body: formatPreferencesAsText(prefs),
-                };
-            }
-            return successResponse(prefs);
+            return respondNegotiated(req, prefs, formatPreferencesAsText);
         }, logger),
     );
 

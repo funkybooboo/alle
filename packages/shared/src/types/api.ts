@@ -50,3 +50,36 @@ export interface TaskApi {
         response: ApiResponse<{ id: string }>;
     };
 }
+
+export interface ErrorResponseBody {
+    error: string;
+    code: string;
+    details?: unknown;
+}
+
+export interface TaskQueryParams {
+    completed?: boolean;
+    date?: string;
+    tag?: string;
+    someDayGroupId?: string;
+    someday?: boolean;
+    includeDeleted?: boolean;
+}
+
+export interface RenameTagRequest {
+    from: string;
+    to: string;
+}
+
+export interface RenameTagResponse {
+    updated: number;
+}
+
+export interface MergeTagRequest {
+    sources: string[];
+    target: string;
+}
+
+export interface MergeTagResponse {
+    updated: number;
+}

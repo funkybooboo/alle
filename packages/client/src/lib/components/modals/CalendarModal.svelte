@@ -1,6 +1,7 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
     import { uiStore } from '$lib/stores';
+    import { container } from '$lib/container';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
@@ -16,7 +17,7 @@
     }
 
     function goToToday() {
-        selectedDate = new Date().toISOString().split('T')[0];
+        selectedDate = container.dateProvider.today();
         handleDateSelect();
     }
 
@@ -75,7 +76,7 @@
                     <button
                         class="day-cell"
                         class:selected={selectedDate === dateStr(day)}
-                        class:today={dateStr(day) === new Date().toISOString().split('T')[0]}
+                        class:today={dateStr(day) === container.dateProvider.today()}
                         onclick={() => { selectedDate = dateStr(day); handleDateSelect(); }}
                     >
                         {day}

@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { taskStore, filterStore } from '$lib/stores';
+    import { taskStore, preferencesStore } from '$lib/stores';
+    import { container } from '$lib/container';
     import { Icon } from 'svelte-icons-pack';
     import { LuX, LuSquareCheck } from 'svelte-icons-pack/lu';
 
@@ -8,12 +9,12 @@
     let todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
     function handleHomeClick() {
-        filterStore.clearAll();
+        preferencesStore.clearAll();
         scrollToToday();
     }
 
     function scrollToToday() {
-        const todayEl = document.getElementById(`day-${new Date().toISOString().split('T')[0]}`);
+        const todayEl = document.getElementById(`day-${container.dateProvider.today()}`);
         const container = document.querySelector('.day-list-area') as HTMLElement | null;
         if (todayEl && container) {
             const elTop = todayEl.offsetTop - container.offsetTop;
@@ -36,32 +37,32 @@
     </button>
 
     <div class="filter-chips">
-        {#each filterStore.tags ?? [] as tag}
+        {#each preferencesStore.activeFilters.tags ?? [] as tag}
             <span class="chip">
                 #{tag}
-                <button class="chip-remove" onclick={() => filterStore.toggleTag(tag)} aria-label="Remove filter #{tag}"><Icon src={LuX} /></button>
+                <button class="chip-remove" onclick={() => preferencesStore.toggleTag(tag)} aria-label="Remove filter #{tag}"><Icon src={LuX} /></button>
             </span>
         {/each}
-        {#if filterStore.projectId}
+        {#if preferencesStore.activeFilters.projectId}
             <span class="chip">
                 Project
-                <button class="chip-remove" onclick={() => filterStore.setProject(null)} aria-label="Remove project filter"><Icon src={LuX} /></button>
+                <button class="chip-remove" onclick={() => preferencesStore.setProject(null)} aria-label="Remove project filter"><Icon src={LuX} /></button>
             </span>
         {/if}
-        {#if filterStore.priority}
+        {#if preferencesStore.activeFilters.priority}
             <span class="chip">
-                #{filterStore.priority}
-                <button class="chip-remove" onclick={() => filterStore.setPriority(null)} aria-label="Remove priority filter"><Icon src={LuX} /></button>
+                #{preferencesStore.activeFilters.priority}
+                <button class="chip-remove" onclick={() => preferencesStore.setPriority(null)} aria-label="Remove priority filter"><Icon src={LuX} /></button>
             </span>
         {/if}
-        {#if !filterStore.showCompleted}
+        {#if !preferencesStore.activeFilters.showCompleted}
             <span class="chip">
                 Completed
-                <button class="chip-remove" onclick={() => filterStore.setShowCompleted(true)} aria-label="Remove completed filter"><Icon src={LuX} /></button>
+                <button class="chip-remove" onclick={() => preferencesStore.setShowCompleted(true)} aria-label="Remove completed filter"><Icon src={LuX} /></button>
             </span>
         {/if}
-        {#if filterStore.activeFilterCount > 1}
-            <button class="clear-all-btn" onclick={filterStore.clearAll}>clear all</button>
+        {#if preferencesStore.activeFilterCount > 1}
+            <button class="clear-all-btn" onclick={preferencesStore.clearAll}>clear all</button>
         {/if}
     </div>
 

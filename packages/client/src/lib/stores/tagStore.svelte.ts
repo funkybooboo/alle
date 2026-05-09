@@ -8,27 +8,26 @@ class TagStore {
 
     async fetchAll() {
         try {
-            const tags = await tagService.getAll();
-            this.tags = tags;
+            this.tags = await tagService.getAll();
         } catch {
             // Keep empty state
         }
     }
 
-    async rename(oldName: string, newName: string) {
+    async rename(from: string, to: string) {
         try {
-            const tags = await tagService.rename(oldName, newName);
-            this.tags = tags;
+            await tagService.rename(from, to);
+            await this.fetchAll();
             return true;
         } catch {
             return false;
         }
     }
 
-    async merge(sourceTag: string, targetTag: string) {
+    async merge(sources: string[], target: string) {
         try {
-            const tags = await tagService.merge(sourceTag, targetTag);
-            this.tags = tags;
+            await tagService.merge(sources, target);
+            await this.fetchAll();
             return true;
         } catch {
             return false;

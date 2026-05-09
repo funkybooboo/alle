@@ -97,3 +97,18 @@ export const UpdateTaskSchema = registry.register(
         })
         .openapi('UpdateTaskInput'),
 );
+
+export const TaskQuerySchema = z.object({
+    date: z.string().optional(),
+    tag: z.string().optional(),
+    completed: z
+        .enum(['true', 'false'])
+        .transform(v => v === 'true')
+        .optional(),
+    someDayGroupId: z.string().optional(),
+    someday: z.enum(['true']).optional(),
+    includeDeleted: z
+        .enum(['true', 'false'])
+        .transform(v => v === 'true')
+        .optional(),
+});

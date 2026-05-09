@@ -1,4 +1,10 @@
-import type { UserPreferences } from '@alle/shared';
+import type {
+    ActiveFilters,
+    DeleteConfirmationType,
+    ThemeType,
+    UserPreferences,
+} from '@alle/shared';
+import { USER_PREFERENCES_DEFAULTS } from '@alle/shared';
 import { container } from '$lib/container';
 import { PreferencesService } from '$lib/services/preferencesService';
 
@@ -6,13 +12,13 @@ const preferencesService = new PreferencesService(container.httpClient);
 
 class PreferencesStore {
     id = $state('default');
-    theme = $state<'light' | 'dark' | 'system'>('system');
+    theme = $state<ThemeType>('system');
     locale = $state('en');
-    someDayPanelWidth = $state(280);
+    someDayPanelWidth = $state<number>(USER_PREFERENCES_DEFAULTS.someDayPanelWidth);
     someDayPanelCollapsed = $state(false);
     rolloverEnabled = $state(true);
     showEmptyDays = $state(true);
-    deleteConfirmation = $state<'instant' | 'confirm'>('instant');
+    deleteConfirmation = $state<DeleteConfirmationType>('instant');
     activeFilters = $state<ActiveFilters>({
         tags: [],
         projectId: null,
@@ -20,6 +26,52 @@ class PreferencesStore {
         showCompleted: true,
     });
     updatedAt = $state(new Date().toISOString());
+
+    toggleTag(tag: string) {
+        if (this.activeFilters.tags.includes(tag)) {
+            this.activeFilters = {
+                ...this.activeFilters,
+                tags: this.activeFilters.tags.filter(t => t !== tag),
+            };
+        } else {
+            this.activeFilters = { ...this.activeFilters, tags: [...this.activeFilters.tags, tag] };
+        }
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    setTags(tags: string[]) {
+        this.activeFilters = { ...this.activeFilters, tags };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    setProject(projectId: string | null) {
+        this.activeFilters = { ...this.activeFilters, projectId };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    setPriority(priority: string | null) {
+        this.activeFilters = { ...this.activeFilters, priority };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    setShowCompleted(show: boolean) {
+        this.activeFilters = { ...this.activeFilters, showCompleted: show };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    clearAll() {
+        this.activeFilters = { tags: [], projectId: null, priority: null, showCompleted: true };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
+    get activeFilterCount() {
+        let count = 0;
+        if (this.activeFilters.tags?.length > 0) count += this.activeFilters.tags.length;
+        if (this.activeFilters.projectId) count++;
+        if (this.activeFilters.priority) count++;
+        if (!this.activeFilters.showCompleted) count++;
+        return count;
+    }
 
     async load() {
         try {
@@ -65,7 +117,7 @@ class PreferencesStore {
         return merged;
     }
 
-    setTheme(theme: 'light' | 'dark' | 'system') {
+    setTheme(theme: ThemeType) {
         this.theme = theme;
         preferencesService.update({ theme }).catch(() => {});
     }
@@ -85,17 +137,10 @@ class PreferencesStore {
         preferencesService.update({ showEmptyDays: show }).catch(() => {});
     }
 
-    setDeleteConfirmation(value: 'instant' | 'confirm') {
+    setDeleteConfirmation(value: DeleteConfirmationType) {
         this.deleteConfirmation = value;
         preferencesService.update({ deleteConfirmation: value }).catch(() => {});
     }
 }
-
-type ActiveFilters = {
-    tags: string[];
-    projectId: string | null;
-    priority: string | null;
-    showCompleted: boolean;
-};
 
 export const preferencesStore = new PreferencesStore();

@@ -2,6 +2,7 @@
     import '../app.css';
     import { onMount } from 'svelte';
     import { preferencesStore, someDayGroupStore, tagStore, uiStore, taskStore } from '$lib/stores';
+    import { container } from '$lib/container';
     import IconRail from '$lib/components/IconRail.svelte';
     import SomedayPanel from '$lib/components/SomedayPanel.svelte';
     import BottomBar from '$lib/components/BottomBar.svelte';
@@ -51,7 +52,7 @@
         if (e.key === 'n' || e.key === 'a') {
             if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
             e.preventDefault();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = container.dateProvider.today();
             uiStore.startAdding(todayStr);
         } else if (e.key === '/') {
             if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;

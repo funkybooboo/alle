@@ -7,29 +7,26 @@ import {
     API_ROUTES,
     BadRequestError,
     type CreateRecurringTaskInput,
-    type CreateTaskInput,
     type UpdateRecurringTaskInput,
 } from '@alle/shared';
 import type { RecurringTaskRepository } from '../adapters/data/RecurringTaskRepository';
-import type { TaskRepository } from '../adapters/data/TaskRepository';
 import type { HttpServer } from '../adapters/http/HttpServer';
 import {
     CreateRecurringTaskSchema,
     GenerateInstancesSchema,
     UpdateRecurringTaskSchema,
 } from '../openapi/schemas/recurringTask';
-import { negotiate } from '../utils/contentNegotiation';
+import { formatRecurringTasksAsText } from '../presentation/formatters';
+import type { RecurringTaskService } from '../services/RecurringTaskService';
 import { notFoundError } from '../utils/errorHandler';
-import { formatRecurringTasksAsText } from '../utils/formatters';
 import { extractPathParam } from '../utils/pathUtils';
-import { generateOccurrences } from '../utils/recurringTaskUtils';
-import { successResponse, withErrorHandling } from '../utils/routeHelpers';
+import { respondNegotiated, successResponse, withErrorHandling } from '../utils/routeHelpers';
 import { parseBody } from '../utils/validate';
 
 export function registerRecurringTaskRoutes(
     server: HttpServer,
     recurringTaskRepo: RecurringTaskRepository,
-    taskRepo: TaskRepository,
+    recurringTaskService: RecurringTaskService,
     logger: Logger,
 ): void {
     // GET /api/recurring-tasks
@@ -38,14 +35,7 @@ export function registerRecurringTaskRoutes(
         API_ROUTES.RECURRING_TASKS,
         withErrorHandling(async req => {
             const tasks = await recurringTaskRepo.findAll();
-            if (negotiate(req.headers['accept']) === 'text') {
-                return {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                    body: formatRecurringTasksAsText(tasks),
-                };
-            }
-            return successResponse(tasks);
+            return respondNegotiated(req, tasks, formatRecurringTasksAsText);
         }, logger),
     );
 
@@ -67,9 +57,9 @@ export function registerRecurringTaskRoutes(
     // GET /api/recurring-tasks/:id
     server.route(
         'GET',
-        '/api/recurring-tasks/:id',
+        API_ROUTES.RECURRING_TASK_ROUTE_PATTERN,
         withErrorHandling(async req => {
-            const id = extractPathParam(req.url, '/api/recurring-tasks/:id');
+            const id = extractPathParam(req.url, API_ROUTES.RECURRING_TASK_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid recurring task ID');
             const task = await recurringTaskRepo.findById(id);
             if (!task) throw notFoundError('RecurringTask', id);
@@ -80,9 +70,9 @@ export function registerRecurringTaskRoutes(
     // PUT /api/recurring-tasks/:id
     server.route(
         'PUT',
-        '/api/recurring-tasks/:id',
+        API_ROUTES.RECURRING_TASK_ROUTE_PATTERN,
         withErrorHandling(async req => {
-            const id = extractPathParam(req.url, '/api/recurring-tasks/:id');
+            const id = extractPathParam(req.url, API_ROUTES.RECURRING_TASK_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid recurring task ID');
             const raw = await req.json<unknown>();
             const input = parseBody(
@@ -98,31 +88,15 @@ export function registerRecurringTaskRoutes(
     // POST /api/recurring-tasks/:id/generate
     server.route(
         'POST',
-        '/api/recurring-tasks/:id/generate',
+        API_ROUTES.RECURRING_TASK_GENERATE_PATTERN,
         withErrorHandling(async req => {
-            const id = extractPathParam(req.url, '/api/recurring-tasks/:id/generate');
+            const id = extractPathParam(req.url, API_ROUTES.RECURRING_TASK_GENERATE_PATTERN);
             if (!id) throw new BadRequestError('Invalid recurring task ID');
-            const rt = await recurringTaskRepo.findById(id);
-            if (!rt) throw notFoundError('RecurringTask', id);
 
             const raw = await req.json<unknown>();
             const { startDate, endDate } = parseBody(GenerateInstancesSchema, raw);
 
-            const dates = generateOccurrences(rt, startDate, endDate);
-            const created = await Promise.all(
-                dates.map(date => {
-                    const taskInput: CreateTaskInput = {
-                        text: rt.text,
-                        date,
-                        notes: rt.notes,
-                        tags: rt.tags,
-                        projectId: rt.projectId,
-                        rolloverEnabled: rt.rolloverEnabled,
-                    };
-                    return taskRepo.create(taskInput);
-                }),
-            );
-
+            const created = await recurringTaskService.generateInstances(id, startDate, endDate);
             return successResponse(created);
         }, logger),
     );
@@ -130,9 +104,9 @@ export function registerRecurringTaskRoutes(
     // DELETE /api/recurring-tasks/:id
     server.route(
         'DELETE',
-        '/api/recurring-tasks/:id',
+        API_ROUTES.RECURRING_TASK_ROUTE_PATTERN,
         withErrorHandling(async req => {
-            const id = extractPathParam(req.url, '/api/recurring-tasks/:id');
+            const id = extractPathParam(req.url, API_ROUTES.RECURRING_TASK_ROUTE_PATTERN);
             if (!id) throw new BadRequestError('Invalid recurring task ID');
             const deleted = await recurringTaskRepo.delete(id);
             if (!deleted) throw notFoundError('RecurringTask', id);

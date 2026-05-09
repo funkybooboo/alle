@@ -3,6 +3,8 @@
     import { recurringTaskStore, taskStore } from '$lib/stores';
     import { Icon } from 'svelte-icons-pack';
     import { LuPlus, LuPencil, LuTrash2 } from 'svelte-icons-pack/lu';
+    import { WEEKDAY_ABBREVIATIONS, MONTH_NAMES as MONTH_ABBREVIATIONS } from '@alle/shared';
+    import { container } from '$lib/container';
     import { onMount } from 'svelte';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
@@ -11,8 +13,8 @@
         recurringTaskStore.fetchAll();
     });
 
-    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const DAY_NAMES = WEEKDAY_ABBREVIATIONS;
+    const MONTH_NAMES = MONTH_ABBREVIATIONS;
 
     function formatFrequency(habit: { frequency: string; interval: number; dayOfWeek: number | null; dayOfMonth: number | null }): string {
         const freq = habit.frequency;
@@ -46,7 +48,7 @@
     let showNewForm = $state(false);
     let newHabitName = $state('');
     let newHabitFrequency = $state<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
-    let newHabitStartDate = $state(new Date().toISOString().split('T')[0]);
+    let newHabitStartDate = $state(container.dateProvider.today());
     let creating = $state(false);
 
     function handleNewKeydown(e: KeyboardEvent) {
@@ -69,7 +71,7 @@
         if (result) {
             newHabitName = '';
             newHabitFrequency = 'daily';
-            newHabitStartDate = new Date().toISOString().split('T')[0];
+            newHabitStartDate = container.dateProvider.today();
             showNewForm = false;
         }
     }
@@ -78,7 +80,7 @@
         showNewForm = false;
         newHabitName = '';
         newHabitFrequency = 'daily';
-        newHabitStartDate = new Date().toISOString().split('T')[0];
+        newHabitStartDate = container.dateProvider.today();
     }
 
     let editingHabitId = $state<string | null>(null);

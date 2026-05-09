@@ -23,20 +23,50 @@ export { ConsoleLogger } from './adapters/logging/ConsoleLogger';
 export type { LogContext, Logger } from './adapters/logging/Logger';
 export { LogLevel } from './adapters/logging/Logger';
 // Constants
-export { API_ROUTES, TASK_CONSTRAINTS } from './constants';
+export {
+    API_ROUTES,
+    CONTENT_TYPE_TEXT,
+    DEFAULT_DAY_RANGE,
+    DEFAULT_RATE_LIMIT_RPM,
+    DEFAULT_TOAST_DURATION_MS,
+    MAX_SEARCH_RESULTS,
+    MONTH_NAMES,
+    PRIORITY_TAGS,
+    PURGE_RETENTION_DAYS,
+    RECURRING_TASK_DEFAULTS,
+    SOMEDAY_KEY,
+    TASK_CONSTRAINTS,
+    TASK_DEFAULTS,
+    USER_PREFERENCES_DEFAULTS,
+    WEEKDAY_ABBREVIATIONS,
+    WEEKDAY_NAMES,
+} from './constants';
 // Errors
 export type { AppErrorJson } from './errors/AppError';
 export {
     AppError,
     BadRequestError,
     ConflictError,
+    createNotFoundError,
+    createValidationError,
     ForbiddenError,
     InternalServerError,
     NotFoundError,
+    RateLimitError,
     UnauthorizedError,
     ValidationError,
 } from './errors/AppError';
-export type { ApiError, ApiResponse, TaskApi } from './types/api';
+export type {
+    ApiError,
+    ApiResponse,
+    ErrorResponseBody,
+    MergeTagRequest,
+    MergeTagResponse,
+    RenameTagRequest,
+    RenameTagResponse,
+    TaskApi,
+    TaskQueryParams,
+} from './types/api';
 // Types
 export type { CreateProjectInput, Project, UpdateProjectInput } from './types/project';
 export type {
@@ -58,6 +88,19 @@ export {
 } from './types/task';
 export type {
     ActiveFilters,
+    DeleteConfirmationType,
+    ThemeType,
     UpdateUserPreferencesInput,
     UserPreferences,
 } from './types/userPreferences';
+// Utilities
+export {
+    formatFrequency,
+    formatTags,
+    groupTasksByDate,
+    hasDeadlineTag,
+    isOverdue,
+    isPriorityTag,
+    parseTags,
+    slugify,
+} from './utils';

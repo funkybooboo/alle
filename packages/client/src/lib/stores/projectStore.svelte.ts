@@ -1,4 +1,4 @@
-import type { Project } from '@alle/shared';
+import type { CreateProjectInput, Project, UpdateProjectInput } from '@alle/shared';
 import { container } from '$lib/container';
 import { ProjectService } from '$lib/services/projectService';
 
@@ -16,12 +16,7 @@ class ProjectStore {
         }
     }
 
-    async create(input: {
-        name: string;
-        description?: string | null;
-        startDate?: string | null;
-        dueDate?: string | null;
-    }) {
+    async create(input: CreateProjectInput) {
         try {
             const project = await projectService.create(input);
             this.projects = [...this.projects, project];
@@ -31,17 +26,7 @@ class ProjectStore {
         }
     }
 
-    async update(
-        id: string,
-        input: Partial<{
-            name: string;
-            description: string | null;
-            startDate: string | null;
-            dueDate: string | null;
-            isActive: boolean;
-            completedAt: string | null;
-        }>,
-    ) {
+    async update(id: string, input: UpdateProjectInput) {
         try {
             const updated = await projectService.update(id, input);
             this.projects = this.projects.map(p => (p.id === id ? updated : p));

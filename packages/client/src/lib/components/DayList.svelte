@@ -2,12 +2,12 @@
     import { onMount, onDestroy, tick } from 'svelte';
     import {
         taskStore,
-        filterStore,
-        uiStore,
         preferencesStore,
-        getTasksByDate,
+        uiStore,
     } from '$lib/stores';
+    import { groupTasksByDate, SOMEDAY_KEY } from '@alle/shared';
     import { applyFilters } from '$lib/filters';
+    import { container } from '$lib/container';
     import DaySection from './DaySection.svelte';
 
     const CHUNK_DAYS = 30;
@@ -37,21 +37,21 @@
         return d.toISOString().split('T')[0];
     }
 
-    const todayISO = new Date().toISOString().split('T')[0];
+    const todayISO = container.dateProvider.today();
 
     let containerEl: HTMLElement;
     let sentinelTopEl: HTMLElement;
     let sentinelBottomEl: HTMLElement;
 
-    let filteredTasks = $derived(applyFilters(taskStore.tasks, filterStore));
+    let filteredTasks = $derived(applyFilters(taskStore.tasks, preferencesStore.activeFilters));
 
-    let tasksByDate = $derived(getTasksByDate(filteredTasks));
+    let tasksByDate = $derived(groupTasksByDate(filteredTasks));
 
     let dateKeys = $derived([...tasksByDate.keys()]
-        .filter(k => k !== '__someday__')
+        .filter(k => k !== SOMEDAY_KEY)
         .sort());
 
-    const todayStr = $derived(new Date().toISOString().split('T')[0]);
+    const todayStr = $derived(container.dateProvider.today());
 
     let visibleStartDate = $state(dateOffset(todayISO, -CHUNK_DAYS));
     let visibleEndDate = $state(dateOffset(todayISO, CHUNK_DAYS));

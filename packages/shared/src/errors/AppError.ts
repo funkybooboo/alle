@@ -135,6 +135,16 @@ export class BadRequestError extends AppError {
 }
 
 /**
+ * Rate limit error (429)
+ * Used when too many requests are made
+ */
+export class RateLimitError extends AppError {
+    constructor(message: string = 'Too many requests', data?: unknown) {
+        super(message, 429, true, data, 'RATE_LIMIT');
+    }
+}
+
+/**
  * Internal server error (500)
  * Used for unexpected errors (bugs)
  */
@@ -142,4 +152,16 @@ export class InternalServerError extends AppError {
     constructor(message: string = 'Internal server error', data?: unknown) {
         super(message, 500, false, data, 'INTERNAL_SERVER_ERROR');
     }
+}
+
+export function createNotFoundError(resource: string, id?: string): NotFoundError {
+    const message = id ? `${resource} with ID ${id} not found` : `${resource} not found`;
+    return new NotFoundError(message);
+}
+
+export function createValidationError(
+    message: string,
+    fields?: Record<string, string>,
+): ValidationError {
+    return new ValidationError(message, fields ? { fields } : undefined);
 }

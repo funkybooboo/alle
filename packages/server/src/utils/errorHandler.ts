@@ -5,7 +5,7 @@
  */
 
 import type { Logger } from '@alle/shared';
-import { AppError, NotFoundError, ValidationError } from '@alle/shared';
+import { AppError } from '@alle/shared';
 import type { HttpResponse } from '../adapters/http/types';
 
 /**
@@ -60,17 +60,7 @@ export function errorToResponse(error: unknown, logger?: Logger): HttpResponse {
     };
 }
 
-/**
- * Create validation error from validation failures
- */
-export function validationError(message: string, fields?: Record<string, string>): ValidationError {
-    return new ValidationError(message, fields ? { fields } : undefined);
-}
-
-/**
- * Create not found error for a resource
- */
-export function notFoundError(resource: string, id?: string): NotFoundError {
-    const message = id ? `${resource} with ID ${id} not found` : `${resource} not found`;
-    return new NotFoundError(message);
-}
+export {
+    createNotFoundError as notFoundError,
+    createValidationError as validationError,
+} from '@alle/shared';
