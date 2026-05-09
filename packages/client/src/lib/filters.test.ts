@@ -30,6 +30,8 @@ const baseTask: Task = {
 
 const noFilters: ActiveFilters = {
     tags: [],
+    projectId: null,
+    priority: null,
     showCompleted: true,
 };
 
@@ -42,14 +44,14 @@ describe('applyFilters', () => {
 
     test('filters by tag', () => {
         const tasks = [baseTask];
-        const filters: ActiveFilters = { tags: ['work'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['work'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(1);
     });
 
     test('excludes tasks that do not match tag filter', () => {
         const tasks = [baseTask];
-        const filters: ActiveFilters = { tags: ['home'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['home'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(0);
     });
@@ -57,21 +59,21 @@ describe('applyFilters', () => {
     test('filters by project tag', () => {
         const projectTask = { ...baseTask, tags: ['work', 'p1', 'project:build-alle'] };
         const tasks = [projectTask];
-        const filters: ActiveFilters = { tags: ['project:build-alle'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['project:build-alle'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(1);
     });
 
     test('excludes tasks without the project tag', () => {
         const tasks = [baseTask];
-        const filters: ActiveFilters = { tags: ['project:build-alle'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['project:build-alle'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(0);
     });
 
     test('filters by priority tag (p1)', () => {
         const tasks = [baseTask];
-        const filters: ActiveFilters = { tags: ['p1'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['p1'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(1);
     });
@@ -79,7 +81,7 @@ describe('applyFilters', () => {
     test('excludes tasks without the priority tag', () => {
         const taskNoPriority = { ...baseTask, tags: ['work'] };
         const tasks = [taskNoPriority];
-        const filters: ActiveFilters = { tags: ['p1'], showCompleted: true };
+        const filters: ActiveFilters = { ...noFilters, tags: ['p1'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(0);
     });
@@ -87,10 +89,46 @@ describe('applyFilters', () => {
     test('hides completed tasks when showCompleted is false', () => {
         const completedTask = { ...baseTask, completed: true };
         const tasks = [baseTask, completedTask];
-        const filters: ActiveFilters = { tags: [], showCompleted: false };
+        const filters: ActiveFilters = { ...noFilters, showCompleted: false };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(1);
         expect(result[0].completed).toBe(false);
+    });
+
+    test('filters by projectId', () => {
+        const tasks = [{ ...baseTask, projectId: 'proj-123' }];
+        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
+        const result = applyFilters(tasks, filters);
+        expect(result).toHaveLength(1);
+    });
+
+    test('excludes tasks with different projectId', () => {
+        const tasks = [{ ...baseTask, projectId: 'proj-456' }];
+        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
+        const result = applyFilters(tasks, filters);
+        expect(result).toHaveLength(0);
+    });
+
+    test('excludes tasks with null projectId when filtering by project', () => {
+        const tasks = [baseTask]; // projectId is null
+        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
+        const result = applyFilters(tasks, filters);
+        expect(result).toHaveLength(0);
+    });
+
+    test('filters by priority', () => {
+        const tasks = [baseTask]; // has p1 tag
+        const filters: ActiveFilters = { ...noFilters, priority: 'p1' };
+        const result = applyFilters(tasks, filters);
+        expect(result).toHaveLength(1);
+    });
+
+    test('excludes tasks without the priority tag', () => {
+        const taskNoPriority = { ...baseTask, tags: ['work'] };
+        const tasks = [taskNoPriority];
+        const filters: ActiveFilters = { ...noFilters, priority: 'p1' };
+        const result = applyFilters(tasks, filters);
+        expect(result).toHaveLength(0);
     });
 
     test('applies multiple tag filters together (OR logic)', () => {
@@ -98,10 +136,7 @@ describe('applyFilters', () => {
         const task2 = { ...baseTask, id: '2', tags: ['work'] };
         const task3 = { ...baseTask, id: '3', tags: ['home'] };
         const tasks = [task1, task2, task3];
-        const filters: ActiveFilters = {
-            tags: ['work'],
-            showCompleted: true,
-        };
+        const filters: ActiveFilters = { ...noFilters, tags: ['work'] };
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(2);
         expect(result.every(t => t.tags.includes('work'))).toBe(true);
