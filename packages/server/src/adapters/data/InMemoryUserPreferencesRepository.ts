@@ -9,6 +9,8 @@ import type { UserPreferencesRepository } from './UserPreferencesRepository';
 
 const DEFAULT_ACTIVE_FILTERS: ActiveFilters = {
     tags: [],
+    projectId: null,
+    priority: null,
     showCompleted: true,
 };
 

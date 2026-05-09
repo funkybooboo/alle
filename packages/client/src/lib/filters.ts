@@ -11,5 +11,14 @@ export function applyFilters(tasks: Task[], filters: ActiveFilters): Task[] {
         result = result.filter(t => !t.completed);
     }
 
+    if (filters.projectId) {
+        result = result.filter(t => t.projectId === filters.projectId);
+    }
+
+    if (filters.priority) {
+        const priority = filters.priority;
+        result = result.filter(t => t.tags.includes(priority));
+    }
+
     return result;
 }

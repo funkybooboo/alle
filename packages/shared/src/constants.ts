@@ -120,6 +120,8 @@ export const USER_PREFERENCES_DEFAULTS = {
     collapsedSections: [] as string[],
     activeFilters: {
         tags: [] as string[],
+        projectId: null as string | null,
+        priority: null as string | null,
         showCompleted: true,
     },
     tagKinds: DEFAULT_TAG_KINDS,

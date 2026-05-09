@@ -20,6 +20,8 @@ export interface TagKind {
 
 export interface ActiveFilters {
     tags: string[];
+    projectId: string | null;
+    priority: string | null;
     showCompleted: boolean;
 }
 

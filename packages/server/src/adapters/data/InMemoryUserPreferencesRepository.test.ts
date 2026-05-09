@@ -40,6 +40,8 @@ describe('InMemoryUserPreferencesRepository', () => {
             await repo.update({
                 activeFilters: {
                     tags: ['work', 'p1'],
+                    projectId: null,
+                    priority: null,
                     showCompleted: true,
                 },
             });
@@ -142,6 +144,8 @@ describe('InMemoryUserPreferencesRepository', () => {
             await repo.update({
                 activeFilters: {
                     tags: ['work', 'p1', 'project:build-alle'],
+                    projectId: null,
+                    priority: null,
                     showCompleted: false,
                 },
             });
