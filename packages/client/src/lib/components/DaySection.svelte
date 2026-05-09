@@ -1,8 +1,9 @@
 <script lang="ts">
     import TaskRow from './TaskRow.svelte';
     import InlineAddTask from './InlineAddTask.svelte';
+    import SectionHeader from './SectionHeader.svelte';
     import type { Task } from '@alle/shared';
-    import { uiStore, taskStore } from '$lib/stores';
+    import { uiStore, taskStore, preferencesStore } from '$lib/stores';
     import { container } from '$lib/container';
     import { dndzone } from 'svelte-dnd-action';
 
@@ -10,8 +11,14 @@
 
     const todayStr = container.dateProvider.today();
     let isToday = $derived(dateStr === todayStr);
+    let isPast = $derived(dateStr < todayStr);
+    let isOverdue = $derived(isPast && tasks.some(t => !t.completed));
+    let overdueCount = $derived(isOverdue ? tasks.filter(t => !t.completed).length : 0);
     let taskCount = $derived(tasks.length);
     let completedCount = $derived(tasks.filter(t => t.completed).length);
+
+    let sectionId = $derived(`day-${dateStr}`);
+    let collapsed = $derived(preferencesStore.isSectionCollapsed(sectionId));
 
     let localTasks = $state<Task[]>([]);
     let prevTasksKey = $state('');
@@ -50,28 +57,33 @@
 </script>
 
 <section {id} class="day-section" class:today={isToday} role="listitem" aria-label={label}>
-    <div class="day-header">
-        <h2 class="day-title">
-            {label}
-            <span class="task-count">{taskCount} task{taskCount !== 1 ? 's' : ''}{taskCount > 0 ? ` \u2022 ${completedCount} done` : ''}</span>
-        </h2>
-    </div>
-    <div class="task-list" role="list" use:dndzone={{ items: localTasks, type: "task" }} onconsider={handleConsider} onfinalize={handleFinalize}>
-        {#if localTasks.length === 0}
-            <div class="drop-placeholder" aria-hidden="true"></div>
+    <SectionHeader
+        sectionId={sectionId}
+        title={label}
+        {taskCount}
+        {completedCount}
+        {overdueCount}
+        {isToday}
+        {isOverdue}
+    />
+    {#if !collapsed}
+        <div class="task-list" role="list" use:dndzone={{ items: localTasks, type: "task" }} onconsider={handleConsider} onfinalize={handleFinalize}>
+            {#if localTasks.length === 0}
+                <div class="drop-placeholder" aria-hidden="true"></div>
+            {/if}
+            {#each localTasks as task (task.id)}
+                <div class="task-drag-wrapper" class:sub-task={task.parentId !== null}>
+                    <TaskRow {task} {dateStr} />
+                </div>
+            {/each}
+        </div>
+        {#if uiStore.addingTo === dateStr}
+            <InlineAddTask date={dateStr} oncancel={() => uiStore.startAdding(null)} />
+        {:else}
+            <button class="add-task-btn" onclick={() => uiStore.startAdding(dateStr)} aria-label="Add task">
+                + add task
+            </button>
         {/if}
-        {#each localTasks as task (task.id)}
-            <div class="task-drag-wrapper" class:sub-task={task.parentId !== null}>
-                <TaskRow {task} {dateStr} />
-            </div>
-        {/each}
-    </div>
-    {#if uiStore.addingTo === dateStr}
-        <InlineAddTask date={dateStr} oncancel={() => uiStore.startAdding(null)} />
-    {:else}
-        <button class="add-task-btn" onclick={() => uiStore.startAdding(dateStr)} aria-label="Add task">
-            + add task
-        </button>
     {/if}
 </section>
 
@@ -85,30 +97,6 @@
         margin: -8px -12px 24px -12px;
         padding: 8px 12px;
         border-radius: 8px;
-    }
-
-    .day-header {
-        border-bottom: 1px solid var(--color-border);
-        padding-bottom: 6px;
-        margin-bottom: 8px;
-    }
-
-    .day-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--color-text);
-        margin: 0;
-    }
-
-    .day-section.today .day-title {
-        color: var(--color-accent);
-    }
-
-    .task-count {
-        font-weight: 400;
-        font-size: 12px;
-        color: var(--color-text-secondary);
-        margin-left: 8px;
     }
 
     .task-list {

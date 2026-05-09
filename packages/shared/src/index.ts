@@ -26,8 +26,11 @@ export { LogLevel } from './adapters/logging/Logger';
 export {
     API_ROUTES,
     CONTENT_TYPE_TEXT,
+    DEFAULT_COLLAPSED_SECTIONS,
     DEFAULT_DAY_RANGE,
     DEFAULT_RATE_LIMIT_RPM,
+    DEFAULT_TAG_KIND_MAP,
+    DEFAULT_TAG_KINDS,
     DEFAULT_TOAST_DURATION_MS,
     MAX_SEARCH_RESULTS,
     MONTH_NAMES,
@@ -89,18 +92,42 @@ export {
 export type {
     ActiveFilters,
     DeleteConfirmationType,
+    TagKind,
+    TagKindBehavior,
     ThemeType,
     UpdateUserPreferencesInput,
     UserPreferences,
 } from './types/userPreferences';
+export type {
+    ConnectionAckPayload,
+    ConnectionStatus,
+    RecurringTaskGeneratedPayload,
+    ServerShutdownPayload,
+    TagMergedPayload,
+    TagRenamedPayload,
+    WsClientEventType,
+    WsClientMessage,
+    WsServerEventType,
+    WsServerMessage,
+    WsServerPayloads,
+} from './types/websocket';
+export {
+    WS_PING_INTERVAL_MS,
+    WS_PING_TIMEOUT_MS,
+    WS_RECONNECT_BASE_MS,
+    WS_RECONNECT_MAX_MS,
+} from './types/websocket';
 // Utilities
 export {
     formatFrequency,
     formatTags,
+    getKindValues,
+    getTagsByKind,
     groupTasksByDate,
     hasDeadlineTag,
     isOverdue,
     isPriorityTag,
     parseTags,
+    resolveTagKind,
     slugify,
 } from './utils';

@@ -92,7 +92,7 @@
         } else if (e.ctrlKey && e.key === '\\') {
             e.preventDefault();
             if (preferencesStore.someDayPanelWidth < 100) {
-                preferencesStore.setPanelWidth(280);
+                preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth);
             } else {
                 preferencesStore.setPanelWidth(0);
             }
@@ -152,5 +152,6 @@
         flex: 1;
         min-width: 0;
         overflow-y: auto;
+        transition: flex 0.2s ease;
     }
 </style>

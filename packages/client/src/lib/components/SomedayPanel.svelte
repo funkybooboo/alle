@@ -3,6 +3,7 @@
     import { applyFilters } from '$lib/filters';
     import TaskRow from './TaskRow.svelte';
     import InlineAddTask from './InlineAddTask.svelte';
+    import SectionHeader from './SectionHeader.svelte';
     import { Icon } from 'svelte-icons-pack';
     import { LuPencil, LuTrash2, LuCheck } from 'svelte-icons-pack/lu';
     import { dndzone } from 'svelte-dnd-action';
@@ -28,8 +29,20 @@
     let groupLocalTasks = $state<Record<string, Task[]>>({});
     let groupTasksKeys = $state<Record<string, string>>({});
 
+    let localGroups = $state<SomeDayGroup[]>([]);
+    let prevGroupsKey = $state('');
+
     $effect(() => {
-        for (const group of someDayGroupStore.sortedGroups) {
+        const sorted = someDayGroupStore.sortedGroups;
+        const key = sorted.map(g => `${g.id}_${g.position}_${g.name}`).join('|');
+        if (key !== prevGroupsKey) {
+            prevGroupsKey = key;
+            localGroups = [...sorted];
+        }
+    });
+
+    $effect(() => {
+        for (const group of localGroups) {
             const tasks = filteredSomedayTasks.filter(t => t.someDayGroupId === group.id);
             const key = tasks.map(t => `${t.id}_${t.completed}_${t.updatedAt}_${t.text}`).join('|');
             if (key !== groupTasksKeys[group.id]) {
@@ -51,7 +64,7 @@
         const name = newGroupName.trim();
         if (!name) return;
         const tag = name.toLowerCase().replace(/\s+/g, '-');
-        someDayGroupStore.create({ name, tag, position: someDayGroupStore.groups.length });
+        someDayGroupStore.create({ name, tag, position: localGroups.length });
         newGroupName = '';
         showAddGroupForm = false;
     }
@@ -103,12 +116,18 @@
     }
 
     async function handleDeleteGroup(id: string) {
-        await someDayGroupStore.remove(id);
-        for (const task of taskStore.tasks) {
-            if (task.someDayGroupId === id) {
-                taskStore.update(task.id, { someDayGroupId: null });
-            }
+        const group = localGroups.find(g => g.id === id);
+        if (!group) return;
+        const taskCount = (groupLocalTasks[group.id] ?? []).length;
+        const msg = taskCount > 0
+            ? `Delete "${group.name}" and its ${taskCount} task${taskCount !== 1 ? 's' : ''}? This cannot be undone.`
+            : `Delete "${group.name}"? This cannot be undone.`;
+        if (!window.confirm(msg)) return;
+
+        for (const task of [...(groupLocalTasks[group.id] ?? [])]) {
+            await taskStore.remove(task.id);
         }
+        await someDayGroupStore.remove(id);
     }
 
     function handleGroupConsider(groupId: string, e: CustomEvent) {
@@ -136,7 +155,21 @@
         }
     }
 
-    let lastOpenWidth = $state(preferencesStore.someDayPanelWidth >= MIN_PANEL_WIDTH ? preferencesStore.someDayPanelWidth : 280);
+    function handleGroupHeaderConsider(e: CustomEvent) {
+        localGroups = e.detail.items;
+    }
+
+    function handleGroupHeaderFinalize(e: CustomEvent) {
+        localGroups = e.detail.items;
+        for (let i = 0; i < localGroups.length; i++) {
+            const group = localGroups[i];
+            if (group.position !== i) {
+                someDayGroupStore.update(group.id, { position: i });
+            }
+        }
+    }
+
+    
 
     function startResize(e: MouseEvent) {
         e.preventDefault();
@@ -153,7 +186,7 @@
         function onMouseUp() {
             isDragging = false;
             if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
-                lastOpenWidth = preferencesStore.someDayPanelWidth;
+                preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
             } else if (preferencesStore.someDayPanelWidth > 0) {
                 preferencesStore.setPanelWidth(0);
             }
@@ -171,9 +204,8 @@
 
     function handleDoubleClick() {
         if (isCollapsed) {
-            preferencesStore.setPanelWidth(lastOpenWidth);
+            preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth);
         } else {
-            lastOpenWidth = preferencesStore.someDayPanelWidth;
             preferencesStore.setPanelWidth(0);
         }
     }
@@ -186,14 +218,14 @@
         function onMouseMove(e: MouseEvent) {
             const deltaX = e.clientX - startX;
             if (deltaX > 10) {
-                preferencesStore.setPanelWidth(Math.min(lastOpenWidth, deltaX));
+                preferencesStore.setPanelWidth(Math.min(preferencesStore.someDayPanelLastOpenWidth, deltaX));
             }
         }
 
         function onMouseUp() {
             isDragging = false;
             if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
-                lastOpenWidth = preferencesStore.someDayPanelWidth;
+                preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
             } else {
                 preferencesStore.setPanelWidth(0);
             }
@@ -243,13 +275,17 @@
                 </div>
             </div>
 
-            <div class="groups-container">
-                {#each someDayGroupStore.sortedGroups as group (group.id)}
+            <div class="groups-container" use:dndzone={{ items: localGroups, type: "someday-group" }} onconsider={handleGroupHeaderConsider} onfinalize={handleGroupHeaderFinalize}>
+                {#each localGroups as group (group.id)}
                     {@const groupTasks = groupLocalTasks[group.id] ?? filteredSomedayTasks.filter(t => t.someDayGroupId === group.id)}
+                    {@const taskCount = groupTasks.length}
+                    {@const completedCount = groupTasks.filter(t => t.completed).length}
+                    {@const sectionId = `someday-${group.id}`}
+                    {@const isGroupCollapsed = preferencesStore.isSectionCollapsed(sectionId)}
 
                     <div class="someday-group" role="listitem">
-                        <div class="group-header">
-                            {#if editingGroupId === group.id}
+                        {#if editingGroupId === group.id}
+                            <div class="group-rename-row">
                                 <input
                                     bind:this={editGroupInput}
                                     bind:value={editGroupName}
@@ -257,12 +293,21 @@
                                     onkeydown={handleRenameKeydown}
                                     onblur={commitRenameGroup}
                                 />
-                            {:else}
-                                <span class="group-tag">#{group.tag}</span>
-                                <span class="group-name">{group.name}</span>
-                            {/if}
-                            <span class="group-count">{groupTasks.length}</span>
-                            {#if editingGroupId !== group.id}
+                                <button class="icon-btn" onclick={commitRenameGroup} aria-label="Save rename" title="Save">
+                                    <Icon src={LuCheck} size={13} />
+                                </button>
+                                <button class="icon-btn" onclick={cancelRenameGroup} aria-label="Cancel rename" title="Cancel">
+                                    ✕
+                                </button>
+                            </div>
+                        {:else}
+                            <div class="group-header-row">
+                                <SectionHeader
+                                    {sectionId}
+                                    title={`#${group.tag} ${group.name}`}
+                                    {taskCount}
+                                    {completedCount}
+                                />
                                 <div class="group-actions">
                                     <button class="icon-btn" onclick={() => startRenameGroup(group)} aria-label="Rename group" title="Rename group">
                                         <Icon src={LuPencil} size={13} />
@@ -271,27 +316,29 @@
                                         <Icon src={LuTrash2} size={13} />
                                     </button>
                                 </div>
+                            </div>
+                        {/if}
+                        {#if !isGroupCollapsed}
+                            <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task" }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
+                                {#if groupTasks.length === 0}
+                                    <div class="drop-placeholder" aria-hidden="true"></div>
+                                {/if}
+                                {#each groupTasks as task (task.id)}
+                                    <div class="task-drag-wrapper">
+                                        <TaskRow {task} dateStr="" />
+                                    </div>
+                                {/each}
+                            </div>
+                            {#if uiStore.addingTo === `someday-${group.id}`}
+                                <InlineAddTask date="" someDayGroupId={group.id} oncancel={() => uiStore.startAdding(null)} />
+                            {:else}
+                                <button
+                                    class="add-task-btn"
+                                    onclick={() => uiStore.startAdding(`someday-${group.id}`)}
+                                >
+                                    + add task
+                                </button>
                             {/if}
-                        </div>
-                        <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task" }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
-                            {#if groupTasks.length === 0}
-                                <div class="drop-placeholder" aria-hidden="true"></div>
-                            {/if}
-                            {#each groupTasks as task (task.id)}
-                                <div class="task-drag-wrapper">
-                                    <TaskRow {task} dateStr="" />
-                                </div>
-                            {/each}
-                        </div>
-                        {#if uiStore.addingTo === `someday-${group.id}`}
-                            <InlineAddTask date="" someDayGroupId={group.id} oncancel={() => uiStore.startAdding(null)} />
-                        {:else}
-                            <button
-                                class="add-task-btn"
-                                onclick={() => uiStore.startAdding(`someday-${group.id}`)}
-                            >
-                                + add task
-                            </button>
                         {/if}
                     </div>
                 {:else}
@@ -338,6 +385,7 @@
         background: var(--color-surface);
         display: flex;
         flex-direction: row;
+        transition: width 0.2s ease;
     }
 
     .resize-handle {
@@ -442,17 +490,36 @@
         color: var(--color-danger);
     }
 
+    .group-header-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .group-header-row :global(.section-header) {
+        flex: 1;
+        min-width: 0;
+    }
+
     .group-actions {
         display: flex;
         align-items: center;
         gap: 2px;
-        margin-left: auto;
+        flex-shrink: 0;
         opacity: 0;
         transition: opacity 0.15s;
     }
 
-    .group-header:hover .group-actions {
+    .someday-group:hover .group-actions {
         opacity: 1;
+    }
+
+    .group-rename-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 0;
+        border-bottom: 1px solid var(--color-border);
     }
 
     .rename-input {
@@ -478,34 +545,6 @@
         padding: 0 12px;
     }
 
-    .group-header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 4px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    .group-tag {
-        font-size: 11px;
-        padding: 1px 6px;
-        border-radius: 10px;
-        background: var(--color-iron-100);
-        color: var(--color-text-secondary);
-    }
-
-    .group-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--color-text);
-    }
-
-    .group-count {
-        font-size: 11px;
-        color: var(--color-text-muted);
-    }
-
     .group-tasks {
         display: flex;
         flex-direction: column;
@@ -517,12 +556,6 @@
 
     .task-drag-wrapper {
         cursor: default;
-    }
-
-    .empty-group {
-        font-size: 12px;
-        color: var(--color-text-muted);
-        padding: 4px 0;
     }
 
     .add-task-btn {

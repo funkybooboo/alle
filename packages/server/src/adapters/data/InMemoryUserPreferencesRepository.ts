@@ -4,13 +4,14 @@ import type {
     UpdateUserPreferencesInput,
     UserPreferences,
 } from '@alle/shared';
+import { DEFAULT_TAG_KIND_MAP, DEFAULT_TAG_KINDS } from '@alle/shared';
 import type { UserPreferencesRepository } from './UserPreferencesRepository';
 
 const DEFAULT_ACTIVE_FILTERS: ActiveFilters = {
     tags: [],
     projectId: null,
     priority: null,
-    showCompleted: false,
+    showCompleted: true,
 };
 
 function defaultPreferences(timestamp: string): UserPreferences {
@@ -18,12 +19,16 @@ function defaultPreferences(timestamp: string): UserPreferences {
         id: 'default',
         theme: 'system',
         locale: 'en',
-        someDayPanelWidth: 300,
+        someDayPanelWidth: 280,
         someDayPanelCollapsed: false,
+        someDayPanelLastOpenWidth: 280,
         rolloverEnabled: true,
         showEmptyDays: true,
         deleteConfirmation: 'instant',
+        collapsedSections: [],
         activeFilters: { ...DEFAULT_ACTIVE_FILTERS },
+        tagKinds: [...DEFAULT_TAG_KINDS],
+        tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
         updatedAt: timestamp,
     };
 }
@@ -36,7 +41,12 @@ export class InMemoryUserPreferencesRepository implements UserPreferencesReposit
     }
 
     async get(): Promise<UserPreferences> {
-        return { ...this.preferences, activeFilters: { ...this.preferences.activeFilters } };
+        return {
+            ...this.preferences,
+            activeFilters: { ...this.preferences.activeFilters },
+            tagKinds: [...this.preferences.tagKinds],
+            tagKindMap: { ...this.preferences.tagKindMap },
+        };
     }
 
     async update(input: UpdateUserPreferencesInput): Promise<UserPreferences> {
@@ -46,6 +56,10 @@ export class InMemoryUserPreferencesRepository implements UserPreferencesReposit
             activeFilters: input.activeFilters
                 ? { ...input.activeFilters }
                 : { ...this.preferences.activeFilters },
+            tagKinds: input.tagKinds ? [...input.tagKinds] : [...this.preferences.tagKinds],
+            tagKindMap: input.tagKindMap
+                ? { ...input.tagKindMap }
+                : { ...this.preferences.tagKindMap },
             updatedAt: this.dateProvider.timestamp(),
         };
         return this.get();

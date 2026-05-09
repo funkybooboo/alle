@@ -1,10 +1,16 @@
 import type {
     ActiveFilters,
     DeleteConfirmationType,
+    TagKind,
     ThemeType,
     UserPreferences,
 } from '@alle/shared';
-import { USER_PREFERENCES_DEFAULTS } from '@alle/shared';
+import {
+    DEFAULT_COLLAPSED_SECTIONS,
+    DEFAULT_TAG_KIND_MAP,
+    DEFAULT_TAG_KINDS,
+    USER_PREFERENCES_DEFAULTS,
+} from '@alle/shared';
 import { container } from '$lib/container';
 import { PreferencesService } from '$lib/services/preferencesService';
 
@@ -16,16 +22,33 @@ class PreferencesStore {
     locale = $state('en');
     someDayPanelWidth = $state<number>(USER_PREFERENCES_DEFAULTS.someDayPanelWidth);
     someDayPanelCollapsed = $state(false);
+    someDayPanelLastOpenWidth = $state<number>(USER_PREFERENCES_DEFAULTS.someDayPanelLastOpenWidth);
     rolloverEnabled = $state(true);
     showEmptyDays = $state(true);
     deleteConfirmation = $state<DeleteConfirmationType>('instant');
+    collapsedSections = $state<string[]>([...DEFAULT_COLLAPSED_SECTIONS]);
     activeFilters = $state<ActiveFilters>({
         tags: [],
         projectId: null,
         priority: null,
         showCompleted: true,
     });
+    tagKinds = $state<TagKind[]>([...DEFAULT_TAG_KINDS]);
+    tagKindMap = $state<Record<string, string>>({ ...DEFAULT_TAG_KIND_MAP });
     updatedAt = $state(new Date().toISOString());
+
+    isSectionCollapsed(sectionId: string): boolean {
+        return this.collapsedSections.includes(sectionId);
+    }
+
+    toggleSectionCollapsed(sectionId: string) {
+        if (this.collapsedSections.includes(sectionId)) {
+            this.collapsedSections = this.collapsedSections.filter(id => id !== sectionId);
+        } else {
+            this.collapsedSections = [...this.collapsedSections, sectionId];
+        }
+        preferencesService.update({ collapsedSections: this.collapsedSections }).catch(() => {});
+    }
 
     toggleTag(tag: string) {
         if (this.activeFilters.tags.includes(tag)) {
@@ -44,6 +67,11 @@ class PreferencesStore {
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
+    setShowCompleted(show: boolean) {
+        this.activeFilters = { ...this.activeFilters, showCompleted: show };
+        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
+    }
+
     setProject(projectId: string | null) {
         this.activeFilters = { ...this.activeFilters, projectId };
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
@@ -51,11 +79,6 @@ class PreferencesStore {
 
     setPriority(priority: string | null) {
         this.activeFilters = { ...this.activeFilters, priority };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
-    setShowCompleted(show: boolean) {
-        this.activeFilters = { ...this.activeFilters, showCompleted: show };
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
@@ -67,9 +90,9 @@ class PreferencesStore {
     get activeFilterCount() {
         let count = 0;
         if (this.activeFilters.tags?.length > 0) count += this.activeFilters.tags.length;
+        if (!this.activeFilters.showCompleted) count++;
         if (this.activeFilters.projectId) count++;
         if (this.activeFilters.priority) count++;
-        if (!this.activeFilters.showCompleted) count++;
         return count;
     }
 
@@ -81,10 +104,16 @@ class PreferencesStore {
             this.locale = prefs.locale;
             this.someDayPanelWidth = prefs.someDayPanelWidth;
             this.someDayPanelCollapsed = prefs.someDayPanelCollapsed;
+            this.someDayPanelLastOpenWidth =
+                prefs.someDayPanelLastOpenWidth ??
+                USER_PREFERENCES_DEFAULTS.someDayPanelLastOpenWidth;
             this.rolloverEnabled = prefs.rolloverEnabled;
             this.showEmptyDays = prefs.showEmptyDays;
             this.deleteConfirmation = prefs.deleteConfirmation ?? 'instant';
+            this.collapsedSections = prefs.collapsedSections ?? [...DEFAULT_COLLAPSED_SECTIONS];
             this.activeFilters = prefs.activeFilters;
+            this.tagKinds = prefs.tagKinds ?? [...DEFAULT_TAG_KINDS];
+            this.tagKindMap = prefs.tagKindMap ?? { ...DEFAULT_TAG_KIND_MAP };
             this.updatedAt = prefs.updatedAt;
         } catch {
             // Use defaults
@@ -98,10 +127,14 @@ class PreferencesStore {
             locale: this.locale,
             someDayPanelWidth: this.someDayPanelWidth,
             someDayPanelCollapsed: this.someDayPanelCollapsed,
+            someDayPanelLastOpenWidth: this.someDayPanelLastOpenWidth,
             rolloverEnabled: this.rolloverEnabled,
             showEmptyDays: this.showEmptyDays,
             deleteConfirmation: this.deleteConfirmation,
+            collapsedSections: this.collapsedSections,
             activeFilters: this.activeFilters,
+            tagKinds: this.tagKinds,
+            tagKindMap: this.tagKindMap,
             updatedAt: this.updatedAt,
         };
 
@@ -124,7 +157,15 @@ class PreferencesStore {
 
     setPanelWidth(width: number) {
         this.someDayPanelWidth = width;
-        preferencesService.update({ someDayPanelWidth: width }).catch(() => {});
+        if (width >= 200) {
+            this.someDayPanelLastOpenWidth = width;
+        }
+        preferencesService
+            .update({
+                someDayPanelWidth: width,
+                someDayPanelLastOpenWidth: this.someDayPanelLastOpenWidth,
+            })
+            .catch(() => {});
     }
 
     setPanelCollapsed(collapsed: boolean) {
@@ -140,6 +181,12 @@ class PreferencesStore {
     setDeleteConfirmation(value: DeleteConfirmationType) {
         this.deleteConfirmation = value;
         preferencesService.update({ deleteConfirmation: value }).catch(() => {});
+    }
+
+    updateTagKinds(tagKinds: TagKind[], tagKindMap: Record<string, string>) {
+        this.tagKinds = tagKinds;
+        this.tagKindMap = tagKindMap;
+        preferencesService.update({ tagKinds, tagKindMap }).catch(() => {});
     }
 }
 

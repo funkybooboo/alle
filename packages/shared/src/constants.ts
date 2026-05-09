@@ -41,6 +41,7 @@ export const API_ROUTES = {
 
     // Tags
     TAGS: '/api/tags',
+    TAG_INFO: '/api/tags/info',
     TAG_RENAME: '/api/tags/rename',
     TAG_MERGE: '/api/tags/merge',
 
@@ -62,22 +63,6 @@ export const API_ROUTES = {
     SOMEDAY_GROUP_ROUTE_PATTERN: '/api/someday-groups/:id',
 } as const;
 
-export const USER_PREFERENCES_DEFAULTS = {
-    theme: 'system' as const,
-    locale: 'en',
-    someDayPanelWidth: 280,
-    someDayPanelCollapsed: false,
-    rolloverEnabled: true,
-    showEmptyDays: true,
-    deleteConfirmation: 'instant' as const,
-    activeFilters: {
-        tags: [],
-        projectId: null as string | null,
-        priority: null as string | null,
-        showCompleted: true,
-    },
-} as const;
-
 export const TASK_DEFAULTS = {
     rolloverEnabled: false,
     tags: [] as string[],
@@ -95,6 +80,54 @@ export const DEFAULT_TOAST_DURATION_MS = 5000;
 export const DEFAULT_RATE_LIMIT_RPM = 300;
 
 export const PRIORITY_TAGS = ['p1', 'p2', 'p3'] as const;
+
+export const DEFAULT_TAG_KINDS: import('./types/userPreferences').TagKind[] = [
+    {
+        id: 'priority',
+        name: 'Priority',
+        behavior: 'single',
+        prefix: null,
+        sortOrder: 0,
+        color: null,
+    },
+    {
+        id: 'project',
+        name: 'Project',
+        behavior: 'single',
+        prefix: 'project:',
+        sortOrder: 1,
+        color: null,
+    },
+];
+
+export const DEFAULT_TAG_KIND_MAP: Record<string, string> = {
+    p1: 'priority',
+    p2: 'priority',
+    p3: 'priority',
+};
+
+export const DEFAULT_COLLAPSED_SECTIONS: string[] = [];
+
+export const USER_PREFERENCES_DEFAULTS = {
+    theme: 'system' as const,
+    locale: 'en',
+    someDayPanelWidth: 280,
+    someDayPanelCollapsed: false,
+    someDayPanelLastOpenWidth: 280,
+    rolloverEnabled: true,
+    showEmptyDays: true,
+    deleteConfirmation: 'instant' as const,
+    collapsedSections: [] as string[],
+    activeFilters: {
+        tags: [] as string[],
+        projectId: null as string | null,
+        priority: null as string | null,
+        showCompleted: true,
+    },
+    tagKinds: DEFAULT_TAG_KINDS,
+    tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
+} as const;
+
 export const SOMEDAY_KEY = '__someday__';
 
 export const WEEKDAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;

@@ -1,9 +1,17 @@
 export type ThemeType = 'light' | 'dark' | 'system';
 export type DeleteConfirmationType = 'instant' | 'confirm';
 
-/**
- * Active filter state — persisted per-user so filters survive page reloads
- */
+export type TagKindBehavior = 'single' | 'multiple';
+
+export interface TagKind {
+    id: string;
+    name: string;
+    behavior: TagKindBehavior;
+    prefix: string | null;
+    sortOrder: number;
+    color: string | null;
+}
+
 export interface ActiveFilters {
     tags: string[];
     projectId: string | null;
@@ -11,24 +19,21 @@ export interface ActiveFilters {
     showCompleted: boolean;
 }
 
-/**
- * UserPreferences — all user-configurable settings and UI state.
- * Single-row entity (id is always 'default') for single-user mode.
- */
 export interface UserPreferences {
     id: 'default';
     theme: ThemeType;
     locale: string;
     someDayPanelWidth: number;
     someDayPanelCollapsed: boolean;
+    someDayPanelLastOpenWidth: number;
     rolloverEnabled: boolean;
     showEmptyDays: boolean;
     deleteConfirmation: DeleteConfirmationType;
+    collapsedSections: string[];
     activeFilters: ActiveFilters;
+    tagKinds: TagKind[];
+    tagKindMap: Record<string, string>;
     updatedAt: string;
 }
 
-/**
- * Input for updating user preferences. All fields are optional.
- */
 export type UpdateUserPreferencesInput = Partial<Omit<UserPreferences, 'id' | 'updatedAt'>>;

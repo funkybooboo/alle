@@ -6,6 +6,7 @@ import type {
     Task,
     UserPreferences,
 } from '@alle/shared';
+import { DEFAULT_TAG_KIND_MAP, DEFAULT_TAG_KINDS } from '@alle/shared';
 
 export const mockTask: Task = {
     id: '1',
@@ -103,6 +104,7 @@ export const mockSomeDayGroup2: SomeDayGroup = {
 export const mockProject: Project = {
     id: 'p-1',
     name: 'Alle App',
+    tag: 'project:alle-app',
     description: 'Build the Alle task management app',
     startDate: '2026-01-01',
     dueDate: '2026-06-30',
@@ -114,6 +116,7 @@ export const mockProject: Project = {
 export const mockInactiveProject: Project = {
     id: 'p-2',
     name: 'Old Project',
+    tag: 'project:old-project',
     description: 'A completed project',
     startDate: '2025-01-01',
     dueDate: '2025-12-31',
@@ -145,15 +148,19 @@ export const mockPreferences: UserPreferences = {
     locale: 'en',
     someDayPanelWidth: 280,
     someDayPanelCollapsed: false,
+    someDayPanelLastOpenWidth: 280,
     rolloverEnabled: true,
     showEmptyDays: true,
     deleteConfirmation: 'instant',
+    collapsedSections: [],
     activeFilters: {
         tags: [],
         projectId: null,
         priority: null,
         showCompleted: false,
     } as ActiveFilters,
+    tagKinds: [...DEFAULT_TAG_KINDS],
+    tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
     updatedAt: '2026-04-27T00:00:00Z',
 };
 
