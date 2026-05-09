@@ -10,8 +10,18 @@
     function handleDateSelect() {
         if (!selectedDate) return;
         const el = document.getElementById(`day-${selectedDate}`);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const scrollEl = document.querySelector('.day-list-area') as HTMLElement | null;
+        if (el && scrollEl) {
+            const elRect = el.getBoundingClientRect();
+            const containerRect = scrollEl.getBoundingClientRect();
+            const elCenter = elRect.top - containerRect.top + elRect.height / 2;
+            const scrollTarget = Math.max(0, scrollEl.scrollTop + elCenter - containerRect.height / 2);
+            scrollEl.scrollTo({
+                top: scrollTarget,
+                behavior: 'smooth',
+            });
+        } else if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         uiStore.closeModal();
     }

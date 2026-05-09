@@ -14,7 +14,6 @@ function makeTask(overrides: Partial<RecurringTask> = {}): RecurringTask {
         dayOfMonth: null,
         startDate: '2026-01-01',
         endDate: null,
-        projectId: null,
         rolloverEnabled: true,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',

@@ -40,14 +40,24 @@ A cornerstone of our architecture is the **adapter pattern**. This pattern allow
     *   **`BunHttpServer`** (server): An implementation using Bun's native HTTP server.
 *   **`TaskRepository`**: Abstracts data persistence for tasks.
     *   **`InMemoryTaskRepository`** (server): An in-memory implementation for development and testing.
+    *   **`SqliteTaskRepository`** (server): SQLite-backed persistence (v0.7.0+, see [ADR-001](decisions/ADR-001-sqlite-raw-sql-persistence.md)).
 *   **`ProjectRepository`**: Abstracts data persistence for projects.
     *   **`InMemoryProjectRepository`** (server): An in-memory implementation.
+    *   **`SqliteProjectRepository`** (server): SQLite-backed persistence.
 *   **`RecurringTaskRepository`**: Abstracts data persistence for recurring task templates and stats.
     *   **`InMemoryRecurringTaskRepository`** (server): An in-memory implementation.
+    *   **`SqliteRecurringTaskRepository`** (server): SQLite-backed persistence.
 *   **`SomeDayGroupRepository`**: Abstracts data persistence for Someday panel groups.
     *   **`InMemorySomeDayGroupRepository`** (server): An in-memory implementation.
+    *   **`SqliteSomeDayGroupRepository`** (server): SQLite-backed persistence.
 *   **`UserPreferencesRepository`**: Abstracts data persistence for user settings.
     *   **`InMemoryUserPreferencesRepository`** (server): An in-memory singleton implementation.
+    *   **`SqliteUserPreferencesRepository`** (server): SQLite-backed persistence.
+*   **`MetricsAdapter`**: Abstracts metrics collection (see [ADR-005](decisions/ADR-005-prometheus-metrics.md)).
+    *   **`PrometheusMetricsAdapter`** (server): In-memory Prometheus exposition format.
+    *   **`NullMetricsAdapter`** (server): No-op for testing and disabled metrics.
+*   **`JobQueue`**: Abstracts background job scheduling and processing (see [ADR-002](decisions/ADR-002-sqlite-backed-job-queue.md)).
+    *   **`SqliteJobQueue`** (server): SQLite-backed persistent job queue.
 
 ### Benefits of the Adapter Pattern
 
@@ -97,10 +107,20 @@ This simple rule ensures that our shared package remains lean and that we mainta
 
 The application is designed to follow the principles of a [12-Factor App](https://12factor.net/). This means that it is:
 
-*   **Stateless**: The server does not store any state between requests.
-*   **Configurable**: All configuration is stored in the environment.
-*   **Portable**: It can be easily run in different environments.
-*   **Scalable**: It can be scaled horizontally by adding more instances of the server.
+*   **Stateless Processes**: The server processes are stateless. Persistent state lives in SQLite (see [ADR-001](decisions/ADR-001-sqlite-raw-sql-persistence.md)). In-memory repositories are for testing only.
+*   **Configurable**: All configuration is stored in the environment (see `EnvConfigProvider`).
+*   **Portable**: It can be easily run in different environments — local dev, Docker, or bare metal.
+*   **Scalable**: The adapter pattern means horizontal scaling is a matter of swapping the SQLite adapter for PostgreSQL (v2.3.0, see [ADR-001](decisions/ADR-001-sqlite-raw-sql-persistence.md)).
+
+## Observability
+
+Alle produces three categories of operational signal:
+
+1.  **Logs**: Structured JSON logs with request IDs for correlation (see [ADR-004](decisions/ADR-004-structured-json-logging.md)). `LOG_FORMAT=json|text` controls output format.
+2.  **Metrics**: Prometheus-compatible metrics at `/api/metrics` (see [ADR-005](decisions/ADR-005-prometheus-metrics.md)). Covers HTTP requests, background jobs, database, and application-level metrics.
+3.  **Health**: Rich health check at `/api/health` with uptime, version, database status, and connection counts.
+
+The recommended observability stack for self-hosted deployment is Loki + Prometheus + Grafana, shipped as an optional `docker-compose.monitoring.yml` (see [ADR-006](decisions/ADR-006-observability-stack.md)).
 
 ## Ready for Docker
 

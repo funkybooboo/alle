@@ -102,7 +102,7 @@
 
     async function handleDeleteTask() {
         if (!task) return;
-        const removedTask = { ...task };
+        const removedTask: Task = { ...task };
         const success = await taskStore.remove(task.id);
         if (success) {
             uiStore.showToast('Task deleted', {

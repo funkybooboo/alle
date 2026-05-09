@@ -27,7 +27,6 @@ describe('InMemoryRecurringTaskRepository', () => {
             expect(task.dayOfWeek).toBeNull();
             expect(task.dayOfMonth).toBeNull();
             expect(task.endDate).toBeNull();
-            expect(task.projectId).toBeNull();
             expect(task.rolloverEnabled).toBe(true);
         });
 

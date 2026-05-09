@@ -52,6 +52,41 @@ export function registerTaskRoutes(
         }, logger),
     );
 
+    // DELETE /api/tasks/purge (must be before :id to avoid matching "purge" as an id)
+    server.route(
+        'DELETE',
+        API_ROUTES.TASK_PURGE,
+        withErrorHandling(async _req => {
+            const purged = await taskService.purge();
+            return successResponse({ purged });
+        }, logger),
+    );
+
+    // GET /api/tasks/trash (must be before :id to avoid matching "trash" as an id)
+    server.route(
+        'GET',
+        API_ROUTES.TASK_TRASH,
+        withErrorHandling(async _req => {
+            const tasks = await taskService.getTrash();
+            return successResponse(tasks);
+        }, logger),
+    );
+
+    // POST /api/tasks/:id/restore
+    server.route(
+        'POST',
+        API_ROUTES.TASK_RESTORE_PATTERN,
+        withErrorHandling(async req => {
+            const id = extractPathParam(req.url, API_ROUTES.TASK_RESTORE_PATTERN);
+            if (!id) throw new BadRequestError('Invalid task ID');
+            const originClientId = req.headers['x-client-id'];
+            const task = await taskRepo.restore(id);
+            if (!task) throw notFoundError('Task', id);
+            eventBus.publish('task:restored', { task }, originClientId);
+            return successResponse(task);
+        }, logger),
+    );
+
     // GET /api/tasks/:id
     server.route(
         'GET',
@@ -94,41 +129,6 @@ export function registerTaskRoutes(
             if (!deleted) throw notFoundError('Task', id);
             eventBus.publish('task:deleted', { id }, originClientId);
             return successResponse({ success: true });
-        }, logger),
-    );
-
-    // POST /api/tasks/:id/restore
-    server.route(
-        'POST',
-        API_ROUTES.TASK_RESTORE_PATTERN,
-        withErrorHandling(async req => {
-            const id = extractPathParam(req.url, API_ROUTES.TASK_RESTORE_PATTERN);
-            if (!id) throw new BadRequestError('Invalid task ID');
-            const originClientId = req.headers['x-client-id'];
-            const task = await taskRepo.restore(id);
-            if (!task) throw notFoundError('Task', id);
-            eventBus.publish('task:restored', { task }, originClientId);
-            return successResponse(task);
-        }, logger),
-    );
-
-    // DELETE /api/tasks/purge
-    server.route(
-        'DELETE',
-        API_ROUTES.TASK_PURGE,
-        withErrorHandling(async _req => {
-            const purged = await taskService.purge();
-            return successResponse({ purged });
-        }, logger),
-    );
-
-    // GET /api/tasks/trash
-    server.route(
-        'GET',
-        API_ROUTES.TASK_TRASH,
-        withErrorHandling(async _req => {
-            const tasks = await taskService.getTrash();
-            return successResponse(tasks);
         }, logger),
     );
 }

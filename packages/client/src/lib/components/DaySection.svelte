@@ -22,6 +22,7 @@
 
     let localTasks = $state<Task[]>([]);
     let prevTasksKey = $state('');
+    let newlyCreatedIds = $state<Set<string>>(new Set());
 
     $effect(() => {
         const key = tasks.map(t => `${t.id}_${t.completed}_${t.updatedAt}_${t.text}`).join('|');
@@ -30,6 +31,11 @@
             localTasks = [...tasks];
         }
     });
+
+    function handleTaskCreated(id: string) {
+        newlyCreatedIds.add(id);
+        setTimeout(() => newlyCreatedIds.delete(id), 600);
+    }
 
     function handleConsider(e: CustomEvent) {
         localTasks = e.detail.items;
@@ -75,17 +81,11 @@
             {/if}
             {#each localTasks as task (task.id)}
                 <div class="task-drag-wrapper" class:sub-task={task.parentId !== null}>
-                    <TaskRow {task} {dateStr} />
+                    <TaskRow {task} {dateStr} isNew={newlyCreatedIds.has(task.id)} />
                 </div>
             {/each}
         </div>
-        {#if uiStore.addingTo === dateStr}
-            <InlineAddTask date={dateStr} oncancel={() => uiStore.startAdding(null)} />
-        {:else}
-            <button class="add-task-btn" onclick={() => uiStore.startAdding(dateStr)} aria-label="Add task">
-                + add task
-            </button>
-        {/if}
+        <InlineAddTask date={dateStr} oncreated={handleTaskCreated} />
     {/if}
 </section>
 
@@ -113,6 +113,7 @@
 
     .dragging .drop-placeholder {
         min-height: 36px;
+        border-top: 2px solid var(--color-warning);
     }
 
     .task-drag-wrapper {
@@ -121,35 +122,5 @@
 
     .task-drag-wrapper.sub-task {
         margin-left: 24px;
-    }
-
-    .add-task-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        font-size: 13px;
-        padding: 6px 24px;
-        cursor: pointer;
-        border-radius: 4px;
-        width: 100%;
-        text-align: left;
-        transition: color 0.15s, background-color 0.15s, opacity 0.15s;
-        opacity: 0;
-    }
-
-    .day-section:hover .add-task-btn,
-    .day-section.today .add-task-btn,
-    .day-section.dragging .add-task-btn {
-        opacity: 1;
-    }
-
-    .add-task-btn:hover {
-        color: var(--color-text);
-        background: var(--color-surface-hover);
-    }
-
-    .add-task-btn:focus-visible {
-        outline: 2px solid var(--color-accent);
-        outline-offset: -2px;
     }
 </style>

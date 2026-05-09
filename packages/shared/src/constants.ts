@@ -79,8 +79,6 @@ export const DEFAULT_DAY_RANGE = 30;
 export const DEFAULT_TOAST_DURATION_MS = 5000;
 export const DEFAULT_RATE_LIMIT_RPM = 300;
 
-export const PRIORITY_TAGS = ['p1', 'p2', 'p3'] as const;
-
 export const DEFAULT_TAG_KINDS: import('./types/userPreferences').TagKind[] = [
     {
         id: 'priority',
@@ -120,8 +118,6 @@ export const USER_PREFERENCES_DEFAULTS = {
     collapsedSections: [] as string[],
     activeFilters: {
         tags: [] as string[],
-        projectId: null as string | null,
-        priority: null as string | null,
         showCompleted: true,
     },
     tagKinds: DEFAULT_TAG_KINDS,

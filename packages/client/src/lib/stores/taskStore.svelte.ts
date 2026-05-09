@@ -128,8 +128,14 @@ class TaskStore {
         }
     }
 
-    restore(task: Task) {
+    async restore(task: Task): Promise<void> {
         this.tasks = [...this.tasks, task];
+        try {
+            await taskService.restore(task.id);
+        } catch (e) {
+            this.tasks = this.tasks.filter(t => t.id !== task.id);
+            this.error = e instanceof Error ? e.message : 'Failed to restore task';
+        }
     }
 
     async getTrash(): Promise<Task[]> {

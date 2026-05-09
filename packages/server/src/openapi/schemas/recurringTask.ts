@@ -24,7 +24,6 @@ export const RecurringTaskSchema = registry.register(
             }),
             startDate: IsoDate,
             endDate: IsoDate.nullable(),
-            projectId: z.string().nullable(),
             rolloverEnabled: z.boolean(),
             createdAt: z.string(),
             updatedAt: z.string(),
@@ -45,7 +44,6 @@ export const CreateRecurringTaskSchema = registry.register(
             dayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
             dayOfMonth: z.number().int().min(1).max(31).nullable().optional(),
             endDate: IsoDate.nullable().optional(),
-            projectId: z.string().nullable().optional(),
             rolloverEnabled: z.boolean().optional(),
         })
         .openapi('CreateRecurringTaskInput'),

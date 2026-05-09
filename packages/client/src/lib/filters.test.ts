@@ -14,7 +14,6 @@ const baseTask: Task = {
     parentId: null,
     rolloverEnabled: true,
     someDayGroupId: null,
-    projectId: null,
     position: 0,
     state: null,
     recurringTaskId: null,
@@ -30,8 +29,6 @@ const baseTask: Task = {
 
 const noFilters: ActiveFilters = {
     tags: [],
-    projectId: null,
-    priority: null,
     showCompleted: true,
 };
 
@@ -93,42 +90,6 @@ describe('applyFilters', () => {
         const result = applyFilters(tasks, filters);
         expect(result).toHaveLength(1);
         expect(result[0].completed).toBe(false);
-    });
-
-    test('filters by projectId', () => {
-        const tasks = [{ ...baseTask, projectId: 'proj-123' }];
-        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
-        const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(1);
-    });
-
-    test('excludes tasks with different projectId', () => {
-        const tasks = [{ ...baseTask, projectId: 'proj-456' }];
-        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
-        const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(0);
-    });
-
-    test('excludes tasks with null projectId when filtering by project', () => {
-        const tasks = [baseTask]; // projectId is null
-        const filters: ActiveFilters = { ...noFilters, projectId: 'proj-123' };
-        const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(0);
-    });
-
-    test('filters by priority', () => {
-        const tasks = [baseTask]; // has p1 tag
-        const filters: ActiveFilters = { ...noFilters, priority: 'p1' };
-        const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(1);
-    });
-
-    test('excludes tasks without the priority tag', () => {
-        const taskNoPriority = { ...baseTask, tags: ['work'] };
-        const tasks = [taskNoPriority];
-        const filters: ActiveFilters = { ...noFilters, priority: 'p1' };
-        const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(0);
     });
 
     test('applies multiple tag filters together (OR logic)', () => {

@@ -15,7 +15,7 @@ export const Default: Story = {};
 export const Collapsed: Story = {
     parameters: {
         stores: {
-            preferencesStore: { someDayPanelCollapsed: true },
+            preferencesStore: { someDayPanelWidth: 0 },
         },
     },
 };

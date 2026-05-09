@@ -62,8 +62,6 @@ export interface TaskQueryParams {
     date?: string;
     tag?: string;
     someDayGroupId?: string;
-    /** @deprecated Use tag-based filtering instead */
-    projectId?: string;
     includeDeleted?: boolean;
 }
 
@@ -75,7 +73,6 @@ function buildQueryString(params?: TaskQueryParams): string {
     if (params.tag !== undefined) searchParams.set('tag', params.tag);
     if (params.someDayGroupId !== undefined)
         searchParams.set('someDayGroupId', params.someDayGroupId);
-    if (params.projectId !== undefined) searchParams.set('projectId', params.projectId);
     if (params.includeDeleted !== undefined)
         searchParams.set('includeDeleted', String(params.includeDeleted));
     const qs = searchParams.toString();

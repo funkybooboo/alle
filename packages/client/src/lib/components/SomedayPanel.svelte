@@ -31,6 +31,7 @@
 
     let localGroups = $state<SomeDayGroup[]>([]);
     let prevGroupsKey = $state('');
+    let newlyCreatedIds = $state<Set<string>>(new Set());
 
     $effect(() => {
         const sorted = someDayGroupStore.sortedGroups;
@@ -173,6 +174,11 @@
         uiStore.endDrag();
     }
 
+    function handleTaskCreated(id: string) {
+        newlyCreatedIds.add(id);
+        setTimeout(() => newlyCreatedIds.delete(id), 600);
+    }
+
     
 
     function startResize(e: MouseEvent) {
@@ -206,49 +212,28 @@
         document.addEventListener('mouseup', onMouseUp);
     }
 
+    function expandPanel() {
+        preferencesStore.setPanelWidth(Math.max(MIN_PANEL_WIDTH, preferencesStore.someDayPanelLastOpenWidth));
+    }
+
     function handleDoubleClick() {
         if (isCollapsed) {
-            preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth);
+            expandPanel();
         } else {
             preferencesStore.setPanelWidth(0);
         }
     }
 
-    function handleCollapsedDragStart(e: MouseEvent) {
-        e.preventDefault();
-        isResizing = true;
-        const startX = e.clientX;
-
-        function onMouseMove(e: MouseEvent) {
-            const deltaX = e.clientX - startX;
-            if (deltaX > 10) {
-                preferencesStore.setPanelWidth(Math.min(preferencesStore.someDayPanelLastOpenWidth, deltaX));
-            }
-        }
-
-        function onMouseUp() {
-            isResizing = false;
-            if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
-                preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
-            } else {
-                preferencesStore.setPanelWidth(0);
-            }
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-        }
-
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    }
+    
 </script>
 
 {#if isCollapsed}
-    <div class="collapsed-strip" ondblclick={handleDoubleClick} onmousedown={handleCollapsedDragStart} role="separator" aria-label="Expand Someday panel — drag or double-click to open">
-        <div class="collapsed-handle"></div>
+    <div class="collapsed-strip" role="separator" aria-label="Expand Someday panel">
+        <button class="expand-btn" onclick={expandPanel} aria-label="Open Someday panel" title="Open Someday panel">
+            <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="8,2 2,9 8,16" />
+            </svg>
+        </button>
     </div>
 {:else}
     <aside class="someday-panel" style="width: {preferencesStore.someDayPanelWidth}px" aria-label="Someday panel">
@@ -279,7 +264,7 @@
                 </div>
             </div>
 
-            <div class="groups-container" use:dndzone={{ items: localGroups, type: "someday-group" }} onconsider={handleGroupHeaderConsider} onfinalize={handleGroupHeaderFinalize}>
+            <div class="groups-container" use:dndzone={{ items: localGroups, type: "someday-group", dropTargetStyle: { outline: "none" }, dropTargetClasses: ["dnd-drop-target"] }} onconsider={handleGroupHeaderConsider} onfinalize={handleGroupHeaderFinalize}>
                 {#each localGroups as group (group.id)}
                     {@const groupTasks = groupLocalTasks[group.id] ?? filteredSomedayTasks.filter(t => t.someDayGroupId === group.id)}
                     {@const taskCount = groupTasks.length}
@@ -323,26 +308,17 @@
                             </div>
                         {/if}
                         {#if !isGroupCollapsed}
-                            <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task" }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
+                            <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task", dropTargetStyle: { outline: "none" }, dropTargetClasses: ["dnd-drop-target"] }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
                                 {#if groupTasks.length === 0}
                                     <div class="drop-placeholder" aria-hidden="true"></div>
                                 {/if}
                                 {#each groupTasks as task (task.id)}
                                     <div class="task-drag-wrapper">
-                                        <TaskRow {task} dateStr="" />
+                                        <TaskRow {task} dateStr="" isNew={newlyCreatedIds.has(task.id)} />
                                     </div>
                                 {/each}
                             </div>
-                            {#if uiStore.addingTo === `someday-${group.id}`}
-                                <InlineAddTask date="" someDayGroupId={group.id} oncancel={() => uiStore.startAdding(null)} />
-                            {:else}
-                                <button
-                                    class="add-task-btn"
-                                    onclick={() => uiStore.startAdding(`someday-${group.id}`)}
-                                >
-                                    + add task
-                                </button>
-                            {/if}
+                            <InlineAddTask date="" someDayGroupId={group.id} oncreated={handleTaskCreated} />
                         {/if}
                     </div>
                 {:else}
@@ -355,8 +331,8 @@
 
 <style>
     .collapsed-strip {
-        width: 8px;
-        min-width: 8px;
+        width: 24px;
+        min-width: 24px;
         background: var(--color-surface);
         border-left: 1px solid var(--color-border);
         display: flex;
@@ -370,16 +346,22 @@
         background: var(--color-surface-hover);
     }
 
-    .collapsed-handle {
-        width: 4px;
-        height: 32px;
-        border-radius: 2px;
-        background: var(--color-border);
-        transition: background-color 0.15s;
+    .expand-btn {
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        padding: 4px 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s, background-color 0.15s;
     }
 
-    .collapsed-strip:hover .collapsed-handle {
-        background: var(--color-accent);
+    .expand-btn:hover {
+        color: var(--color-accent);
+        background: var(--color-surface-hover);
     }
 
     .someday-panel {
@@ -554,38 +536,22 @@
         flex-direction: column;
     }
 
+    .dnd-drop-target {
+        outline: none !important;
+    }
+
     .drop-placeholder {
-        min-height: 4px;
-        transition: min-height 0.15s ease;
+        min-height: 8px;
+        border-top: 2px solid transparent;
+        transition: border-color 0.15s ease;
     }
 
     .dragging .drop-placeholder {
-        min-height: 36px;
+        border-top-color: var(--color-warning);
     }
 
     .task-drag-wrapper {
         cursor: default;
-    }
-
-    .add-task-btn {
-        background: none;
-        border: none;
-        font-size: 12px;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        padding: 4px 0;
-        text-align: left;
-        transition: color 0.15s, opacity 0.15s;
-        opacity: 0;
-    }
-
-    .someday-group:hover .add-task-btn,
-    .dragging .add-task-btn {
-        opacity: 1;
-    }
-
-    .add-task-btn:hover {
-        color: var(--color-text);
     }
 
     .empty-state {

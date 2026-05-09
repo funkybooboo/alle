@@ -15,16 +15,18 @@
 
     function scrollToToday() {
         const todayEl = document.getElementById(`day-${container.dateProvider.today()}`);
-        const container = document.querySelector('.day-list-area') as HTMLElement | null;
-        if (todayEl && container) {
-            const elTop = todayEl.offsetTop - container.offsetTop;
-            const elHeight = todayEl.offsetHeight;
-            const containerHeight = container.clientHeight;
-            container.scrollTo({
-                top: elTop + elHeight / 2 - containerHeight / 2,
+        if (!todayEl) return;
+        const scrollEl = document.querySelector('.day-list-area') as HTMLElement | null;
+        if (scrollEl) {
+            const elRect = todayEl.getBoundingClientRect();
+            const containerRect = scrollEl.getBoundingClientRect();
+            const elCenter = elRect.top - containerRect.top + elRect.height / 2;
+            const scrollTarget = Math.max(0, scrollEl.scrollTop + elCenter - containerRect.height / 2);
+            scrollEl.scrollTo({
+                top: scrollTarget,
                 behavior: 'smooth',
             });
-        } else if (todayEl) {
+        } else {
             todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
@@ -43,18 +45,6 @@
                 <button class="chip-remove" onclick={() => preferencesStore.toggleTag(tag)} aria-label="Remove filter #{tag}"><Icon src={LuX} /></button>
             </span>
         {/each}
-        {#if preferencesStore.activeFilters.projectId}
-            <span class="chip">
-                {preferencesStore.activeFilters.projectId}
-                <button class="chip-remove" onclick={() => preferencesStore.setProject(null)} aria-label="Remove project filter"><Icon src={LuX} /></button>
-            </span>
-        {/if}
-        {#if preferencesStore.activeFilters.priority}
-            <span class="chip">
-                {preferencesStore.activeFilters.priority}
-                <button class="chip-remove" onclick={() => preferencesStore.setPriority(null)} aria-label="Remove priority filter"><Icon src={LuX} /></button>
-            </span>
-        {/if}
         {#if !preferencesStore.activeFilters.showCompleted}
             <span class="chip">
                 Completed

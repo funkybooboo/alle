@@ -16,8 +16,6 @@ const TagKindSchema = z.object({
 
 const ActiveFiltersSchema = z.object({
     tags: z.array(z.string()),
-    projectId: z.string().nullable(),
-    priority: z.string().nullable(),
     showCompleted: z.boolean(),
 });
 
@@ -56,7 +54,7 @@ export const UpdateUserPreferencesSchema = registry.register(
         .object({
             theme: z.enum(['light', 'dark', 'system']).optional(),
             locale: z.string().optional(),
-            someDayPanelWidth: z.number().int().min(100).max(800).optional(),
+            someDayPanelWidth: z.number().int().min(0).max(800).optional(),
             someDayPanelCollapsed: z.boolean().optional(),
             someDayPanelLastOpenWidth: z.number().int().optional(),
             rolloverEnabled: z.boolean().optional(),

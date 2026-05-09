@@ -34,11 +34,11 @@ This release defines the full data model that powers the entire application — 
 
 - [x] **Task Model:** Define the complete `Task` type in `packages/shared` with all fields:
     - `id`, `text`, `notes` (markdown), `completed`, `date` (`null` = Someday), `createdAt`, `updatedAt`
-    - `tags: string[]` — first-class tag system; priority is expressed as special tags (`#p1`, `#p2`, `#p3`)
+    - `tags: string[]` — first-class tag system; priority is expressed as special tags (`#p1`, `#p2`, `#p3`); projects use `project:` prefix tags
     - `parentId: string | null` — enables nested sub-tasks
     - `rolloverEnabled: boolean` — per-task rollover override (default: `true`)
     - `someDayGroupId: string | null` — which Someday group this task belongs to
-    - `projectId: string | null`, `position: number | null`, `state: 'ready' | 'scheduled' | 'done' | null`
+    - `position: number | null`, `state: 'ready' | 'scheduled' | 'done' | null`
     - `recurringTaskId: string | null`, `instanceDate: string | null`
     - `originalScheduledDate: string | null`, `daysLate: number`
     - `dependsOn: string | null`
@@ -57,7 +57,7 @@ This release defines the full data model that powers the entire application — 
 ### Technical Notes & Considerations
 
 - All models live in `packages/shared` to be used by client, server, CLI, and MCP packages.
-- Priority (`#p1`, `#p2`, `#p3`) is just a tag convention — no separate priority field needed.
+- Priority (`#p1`, `#p2`, `#p3`) is a tag convention defined by `DEFAULT_TAG_KINDS` — no separate priority field. Projects use `project:` prefix tags.
 - The `tags` array is the primary organizational system across the entire app.
 - `rolloverEnabled` defaults to `true` app-wide; the per-task field overrides the app setting.
 - `startTime`/`endTime` are stored as time-only strings tied to the task's `date`. All-day tasks have both as `null`.
@@ -162,7 +162,7 @@ Layout: `alle logo | filter chips | task count | ▲ Today | docs ↗`
 ### Day List
 
 - [x] **Day section header:** Date label + task count + completed count.
-- [x] **Task row:** Drag handle (⠿) on left (visible on hover), checkbox, text, tag chips, priority badge, time display for tasks with `startTime`.
+- [x] **Task row:** Drag handle (⠿) on left (visible on hover), checkbox, text, tag chips, time display for tasks with `startTime`.
 - [x] **Recurring task indicator:** Subtle 🔁 icon after the task text.
 - [x] **Sub-tasks:** Child tasks with `parentId` rendered indented below their parent task.
 - [x] **Empty days:** Render empty day sections between today ±30 days when `showEmptyDays` preference is enabled.
@@ -198,7 +198,7 @@ Layout: `alle logo | filter chips | task count | ▲ Today | docs ↗`
 - [x] 📊 **Projects** — project list view (active and inactive) with task counts, + new project inline form, edit/delete actions, and detail view showing project tasks.
 - [x] 🔁 **Habits** — recurring task list view (name, frequency label, tags, dates) with instance count badges, + new habit inline form, and edit/delete actions.
 - [x] 🔍 **Search** — search tasks by text, notes, and tags; selecting a result scrolls the day list to that task.
-- [x] 🏷️ **Filter** — filter by tags (multi-select), priority, project, and completion status.
+- [x] 🏷️ **Filter** — filter by tags using dynamic `tagKinds` sections (single-behavior kinds render as radio groups, multiple as toggle chips), plus completion status toggle.
 - [x] ⚙️ **Settings** — theme (light/dark/system), auto-rollover toggle, show empty days toggle, panel toggle hint, delete confirmation toggle (instant vs confirm).
 
 ### TaskDetailModal
@@ -248,7 +248,7 @@ Layout: `alle logo | filter chips | task count | ▲ Today | docs ↗`
 
 ## v0.4.1: Architecture Clean-Up
 
-Refactoring pass to fix API mismatches, extract shared types/constants/utilities, add server service layer, and clean up client architecture.
+Refactoring pass to fix API mismatches, extract shared types/constants/utilities, add server service layer, WebSocket real-time sync, flexible tag system, and clean up client architecture.
 
 ### Client/Server API Bug Fixes
 - [x] Fix `tagService.getAll()` — wrong response type shape (`{data: {tags: string[]}}` → `ApiResponse<string[]>`)
@@ -259,13 +259,48 @@ Refactoring pass to fix API mismatches, extract shared types/constants/utilities
 
 ### Shared Package — Types, Constants, Utilities
 - [x] Add `ErrorResponseBody`, `TaskQueryParams`, `RenameTagRequest/Response`, `MergeTagRequest/Response` to `shared/types/api.ts`
-- [x] Add `ThemeType`, `DeleteConfirmationType` to `shared/types/userPreferences.ts`
-- [x] Add `USER_PREFERENCES_DEFAULTS`, `TASK_DEFAULTS`, `RECURRING_TASK_DEFAULTS`, `PURGE_RETENTION_DAYS`, `DEFAULT_DAY_RANGE`, `DEFAULT_TOAST_DURATION_MS`, `DEFAULT_RATE_LIMIT_RPM`, `PRIORITY_TAGS`, `SOMEDAY_KEY`, weekday/month name constants, `CONTENT_TYPE_TEXT`, `MAX_SEARCH_RESULTS`, route patterns to `shared/constants.ts`
+- [x] Add `ThemeType`, `DeleteConfirmationType`, `NotificationPosition`, `TagKind`, `TagKindBehavior` to `shared/types/userPreferences.ts`
+- [x] Add `USER_PREFERENCES_DEFAULTS`, `TASK_DEFAULTS`, `RECURRING_TASK_DEFAULTS`, `PURGE_RETENTION_DAYS`, `DEFAULT_DAY_RANGE`, `DEFAULT_TOAST_DURATION_MS`, `DEFAULT_RATE_LIMIT_RPM`, `DEFAULT_TAG_KINDS`, `DEFAULT_TAG_KIND_MAP`, `SOMEDAY_KEY`, weekday/month name constants, `CONTENT_TYPE_TEXT`, `MAX_SEARCH_RESULTS`, route patterns to `shared/constants.ts`
 - [x] Add `RateLimitError`, `createNotFoundError`, `createValidationError` to shared errors
-- [x] Create `shared/utils/` with `isPriorityTag`, `parseTags`, `formatTags`, `slugify`, `groupTasksByDate`, `isOverdue`, `hasDeadlineTag`, `formatFrequency`
+- [x] Create `shared/utils/` with `resolveTagKind`, `getTagsByKind`, `getKindValues`, `parseTags`, `formatTags`, `slugify`, `groupTasksByDate`, `isOverdue`, `hasDeadlineTag`, `formatFrequency`
 - [x] Delete `server/adapters/data/defaults.ts` — replaced by shared constants
-- [x] Fix `preferencesStore` — remove local `ActiveFilters` type, use `ThemeType`/`DeleteConfirmationType` from shared, use `USER_PREFERENCES_DEFAULTS`
-- [x] Fix `filters.ts` — replace local `FilterState` with `ActiveFilters` from shared
+- [x] Fix `preferencesStore` — remove local `ActiveFilters` type, use `ThemeType`/`DeleteConfirmationType`/`NotificationPosition` from shared, use `USER_PREFERENCES_DEFAULTS`
+- [x] Fix `filters.ts` — replace local `FilterState` with `ActiveFilters` from shared; filter by tags only (no separate `projectId`/`priority` fields)
+
+### Flexible Tag System
+- [x] Add `TagKind` type (`id`, `name`, `behavior`, `prefix`, `sortOrder`, `color`) to `shared/types/userPreferences.ts`
+- [x] Add `tagKinds: TagKind[]` and `tagKindMap: Record<string, string>` to `UserPreferences`
+- [x] Add `DEFAULT_TAG_KINDS` (priority: single, project: single with `project:` prefix) and `DEFAULT_TAG_KIND_MAP` (`p1/p2/p3` → `priority`) to `shared/constants.ts`
+- [x] Add `resolveTagKind()`, `getTagsByKind()`, `getKindValues()` utilities to `shared/utils/tagKinds.ts`
+- [x] Add `NotificationPosition` type and `notificationPosition` preference
+- [x] Rewrite `FilterModal` to dynamically render sections from `tagKinds` — single-behavior kinds as radio groups, multiple as toggle chips
+- [x] Remove `projectId` and `priority` from `ActiveFilters` — projects and priorities are now just tags, filtered via `tags[]`
+- [x] Remove `setProject()`/`setPriority()` from `preferencesStore` — `toggleTag()`/`setTags()` handle all filtering
+- [x] Remove `Task.projectId` and `RecurringTask.projectId` — project linkage is via `project:` prefix tags
+- [x] Remove `PRIORITY_TAGS` constant and `isPriorityTag()` — replaced by `DEFAULT_TAG_KINDS`/`DEFAULT_TAG_KIND_MAP` and `resolveTagKind()`
+- [x] Update `BottomBar` to render all active filters as uniform tag chips (no separate project/priority chips)
+- [x] Update server Zod schemas to match: `ActiveFiltersSchema` uses `tags[]` + `showCompleted`, no `projectId`/`priority`; task schemas have no `projectId`
+
+### Collapsible Sections & Panel Persistence
+- [x] Create shared `SectionHeader` component with collapsible chevron, task stats, overdue indicator, and today highlight
+- [x] Add `collapsedSections: string[]` to `UserPreferences` with `isSectionCollapsed()`/`toggleSectionCollapsed()` in `preferencesStore`
+- [x] Add `someDayPanelLastOpenWidth` to `UserPreferences` to persist panel width across refreshes
+- [x] Day sections show overdue count with red left border; Someday groups use unified `SectionHeader` pattern
+- [x] Smooth 200ms panel toggle animation
+
+### Notification System
+- [x] Add `notificationStore` (Svelte 5 `$state` class) with push, dismiss, clear, auto-dismiss, and action buttons
+- [x] Add `NotificationContainer` component with enter/leave animations and configurable position (`notificationPosition` preference)
+- [x] Connection status notifications (connected, disconnected, reconnecting, synced, error) via `connectionStore`
+
+### WebSocket Real-Time Sync
+- [x] Add `ConnectionManager` on server — tracks connected clients with connect/disconnect/message callbacks
+- [x] Add `BunWebSocketServer` implementing `WebSocketServer` interface — broadcast and send methods
+- [x] Add `WebSocketManager` service — subscribes to `EventBus.onAny()` and rebroadcasts all events via WebSocket
+- [x] Add `EventBus` service on server — `emit()`, `onAny()`, `on()` for domain event publishing
+- [x] Add WebSocket types to `shared/types/websocket.ts` — `WsServerMessage` discriminated union with event types for task, project, someday group, and recurring task CRUD
+- [x] Add `connectionStore` on client — manages `WebSocketService` lifecycle, connection state, and client ID header
+- [x] Wire WebSocket into server container and `index.ts` — `listen()` upgrades start WebSocket server; domain events broadcast to connected clients
 
 ### Server Service Layer
 - [x] Create `server/services/TaskService.ts` — listTasks, completeTask, getTrash, purge
@@ -279,12 +314,11 @@ Refactoring pass to fix API mismatches, extract shared types/constants/utilities
 - [x] Move `formatters.ts` to `server/presentation/formatters.ts`
 
 ### Client Architecture Clean-Up
-- [x] Merge `filterStore` into `preferencesStore` — toggleTag, clearAll, setTags, setProject, setPriority, setShowCompleted, activeFilterCount getter
+- [x] Merge `filterStore` into `preferencesStore` — toggleTag, clearAll, setTags, setShowCompleted, activeFilterCount getter
 - [x] Add `getTrash()`, `softDelete()`, `restoreFromTrash()`, `purge()` to `taskStore`
 - [x] Update `TrashModal` to use `taskStore` instead of direct `TaskService`
 - [x] Replace inline types in stores with shared input types (`CreateRecurringTaskInput`, `CreateProjectInput`, `CreateSomeDayGroupInput`, etc.)
 - [x] Replace hardcoded `'__someday__'` with `SOMEDAY_KEY`
-- [x] Replace hardcoded `'p1'`/`'p2'`/`'p3'` with `PRIORITY_TAGS` and `isPriorityTag()`
 - [x] Replace hardcoded `5000` toast duration with `DEFAULT_TOAST_DURATION_MS`
 - [x] Replace hardcoded `7` purge days with `PURGE_RETENTION_DAYS`
 - [x] Replace `new Date().toISOString().split('T')[0]` with `container.dateProvider.today()` (6 locations)
@@ -433,7 +467,7 @@ This release polishes the three-panel layout, completes drag-and-drop interactio
 
 - [ ] **Priority view mode:** Accessible through the 🏷️ Filter modal as a sort option. When "Priority" sort is active, tasks within each day section are ordered `#p1` → `#p2` → `#p3` → untagged, with a subtle left-border accent per priority level.
 - [ ] **Date range filter:** Add date range picker to the Filter modal. Filters tasks by date range (from/to), applies to day list and Someday simultaneously.
-- [ ] **Filter persistence:** Configurable in Settings (default: persist across sessions in `UserPreferences`).
+- [x] **Filter persistence:** Configurable in Settings (default: persist across sessions in `UserPreferences`).
 
 ### Responsiveness
 
@@ -465,18 +499,21 @@ This release polishes the three-panel layout, completes drag-and-drop interactio
 
 ---
 
-## v0.7.0: Persistence & Data I/O
+## v0.7.0: Persistence, Observability & Data I/O
 
-This release implements persistent storage, multi-format data export, and import from popular task managers.
+This release implements persistent storage, structured logging and metrics, multi-format data export, and import from popular task managers.
 
 ### Storage
 - [ ] **I/O Abstraction Layer:** Solidify the adapter pattern so the application core is independent of the data source.
 - [ ] **In-Memory Adapter:** Already exists; keep for testing and ephemeral sessions.
-- [ ] **SQLite Adapter:** Implement a file-based SQLite adapter as the first real persistence layer.
-    - Zero-config for self-hosted use: single `.db` file on disk.
-    - Schema migrations via a lightweight migration tool.
-    - Supports all entities: tasks, sub-tasks, Someday groups, projects, recurring tasks, tags, `UserPreferences`.
-- [ ] **Configuration:** Select adapter via environment variable (`STORAGE_ADAPTER=sqlite|memory`).
+- [ ] **SQLite Adapter:** Implement a file-based SQLite adapter as the first real persistence layer (see [ADR-001](../docs/devs/architecture/decisions/ADR-001-sqlite-raw-sql-persistence.md)).
+    - Zero-config for self-hosted use: single `.db` file on disk (`./data/alle.db`, configurable via `DB_PATH`).
+    - Raw SQL via `bun:sqlite` — no ORM (see [ADR-001](../docs/devs/architecture/decisions/ADR-001-sqlite-raw-sql-persistence.md)).
+    - JSON columns for `tags[]`, `reminder`, nested objects — repository handles `JSON.parse`/`JSON.stringify` at the boundary.
+    - Schema migrations via raw SQL files (see [ADR-003](../docs/devs/architecture/decisions/ADR-003-raw-sql-migrations.md)): sequentially-numbered `.sql` files, forward-only, lightweight runner (~50 LOC).
+    - Supports all entities: tasks, sub-tasks, Someday groups, projects, recurring tasks, `UserPreferences`.
+    - Indexes on `tasks(date)`, `tasks(some_day_group_id)`, `tasks(parent_id)`, `tasks(recurring_task_id)`, `tasks(deleted_at)`.
+- [ ] **Configuration:** Select adapter via environment variable (`STORAGE_ADAPTER=sqlite|memory`, default: `sqlite` in production, `memory` in test).
 - [ ] **Adapter contract tests:** The same test suite runs against both in-memory and SQLite adapters to ensure behavioral parity.
 
 ### State Persistence
@@ -487,6 +524,27 @@ This release implements persistent storage, multi-format data export, and import
     - Theme preference (light/dark/system)
     - Locale setting
     - All behavioral toggles (rollover, completion animation, delete confirmation, etc.)
+
+### Structured Logging
+- [ ] **JSON log format:** Upgrade `ConsoleLogger` to emit structured JSON when `LOG_FORMAT=json` (production default), human-readable text when `LOG_FORMAT=text` (development default) (see [ADR-004](../docs/devs/architecture/decisions/ADR-004-structured-json-logging.md)).
+- [ ] **Request ID middleware:** Generate a `requestId` (UUID) per HTTP request. Attach to all logs in that request's scope via child logger pattern. Return as `X-Request-Id` response header.
+- [ ] **Request duration logging:** Log method, path, status code, and duration in ms for every HTTP request.
+- [ ] **Job-scoped logging:** Background jobs log with `jobId` and `jobType` in context.
+- [ ] **Child logger pattern:** `RequestLogger` wraps parent logger with default context (request ID, job ID). Services receive child loggers — they don't manage correlation IDs.
+- [ ] **Error logging:** Errors always include `error.message` and `error.stack` in structured context.
+
+### Metrics
+- [ ] **`MetricsAdapter` interface** in `packages/shared/src/adapters/metrics/` (see [ADR-005](../docs/devs/architecture/decisions/ADR-005-prometheus-metrics.md)).
+- [ ] **`PrometheusMetricsAdapter`:** In-memory counters, gauges, and histograms. Renders Prometheus text format on `/api/metrics`.
+- [ ] **`NullMetricsAdapter`:** No-op implementation for tests and `METRICS_ENABLED=false`.
+- [ ] **HTTP request metrics:** `alle_http_requests_total` (counter by method, path, status), `alle_http_request_duration_seconds` (histogram by method, path), `alle_http_requests_active` (gauge by method).
+- [ ] **Background job metrics:** `alle_jobs_total` (counter by type, status), `alle_job_duration_seconds` (histogram by type), `alle_jobs_pending` (gauge by type), `alle_jobs_running` (gauge).
+- [ ] **Application metrics:** `alle_tasks_total` (gauge), `alle_ws_connections_active` (gauge), `alle_uptime_seconds` (gauge), `alle_build_info` (gauge with version label).
+- [ ] **Path normalization:** Dynamic path segments (e.g., `/api/tasks/:id`) normalized to route patterns to prevent label explosion.
+- [ ] **Container wiring:** `container.metricsAdapter` — `METRICS_ENABLED=true` (default) creates `PrometheusMetricsAdapter`, `false` creates `NullMetricsAdapter`.
+
+### Health Endpoint
+- [ ] **Enhanced `/api/health`:** Rich response including `version`, `uptime`, `database` (type, path, size), `connections` (websocket count), `jobs` (pending, running counts).
 
 ### Export
 - [ ] **JSON** — canonical format; lossless round-trip. All entities included.
@@ -506,15 +564,20 @@ This release implements persistent storage, multi-format data export, and import
 - [ ] **`ImportAdapter<T>`** interface in `packages/shared` — implement one adapter per format.
 
 ### Technical Notes & Considerations
-- SQLite via `bun:sqlite` (built into Bun — no extra dependency).
-- Keep PostgreSQL adapter for v2.3.0 when multi-user auth is added.
-- Drizzle ORM is a good fit for both SQLite and PostgreSQL.
+- SQLite via `bun:sqlite` (built into Bun — no extra dependency). No ORM — raw SQL per [ADR-001](../docs/devs/architecture/decisions/ADR-001-sqlite-raw-sql-persistence.md).
+- Migrations are forward-only raw SQL files per [ADR-003](../docs/devs/architecture/decisions/ADR-003-raw-sql-migrations.md). No `down()` migrations — fix-forward is the policy.
+- Keep PostgreSQL adapter for v2.3.0 when multi-user auth is added. Same repository interfaces, different SQL implementations.
 - The JSON export format is documented and stable — users can rely on it for backups.
 - Import UI: a file picker in ⚙️ Settings > Import/Export with format selection and column mapping for CSV.
 - All import adapters are tested with real export files from the source apps.
+- `Logger` interface stays the same — `ConsoleLogger` implementation gains JSON output. Child logger pattern adds context without changing the interface.
+- OTEL SDK is deferred to v2.x (see [ADR-004](../docs/devs/architecture/decisions/ADR-004-structured-json-logging.md)). The current `Logger` interface is OTEL-compatible.
 
 ### Documentation & ADRs
-- ADR: why SQLite before PostgreSQL (self-hosted simplicity).
+- [ADR-001](../docs/devs/architecture/decisions/ADR-001-sqlite-raw-sql-persistence.md): SQLite with raw SQL (no ORM)
+- [ADR-003](../docs/devs/architecture/decisions/ADR-003-raw-sql-migrations.md): Raw SQL migration files (forward-only)
+- [ADR-004](../docs/devs/architecture/decisions/ADR-004-structured-json-logging.md): Structured JSON logging & request tracing
+- [ADR-005](../docs/devs/architecture/decisions/ADR-005-prometheus-metrics.md): Prometheus-compatible metrics endpoint
 - ADR: export format stability commitment (JSON as canonical).
 - User docs: import/export guide with format descriptions and step-by-step instructions.
 - Dev docs: `ExportAdapter` and `ImportAdapter` interface contracts.
@@ -526,6 +589,11 @@ This release implements persistent storage, multi-format data export, and import
 ### Definition of Done
 - SQLite adapter fully implemented and tested.
 - All adapter contract tests pass against both in-memory and SQLite.
+- Schema migrations run on server start; `_migrations` tracking table created.
+- Structured JSON logging functional (`LOG_FORMAT=json`).
+- Request ID middleware attaches `X-Request-Id` header and correlates logs.
+- `/api/metrics` exposes Prometheus-format metrics.
+- `/api/health` returns rich health information.
 - Export working for all four formats.
 - Import working for all five sources.
 - `UserPreferences` persisted across restarts.
@@ -533,35 +601,63 @@ This release implements persistent storage, multi-format data export, and import
 
 ---
 
-## v0.8.0: Automation
+## v0.8.0: Automation & Background Jobs
 
-This release introduces the automation features that make Alle smart.
+This release introduces the automation features that make Alle smart, backed by a persistent job queue.
 
+### Background Job System
+- [ ] **`JobQueue` interface** in `packages/server/src/adapters/jobs/` (see [ADR-002](../docs/devs/architecture/decisions/ADR-002-sqlite-backed-job-queue.md)).
+- [ ] **`SqliteJobQueue` implementation:** SQLite-backed persistent job queue (same database as application data).
+- [ ] **`JobRunner` service:** Polls for pending jobs every 1 second (configurable via `JOB_POLL_INTERVAL_MS`). Processes jobs sequentially (single worker, concurrency=1).
+- [ ] **Job types:** `rollover`, `generate-recurring`, `purge-deleted`, `send-reminder` (stubbed for v2.2.0).
+- [ ] **Retry with exponential backoff:** Max 3 attempts (configurable). Base delay 5 seconds. Failed jobs marked `dead` after max attempts.
+- [ ] **Startup recovery:** On server start, any `running` jobs (from previous crash) are reset to `pending`. Recurring jobs are re-scheduled if not already queued.
+- [ ] **Configuration:** `JOB_POLL_INTERVAL_MS` (default: 1000), `JOB_MAX_ATTRIES` (default: 3), `JOB_TIMEOUT_MS` (default: 30000).
+
+### Task Rollover
 - [ ] **Task rollover:**
     - Incomplete tasks with `rolloverEnabled: true` automatically move to the next day.
     - `originalScheduledDate` is preserved; `daysLate` is calculated and displayed as an overdue badge.
     - App-wide rollover default configurable in ⚙️ Settings (on/off, trigger time: midnight / 9am / manual).
     - Per-task override via the task detail modal.
+- [ ] **Rollover job:** Scheduled daily at configured time (default: midnight). Processes all incomplete tasks where `rolloverEnabled=true` and `date < today`.
+
+### Recurring Task Generation
 - [ ] **Recurring tasks:**
     - Recurring task instances are auto-generated from templates.
     - Generation window configurable in Settings (1 week, 2 weeks, 1 month ahead).
     - Instances appear in the day list with a 🔁 icon.
     - Completing an instance updates `RecurringTaskStats` (streak tracking: current streak, longest streak, total completions).
     - Missing a day breaks the streak.
+- [ ] **Recurring generation job:** Runs daily. Generates instances for the configured window ahead. Skips dates that already have an instance.
+
+### Trash Purge
+- [ ] **Purge job:** Runs daily at 3am. Permanently deletes tasks where `deletedAt` is older than `PURGE_RETENTION_DAYS` (default: 7).
+
+### Streak Tracking
 - [ ] **Streak tracking:** Displayed on recurring tasks in the 🔁 Habits modal heatmap.
 
 ### Technical Notes & Considerations
+- Job queue is SQLite-backed per [ADR-002](../docs/devs/architecture/decisions/ADR-002-sqlite-backed-job-queue.md). Same database, `jobs` table.
 - `rrule.js` for recurring date generation.
-- Rollover can run as a background job on server start or via a cron expression.
 - Streak calculation: check if yesterday's instance was completed when today's is completed.
 - All automation logic has unit tests written before implementation.
+- Job metrics are exposed via `/api/metrics` (see [ADR-005](../docs/devs/architecture/decisions/ADR-005-prometheus-metrics.md)): `alle_jobs_total`, `alle_job_duration_seconds`, `alle_jobs_pending`, `alle_jobs_running`.
+
+### Documentation & ADRs
+- [ADR-002](../docs/devs/architecture/decisions/ADR-002-sqlite-backed-job-queue.md): SQLite-backed job queue
 
 ### Definition of Done
+- `JobQueue` interface and `SqliteJobQueue` implementation tested.
+- `JobRunner` processes jobs with retry and exponential backoff.
+- Startup recovery resets orphaned `running` jobs.
 - Rollover moves incomplete tasks and tracks `daysLate`.
 - Recurring instances appear in the day list on the correct days.
 - Streak statistics update correctly on completion and missed days.
+- Trash purge runs daily and permanently deletes old soft-deleted tasks.
 - All automation logic has unit tests.
 - Rollover settings configurable and respected.
+- Job metrics visible on `/api/metrics`.
 
 ---
 
@@ -798,7 +894,12 @@ This release adds a time-grid calendar view for tasks with start and end times.
 The first stable, fully usable release of Alle. Goal: a complete daily driver for a single self-hosted user.
 
 - [ ] **Feature complete:** All v0.x features integrated and working end-to-end.
-- [ ] **SQLite persistence:** All data persists reliably across restarts.
+- [ ] **SQLite persistence:** All data persists reliably across restarts (ADR-001).
+- [ ] **Background jobs:** Rollover, recurring generation, trash purge run via persistent job queue (ADR-002).
+- [ ] **Structured logging:** JSON logs with request IDs in production (ADR-004).
+- [ ] **Metrics endpoint:** `/api/metrics` exposes Prometheus-format metrics (ADR-005).
+- [ ] **Rich health endpoint:** `/api/health` returns version, uptime, database status, connection counts.
+- [ ] **Monitoring stack:** `docker-compose.monitoring.yml` ships with Prometheus + Grafana + Loki + Uptime Kuma (ADR-006).
 - [ ] **Full keyboard operation:** Every action reachable without a mouse. All shortcuts from v0.5.0 working.
 - [ ] **Command palette:** Search, commands (`/` prefix), natural language add/navigate all functional.
 - [ ] **Projects & Habits:** Fully functional project Kanban and habit tracking with streaks.
@@ -895,6 +996,7 @@ Adds browser push and email reminders.
 
 ### Technical Notes & Considerations
 - `EmailAdapter` interface in `packages/shared`; adapters for SMTP, Resend, Postmark implement it.
+- `send-reminder` jobs scheduled via `JobQueue` (see [ADR-002](../docs/devs/architecture/decisions/ADR-002-sqlite-backed-job-queue.md)). Job dispatches at the configured reminder time.
 - Background job (cron) on the server checks for upcoming reminders and dispatches them.
 
 ### Definition of Done
@@ -912,7 +1014,7 @@ Adds multi-user support with passwordless authentication.
 - [ ] **User accounts:** Registration, login, logout. Sessions managed with short-lived JWTs (15 min) + refresh tokens (30 days).
 - [ ] **Data scoping:** All tasks, projects, groups, settings, and `UserPreferences` are scoped per user.
 - [ ] **Protected API:** All endpoints require a valid JWT. Middleware enforces data isolation.
-- [ ] **PostgreSQL adapter:** Add a PostgreSQL persistence adapter (Drizzle ORM) to support multi-user at scale.
+- [ ] **PostgreSQL adapter:** Add a PostgreSQL persistence adapter to support multi-user at scale. Same repository interfaces as SQLite (see [ADR-001](../docs/devs/architecture/decisions/ADR-001-sqlite-raw-sql-persistence.md)), different SQL implementations in `migrations/postgresql/`.
 
 ### Security Requirements
 - Passkeys stored per FIDO2 spec. No password is ever stored.
@@ -944,7 +1046,7 @@ A dedicated security audit and hardening release. Runs before SaaS billing to en
 - [ ] **Dependency scanning:** `osv-scanner` (or equivalent) integrated into CI. Zero known-vulnerable dependencies in production.
 - [ ] **Secrets scanning:** `git-secrets` or `trufflehog` pre-commit hook and CI check. Historical git scan on first run.
 - [ ] **CSP hardening:** Content Security Policy tightened to the minimum required set of directives. Subresource integrity on all external assets.
-- [ ] **Audit logging:** All write operations logged with user ID, timestamp, and action. Logs stored separately from application data.
+- [ ] **Audit logging:** All write operations logged with user ID, timestamp, and action. Uses structured JSON logging (see [ADR-004](../docs/devs/architecture/decisions/ADR-004-structured-json-logging.md)). Audit logs stored separately from application data, queryable via Loki (see [ADR-006](../docs/devs/architecture/decisions/ADR-006-observability-stack.md)).
 - [ ] **Brute-force protection:** Account lockout after N failed auth attempts. Rate limiting on auth endpoints (stricter than general API rate limit).
 - [ ] **CORS:** Locked down to explicit origin allowlist in production. Wildcard `*` never used.
 - [ ] **Threat model document:** Written and stored in `docs/security/threat-model.md`. Covers trust boundaries, attack surfaces, and mitigations.

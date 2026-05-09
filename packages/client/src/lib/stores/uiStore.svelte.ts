@@ -16,7 +16,6 @@ class UIStore {
     focusedTaskId = $state<string | null>(null);
     activeModal = $state<ModalType | null>(null);
     editingTaskId = $state<string | null>(null);
-    addingTo = $state<string | null>(null);
     todayVisible = $state(true);
     isDragging = $state(false);
     toastMessage = $state<string | null>(null);
@@ -37,10 +36,6 @@ class UIStore {
 
     startEditing(taskId: string | null) {
         this.editingTaskId = taskId;
-    }
-
-    startAdding(dateOrSomeday: string | null) {
-        this.addingTo = dateOrSomeday;
     }
 
     setTodayVisible(visible: boolean) {
@@ -79,7 +74,6 @@ class UIStore {
         this.focusedTaskId = null;
         this.activeModal = null;
         this.editingTaskId = null;
-        this.addingTo = null;
         this.todayVisible = true;
         this.isDragging = false;
         this.toastMessage = null;

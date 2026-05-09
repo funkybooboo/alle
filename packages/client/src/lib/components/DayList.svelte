@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy, tick } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import {
         taskStore,
         preferencesStore,
@@ -138,29 +138,26 @@
         return date.toLocaleDateString('en-US', opts);
     }
 
-    function scrollToToday(smooth = true) {
+function scrollToToday(smooth = true) {
         const el = document.getElementById(`day-${todayISO}`);
-        if (el && scrollContainer) {
-            const elTop = el.offsetTop - scrollContainer.offsetTop;
-            const elHeight = el.offsetHeight;
-            const containerHeight = scrollContainer.clientHeight;
+        if (!el) return;
+        if (scrollContainer) {
+            const elRect = el.getBoundingClientRect();
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const elCenter = elRect.top - containerRect.top + elRect.height / 2;
+            const scrollTarget = Math.max(0, scrollContainer.scrollTop + elCenter - containerRect.height / 2);
             scrollContainer.scrollTo({
-                top: elTop + elHeight / 2 - containerHeight / 2,
+                top: scrollTarget,
                 behavior: smooth ? 'smooth' : 'instant',
             });
-        } else if (el) {
+        } else {
             el.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'center' });
         }
     }
 
-    function handleAdd(date: string) {
-        uiStore.startAdding(date);
-    }
-
-    onMount(async () => {
+    onMount(() => {
         scrollContainer = containerEl?.closest('.day-list-area') ?? containerEl?.parentElement ?? null;
 
-        await tick();
         scrollToToday(false);
 
         const todayEl = document.getElementById(`day-${todayISO}`);
@@ -204,12 +201,11 @@
 <div class="day-list" bind:this={containerEl} role="list" aria-label="Task list by day">
     <div bind:this={sentinelTopEl} class="infinite-scroll-sentinel" aria-hidden="true"></div>
     {#each displayDateKeys as dateStr (dateStr)}
-        <DaySection
+<DaySection
             id="day-{dateStr}"
             dateStr={dateStr}
             label={formatDateHeader(dateStr)}
             tasks={tasksByDate.get(dateStr) ?? []}
-            onadd={() => handleAdd(dateStr)}
         />
     {:else}
         <div class="empty-state">

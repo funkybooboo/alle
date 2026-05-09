@@ -18,8 +18,6 @@ export const WithFilters: Story = {
             preferencesStore: {
                 activeFilters: {
                     tags: ['work', 'p1'],
-                    projectId: null,
-                    priority: null,
                     showCompleted: false,
                 },
             },

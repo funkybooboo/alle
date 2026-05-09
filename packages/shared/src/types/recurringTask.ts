@@ -12,13 +12,11 @@ export interface RecurringTask {
     notes: string | null;
     tags: string[];
     frequency: RecurringFrequency;
-    interval: number; // e.g. every 2 weeks → frequency: 'weekly', interval: 2
-    dayOfWeek: number | null; // 0–6 for weekly recurrence
-    dayOfMonth: number | null; // 1–31 for monthly recurrence
+    interval: number;
+    dayOfWeek: number | null;
+    dayOfMonth: number | null;
     startDate: string;
     endDate: string | null;
-    /** @deprecated Use project tag instead. Kept for migration. */
-    projectId: string | null;
     rolloverEnabled: boolean;
     createdAt: string;
     updatedAt: string;
@@ -48,7 +46,6 @@ export type CreateRecurringTaskInput = {
     dayOfWeek?: number | null;
     dayOfMonth?: number | null;
     endDate?: string | null;
-    projectId?: string | null;
     rolloverEnabled?: boolean;
 };
 

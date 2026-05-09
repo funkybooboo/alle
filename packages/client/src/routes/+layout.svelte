@@ -10,6 +10,7 @@
         uiStore,
         taskStore,
     } from '$lib/stores';
+    import type { Task } from '@alle/shared';
     import { container } from '$lib/container';
     import IconRail from '$lib/components/IconRail.svelte';
     import SomedayPanel from '$lib/components/SomedayPanel.svelte';
@@ -65,7 +66,10 @@
         if (e.key === 'Escape') {
             uiStore.closeModal();
             uiStore.startEditing(null);
-            uiStore.startAdding(null);
+            const activeInput = document.activeElement;
+            if (activeInput && activeInput.classList.contains('add-input')) {
+                (activeInput as HTMLInputElement).blur();
+            }
             return;
         }
 
@@ -74,8 +78,8 @@
         if (e.key === 'n' || e.key === 'a') {
             if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
             e.preventDefault();
-            const todayStr = container.dateProvider.today();
-            uiStore.startAdding(todayStr);
+            const todayInput = document.querySelector(`#day-${container.dateProvider.today()} .add-input`) as HTMLElement | null;
+            todayInput?.focus();
         } else if (e.key === '/') {
             if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
             e.preventDefault();
@@ -92,15 +96,15 @@
             if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
             e.preventDefault();
             const taskId = uiStore.focusedTaskId;
-            const task = taskStore.tasks.find(t => t.id === taskId);
+            const task = taskStore.tasks.find(t => t.id === taskId) as Task | undefined;
             if (!task) return;
             async function doDelete() {
-                const removedTask = { ...task };
+                const taskCopy = { ...task! } as Task;
                 const success = await taskStore.remove(taskId);
                 if (success) {
                     uiStore.showToast('Task deleted', {
                         label: 'Undo',
-                        fn: () => taskStore.restore(removedTask),
+                        fn: () => taskStore.restore(taskCopy),
                     });
                 }
             }
@@ -114,7 +118,7 @@
         } else if (e.ctrlKey && e.key === '\\') {
             e.preventDefault();
             if (preferencesStore.someDayPanelWidth < 100) {
-                preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth);
+                preferencesStore.setPanelWidth(Math.max(200, preferencesStore.someDayPanelLastOpenWidth));
             } else {
                 preferencesStore.setPanelWidth(0);
             }

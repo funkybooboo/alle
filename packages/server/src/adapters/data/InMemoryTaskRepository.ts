@@ -72,7 +72,6 @@ export class InMemoryTaskRepository implements TaskRepository {
             parentId: input.parentId ?? null,
             rolloverEnabled: input.rolloverEnabled ?? TASK_DEFAULTS.rolloverEnabled,
             someDayGroupId: input.someDayGroupId ?? null,
-            projectId: input.projectId ?? null,
             position: input.position ?? null,
             state: input.state ?? null,
             recurringTaskId: null,

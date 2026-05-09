@@ -30,8 +30,6 @@ class PreferencesStore {
     collapsedSections = $state<string[]>([...DEFAULT_COLLAPSED_SECTIONS]);
     activeFilters = $state<ActiveFilters>({
         tags: [],
-        projectId: null,
-        priority: null,
         showCompleted: true,
     });
     tagKinds = $state<TagKind[]>([...DEFAULT_TAG_KINDS]);
@@ -74,18 +72,8 @@ class PreferencesStore {
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
-    setProject(projectId: string | null) {
-        this.activeFilters = { ...this.activeFilters, projectId };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
-    setPriority(priority: string | null) {
-        this.activeFilters = { ...this.activeFilters, priority };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
     clearAll() {
-        this.activeFilters = { tags: [], projectId: null, priority: null, showCompleted: true };
+        this.activeFilters = { tags: [], showCompleted: true };
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
@@ -93,8 +81,6 @@ class PreferencesStore {
         let count = 0;
         if (this.activeFilters.tags?.length > 0) count += this.activeFilters.tags.length;
         if (!this.activeFilters.showCompleted) count++;
-        if (this.activeFilters.projectId) count++;
-        if (this.activeFilters.priority) count++;
         return count;
     }
 

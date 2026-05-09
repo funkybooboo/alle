@@ -39,7 +39,6 @@ export class InMemoryRecurringTaskRepository implements RecurringTaskRepository 
             dayOfMonth: input.dayOfMonth ?? null,
             startDate: input.startDate,
             endDate: input.endDate ?? null,
-            projectId: input.projectId ?? null,
             rolloverEnabled: input.rolloverEnabled ?? RECURRING_TASK_DEFAULTS.rolloverEnabled,
             createdAt: now,
             updatedAt: now,

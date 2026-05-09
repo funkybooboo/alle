@@ -22,7 +22,6 @@ describe('InMemoryTaskRepository', () => {
             expect(task.parentId).toBeNull();
             expect(task.rolloverEnabled).toBe(false);
             expect(task.someDayGroupId).toBeNull();
-            expect(task.projectId).toBeNull();
             expect(task.position).toBeNull();
             expect(task.state).toBeNull();
             expect(task.recurringTaskId).toBeNull();
@@ -45,7 +44,6 @@ describe('InMemoryTaskRepository', () => {
                 startTime: '09:00',
                 endTime: '10:00',
                 someDayGroupId: 'g1',
-                projectId: 'proj1',
                 rolloverEnabled: true,
                 state: 'scheduled',
             });
@@ -54,7 +52,6 @@ describe('InMemoryTaskRepository', () => {
             expect(task.startTime).toBe('09:00');
             expect(task.endTime).toBe('10:00');
             expect(task.someDayGroupId).toBe('g1');
-            expect(task.projectId).toBe('proj1');
             expect(task.rolloverEnabled).toBe(true);
             expect(task.state).toBe('scheduled');
         });

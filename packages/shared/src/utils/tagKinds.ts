@@ -1,9 +1,4 @@
-import { PRIORITY_TAGS } from '../constants';
 import type { TagKind } from '../types/userPreferences';
-
-export function isPriorityTag(tag: string): boolean {
-    return PRIORITY_TAGS.includes(tag as (typeof PRIORITY_TAGS)[number]);
-}
 
 export function resolveTagKind(
     tag: string,

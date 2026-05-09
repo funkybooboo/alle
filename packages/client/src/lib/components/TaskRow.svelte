@@ -5,7 +5,7 @@
     import { Icon } from 'svelte-icons-pack';
     import { LuCheck, LuCircle, LuRepeat, LuFileText, LuX } from 'svelte-icons-pack/lu';
 
-    let { task, dateStr = '' }: { task: Task; dateStr?: string } = $props();
+    let { task, dateStr = '', isNew = false }: { task: Task; dateStr?: string; isNew?: boolean } = $props();
 
     let isEditing = $derived(uiStore.editingTaskId === task.id);
     let hasStartTime = $derived(task.startTime !== null);
@@ -61,7 +61,7 @@
     }
 
     async function handleDelete() {
-        const removedTask = { ...task };
+        const removedTask: Task = { ...task };
         const success = await taskStore.remove(task.id);
         if (success) {
             uiStore.showToast('Task deleted', {
@@ -75,6 +75,7 @@
 <div
     class="task-row"
     class:completed={task.completed}
+    class:task-new={isNew}
     aria-label="{task.text}{task.completed ? ', completed' : ''}"
 >
     <span class="drag-handle" title="Drag to reorder">&#9801;</span>
@@ -153,6 +154,15 @@
     .task-row.completed .task-text {
         text-decoration: line-through;
         color: var(--color-text-muted);
+    }
+
+    .task-new {
+        animation: task-flash 500ms ease-out;
+    }
+
+    @keyframes task-flash {
+        from { background: var(--color-accent-light); }
+        to { background: transparent; }
     }
 
     .drag-handle {

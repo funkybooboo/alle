@@ -6,15 +6,13 @@ export interface Task {
     text: string;
     notes: string | null;
     completed: boolean;
-    date: string | null; // ISO 8601 date string; null = Someday (unscheduled)
+    date: string | null;
     createdAt: string;
     updatedAt: string;
     tags: string[];
     parentId: string | null;
     rolloverEnabled: boolean;
     someDayGroupId: string | null;
-    /** @deprecated Use project tag instead. Kept for migration. */
-    projectId: string | null;
     position: number | null;
     state: 'ready' | 'scheduled' | 'done' | null;
     recurringTaskId: string | null;
@@ -22,10 +20,10 @@ export interface Task {
     originalScheduledDate: string | null;
     daysLate: number;
     dependsOn: string | null;
-    startTime: string | null; // "HH:MM" or null (all-day)
-    endTime: string | null; // "HH:MM" or null (all-day or open-ended)
-    reminder: { time: string; channels: ('push' | 'email')[] } | null; // stub — implemented in v2.2.0
-    deletedAt: string | null; // ISO 8601 timestamp; null = not deleted. Soft-deleted tasks are purged after 7 days
+    startTime: string | null;
+    endTime: string | null;
+    reminder: { time: string; channels: ('push' | 'email')[] } | null;
+    deletedAt: string | null;
 }
 
 /**
@@ -40,7 +38,6 @@ export type CreateTaskInput = {
     tags?: string[];
     parentId?: string | null;
     someDayGroupId?: string | null;
-    projectId?: string | null;
     rolloverEnabled?: boolean;
     position?: number | null;
     state?: 'ready' | 'scheduled' | 'done' | null;
@@ -61,7 +58,6 @@ export type UpdateTaskInput = Partial<{
     tags: string[];
     parentId: string | null;
     someDayGroupId: string | null;
-    projectId: string | null;
     rolloverEnabled: boolean;
     position: number | null;
     state: 'ready' | 'scheduled' | 'done' | null;

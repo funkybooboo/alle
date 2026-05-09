@@ -37,6 +37,12 @@
         const diff = PURGE_RETENTION_DAYS - Math.floor((now.getTime() - deleted.getTime()) / (1000 * 60 * 60 * 24));
         return Math.max(0, diff);
     }
+
+    function formatDate(dateStr: string | null): string {
+        if (!dateStr) return 'Someday';
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
 </script>
 
 <Modal title="Trash" onclose={onclose}>
@@ -50,7 +56,10 @@
             <ul class="list">
                 {#each deletedTasks as task (task.id)}
                     <li class="list-item">
-                        <span class="task-text">{task.text}</span>
+                        <div class="task-info">
+                            <span class="task-text">{task.text}</span>
+                            <span class="task-date">{formatDate(task.date)}</span>
+                        </div>
                         <span class="days-left">{daysUntilPurge(task.deletedAt!)}d left</span>
                         <button class="restore-btn" onclick={() => handleRestore(task.id)} aria-label="Restore task">
                             Restore
@@ -84,10 +93,22 @@
     }
 
     .task-text {
-        flex: 1;
         font-size: 14px;
         color: var(--color-text-secondary);
         text-decoration: line-through;
+    }
+
+    .task-date {
+        font-size: 11px;
+        color: var(--color-text-muted);
+    }
+
+    .task-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
     }
 
     .days-left {

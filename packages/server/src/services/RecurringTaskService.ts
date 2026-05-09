@@ -22,7 +22,6 @@ export class RecurringTaskService {
                     date,
                     notes: rt.notes,
                     tags: rt.tags,
-                    projectId: rt.projectId,
                     rolloverEnabled: rt.rolloverEnabled,
                 };
                 return this.taskRepo.create(taskInput);
