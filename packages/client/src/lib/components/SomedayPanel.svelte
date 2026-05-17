@@ -367,20 +367,6 @@
         transition: width 0.2s ease;
     }
 
-    .resize-handle {
-        width: 4px;
-        cursor: col-resize;
-        background: transparent;
-        flex-shrink: 0;
-        transition: background-color 0.15s;
-        position: relative;
-        z-index: 5;
-    }
-
-    .resize-handle:hover {
-        background: var(--color-accent);
-    }
-
     .panel-content {
         flex: 1;
         display: flex;
