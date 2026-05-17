@@ -104,8 +104,6 @@ export const DEFAULT_TAG_KIND_MAP: Record<string, string> = {
     p3: 'priority',
 };
 
-export const DEFAULT_COLLAPSED_SECTIONS: string[] = [];
-
 export const USER_PREFERENCES_DEFAULTS = {
     theme: 'system' as const,
     locale: 'en',

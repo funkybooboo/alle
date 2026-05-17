@@ -179,8 +179,6 @@
         setTimeout(() => newlyCreatedIds.delete(id), 600);
     }
 
-    
-
     function startResize(e: MouseEvent) {
         e.preventDefault();
         const startX = e.clientX;
@@ -224,7 +222,6 @@
         }
     }
 
-    
 </script>
 
 {#if isCollapsed}
@@ -237,7 +234,6 @@
     </div>
 {:else}
     <aside class="someday-panel" style="width: {preferencesStore.someDayPanelWidth}px" aria-label="Someday panel">
-        <div class="resize-handle" role="separator" aria-orientation="vertical" onmousedown={startResize} ondblclick={handleDoubleClick} aria-label="Resize panel — drag to resize, double-click to collapse"></div>
         <div class="panel-content">
             <div class="panel-header">
                 <h2 class="panel-title">Someday</h2>
@@ -270,7 +266,6 @@
                     {@const taskCount = groupTasks.length}
                     {@const completedCount = groupTasks.filter(t => t.completed).length}
                     {@const sectionId = `someday-${group.id}`}
-                    {@const isGroupCollapsed = preferencesStore.isSectionCollapsed(sectionId)}
 
                     <div class="someday-group" class:dragging={uiStore.isDragging} role="listitem">
                         {#if editingGroupId === group.id}
@@ -307,7 +302,6 @@
                                 </div>
                             </div>
                         {/if}
-                        {#if !isGroupCollapsed}
                             <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task", dropTargetStyle: { outline: "none" }, dropTargetClasses: ["dnd-drop-target"] }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
                                 {#if groupTasks.length === 0}
                                     <div class="drop-placeholder" aria-hidden="true"></div>
@@ -319,7 +313,6 @@
                                 {/each}
                             </div>
                             <InlineAddTask date="" someDayGroupId={group.id} oncreated={handleTaskCreated} />
-                        {/if}
                     </div>
                 {:else}
                     <p class="empty-state">No groups yet. Create one above.</p>
@@ -534,10 +527,6 @@
     .group-tasks {
         display: flex;
         flex-direction: column;
-    }
-
-    .dnd-drop-target {
-        outline: none !important;
     }
 
     .drop-placeholder {

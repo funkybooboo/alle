@@ -6,12 +6,7 @@ import type {
     ThemeType,
     UserPreferences,
 } from '@alle/shared';
-import {
-    DEFAULT_COLLAPSED_SECTIONS,
-    DEFAULT_TAG_KIND_MAP,
-    DEFAULT_TAG_KINDS,
-    USER_PREFERENCES_DEFAULTS,
-} from '@alle/shared';
+import { DEFAULT_TAG_KIND_MAP, DEFAULT_TAG_KINDS, USER_PREFERENCES_DEFAULTS } from '@alle/shared';
 import { container } from '$lib/container';
 import { PreferencesService } from '$lib/services/preferencesService';
 
@@ -27,7 +22,6 @@ class PreferencesStore {
     rolloverEnabled = $state(true);
     showEmptyDays = $state(true);
     deleteConfirmation = $state<DeleteConfirmationType>('instant');
-    collapsedSections = $state<string[]>([...DEFAULT_COLLAPSED_SECTIONS]);
     activeFilters = $state<ActiveFilters>({
         tags: [],
         showCompleted: true,
@@ -36,19 +30,6 @@ class PreferencesStore {
     tagKindMap = $state<Record<string, string>>({ ...DEFAULT_TAG_KIND_MAP });
     notificationPosition = $state<NotificationPosition>('bottom-right');
     updatedAt = $state(new Date().toISOString());
-
-    isSectionCollapsed(sectionId: string): boolean {
-        return this.collapsedSections.includes(sectionId);
-    }
-
-    toggleSectionCollapsed(sectionId: string) {
-        if (this.collapsedSections.includes(sectionId)) {
-            this.collapsedSections = this.collapsedSections.filter(id => id !== sectionId);
-        } else {
-            this.collapsedSections = [...this.collapsedSections, sectionId];
-        }
-        preferencesService.update({ collapsedSections: this.collapsedSections }).catch(() => {});
-    }
 
     toggleTag(tag: string) {
         if (this.activeFilters.tags.includes(tag)) {
@@ -98,7 +79,6 @@ class PreferencesStore {
             this.rolloverEnabled = prefs.rolloverEnabled;
             this.showEmptyDays = prefs.showEmptyDays;
             this.deleteConfirmation = prefs.deleteConfirmation ?? 'instant';
-            this.collapsedSections = prefs.collapsedSections ?? [...DEFAULT_COLLAPSED_SECTIONS];
             this.activeFilters = prefs.activeFilters;
             this.tagKinds = prefs.tagKinds ?? [...DEFAULT_TAG_KINDS];
             this.tagKindMap = prefs.tagKindMap ?? { ...DEFAULT_TAG_KIND_MAP };
@@ -120,7 +100,6 @@ class PreferencesStore {
             rolloverEnabled: this.rolloverEnabled,
             showEmptyDays: this.showEmptyDays,
             deleteConfirmation: this.deleteConfirmation,
-            collapsedSections: this.collapsedSections,
             activeFilters: this.activeFilters,
             tagKinds: this.tagKinds,
             tagKindMap: this.tagKindMap,

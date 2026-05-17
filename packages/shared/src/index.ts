@@ -26,7 +26,6 @@ export { LogLevel } from './adapters/logging/Logger';
 export {
     API_ROUTES,
     CONTENT_TYPE_TEXT,
-    DEFAULT_COLLAPSED_SECTIONS,
     DEFAULT_DAY_RANGE,
     DEFAULT_RATE_LIMIT_RPM,
     DEFAULT_TAG_KIND_MAP,

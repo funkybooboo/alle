@@ -3,7 +3,7 @@
     import InlineAddTask from './InlineAddTask.svelte';
     import SectionHeader from './SectionHeader.svelte';
     import type { Task } from '@alle/shared';
-    import { uiStore, taskStore, preferencesStore } from '$lib/stores';
+    import { uiStore, taskStore } from '$lib/stores';
     import { container } from '$lib/container';
     import { dndzone } from 'svelte-dnd-action';
 
@@ -18,7 +18,6 @@
     let completedCount = $derived(tasks.filter(t => t.completed).length);
 
     let sectionId = $derived(`day-${dateStr}`);
-    let collapsed = $derived(preferencesStore.isSectionCollapsed(sectionId));
 
     let localTasks = $state<Task[]>([]);
     let prevTasksKey = $state('');
@@ -74,19 +73,17 @@
         {isToday}
         {isOverdue}
     />
-    {#if !collapsed}
-        <div class="task-list" role="list" use:dndzone={{ items: localTasks, type: "task" }} onconsider={handleConsider} onfinalize={handleFinalize}>
-            {#if localTasks.length === 0}
-                <div class="drop-placeholder" aria-hidden="true"></div>
-            {/if}
-            {#each localTasks as task (task.id)}
-                <div class="task-drag-wrapper" class:sub-task={task.parentId !== null}>
-                    <TaskRow {task} {dateStr} isNew={newlyCreatedIds.has(task.id)} />
-                </div>
-            {/each}
-        </div>
-        <InlineAddTask date={dateStr} oncreated={handleTaskCreated} />
-    {/if}
+      <div class="task-list" role="list" use:dndzone={{ items: localTasks, type: "task" }} onconsider={handleConsider} onfinalize={handleFinalize}>
+          {#if localTasks.length === 0}
+              <div class="drop-placeholder" aria-hidden="true"></div>
+          {/if}
+          {#each localTasks as task (task.id)}
+              <div class="task-drag-wrapper" class:sub-task={task.parentId !== null}>
+                  <TaskRow {task} {dateStr} isNew={newlyCreatedIds.has(task.id)} />
+              </div>
+          {/each}
+      </div>
+      <InlineAddTask date={dateStr} oncreated={handleTaskCreated} />
 </section>
 
 <style>
