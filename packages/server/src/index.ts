@@ -1,11 +1,3 @@
-/**
- * Alle Task App - API Server
- *
- * Thin orchestrator: registers middleware, routes, then starts the server.
- * Swap the underlying runtime (Bun → Node/Express/Fastify) by changing
- * one line in container.ts — business logic stays unchanged.
- */
-
 import { API_ROUTES, type ApiResponse, DEFAULT_RATE_LIMIT_RPM } from '@alle/shared';
 import type { HttpResponse } from './adapters/http/types';
 import { container } from './container';
