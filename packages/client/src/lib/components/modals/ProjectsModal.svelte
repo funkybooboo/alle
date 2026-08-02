@@ -279,19 +279,6 @@
         gap: 16px;
     }
 
-    .list-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .list-header h3 {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--color-text);
-        margin: 0;
-    }
-
     .section h4 {
         font-size: 13px;
         font-weight: 600;
@@ -327,22 +314,9 @@
         border-color: var(--color-border);
     }
 
-    .card-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
     .project-name {
         font-weight: 600;
         font-size: 14px;
-    }
-
-    .card-actions {
-        display: flex;
-        gap: 4px;
-        flex-shrink: 0;
     }
 
     .project-desc {
@@ -361,97 +335,6 @@
 
     .task-count {
         color: var(--color-text-secondary);
-    }
-
-    .icon-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border: none;
-        background: transparent;
-        border-radius: 6px;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .icon-btn:hover {
-        background: var(--color-border);
-    }
-
-    .icon-btn.small {
-        width: 24px;
-        height: 24px;
-    }
-
-    .icon-btn.danger:hover {
-        color: var(--color-danger);
-        background: var(--color-danger-light);
-    }
-
-    .inline-form {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 12px;
-        background: var(--color-surface-dim);
-        border: 1px solid var(--color-border);
-        border-radius: 8px;
-        margin-bottom: 4px;
-    }
-
-    .inline-form input {
-        padding: 8px 10px;
-        border: 1px solid var(--color-border);
-        border-radius: 6px;
-        background: var(--color-surface);
-        color: var(--color-text);
-        font-size: 13px;
-        outline: none;
-    }
-
-    .inline-form input:focus {
-        border-color: var(--color-accent);
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn {
-        padding: 6px 14px;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-
-    .btn-primary {
-        background: var(--color-accent);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-    }
-
-    .btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .btn-secondary {
-        background: var(--color-border);
-        color: var(--color-text-secondary);
-    }
-
-    .btn-secondary:hover {
-        background: var(--color-text-muted);
     }
 
     .back-btn {
@@ -538,12 +421,6 @@
     .task-date {
         font-size: 11px;
         color: var(--color-text-muted);
-    }
-
-    .empty {
-        color: var(--color-text-muted);
-        text-align: center;
-        padding: 20px 0;
     }
 
     .empty-small {

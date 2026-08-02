@@ -225,20 +225,6 @@
         gap: 8px;
     }
 
-    .list-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 4px;
-    }
-
-    .list-header h3 {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--color-text);
-        margin: 0;
-    }
-
     .habit-card {
         padding: 12px;
         background: var(--color-surface-dim);
@@ -248,19 +234,6 @@
 
     .habit-card.editing {
         cursor: default;
-    }
-
-    .card-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .card-actions {
-        display: flex;
-        gap: 4px;
-        flex-shrink: 0;
     }
 
     .habit-name {
@@ -323,30 +296,6 @@
         color: var(--color-text-muted);
     }
 
-    .inline-form {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 12px;
-        background: var(--color-surface-dim);
-        border: 1px solid var(--color-border);
-        border-radius: 8px;
-    }
-
-    .inline-form input[type="text"] {
-        padding: 8px 10px;
-        border: 1px solid var(--color-border);
-        border-radius: 6px;
-        background: var(--color-surface);
-        color: var(--color-text);
-        font-size: 13px;
-        outline: none;
-    }
-
-    .inline-form input[type="text"]:focus {
-        border-color: var(--color-accent);
-    }
-
     .form-row {
         display: flex;
         align-items: center;
@@ -375,72 +324,6 @@
         border-color: var(--color-accent);
     }
 
-    .form-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn {
-        padding: 6px 14px;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-
-    .btn-primary {
-        background: var(--color-accent);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        opacity: 0.9;
-    }
-
-    .btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .btn-secondary {
-        background: var(--color-border);
-        color: var(--color-text-secondary);
-    }
-
-    .btn-secondary:hover {
-        background: var(--color-text-muted);
-    }
-
-    .icon-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border: none;
-        background: transparent;
-        border-radius: 6px;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .icon-btn:hover {
-        background: var(--color-border);
-    }
-
-    .icon-btn.small {
-        width: 24px;
-        height: 24px;
-    }
-
-    .icon-btn.danger:hover {
-        color: var(--color-danger);
-        background: var(--color-danger-light);
-    }
-
     .icon-btn :global(svg) {
         width: 16px;
         height: 16px;
@@ -449,11 +332,5 @@
     .icon-btn.small :global(svg) {
         width: 14px;
         height: 14px;
-    }
-
-    .empty {
-        color: var(--color-text-muted);
-        text-align: center;
-        padding: 20px 0;
     }
 </style>
