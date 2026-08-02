@@ -1,5 +1,3 @@
-import { DEFAULT_TOAST_DURATION_MS } from '@alle/shared';
-
 export type ModalType =
     | 'summary'
     | 'projects'
@@ -16,9 +14,6 @@ class UIStore {
     focusedTaskId = $state<string | null>(null);
     activeModal = $state<ModalType | null>(null);
     editingTaskId = $state<string | null>(null);
-    toastMessage = $state<string | null>(null);
-    toastAction = $state<{ label: string; fn: () => void } | null>(null);
-    #toastTimer: ReturnType<typeof setTimeout> | null = null;
 
     focusTask(id: string | null) {
         this.focusedTaskId = id;
@@ -36,32 +31,10 @@ class UIStore {
         this.editingTaskId = taskId;
     }
 
-    showToast(
-        message: string,
-        action?: { label: string; fn: () => void },
-        duration = DEFAULT_TOAST_DURATION_MS,
-    ) {
-        if (this.#toastTimer) clearTimeout(this.#toastTimer);
-        this.toastMessage = message;
-        this.toastAction = action ?? null;
-        this.#toastTimer = setTimeout(() => {
-            this.toastMessage = null;
-            this.toastAction = null;
-        }, duration);
-    }
-
-    dismissToast() {
-        if (this.#toastTimer) clearTimeout(this.#toastTimer);
-        this.toastMessage = null;
-        this.toastAction = null;
-    }
-
     reset() {
         this.focusedTaskId = null;
         this.activeModal = null;
         this.editingTaskId = null;
-        this.toastMessage = null;
-        this.toastAction = null;
     }
 }
 

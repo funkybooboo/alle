@@ -263,7 +263,7 @@
     }
 
     .tag-option {
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         border: 1px solid var(--color-border);
         border-radius: 14px;
         padding: 4px 10px;
@@ -274,7 +274,7 @@
     }
 
     .tag-option:hover {
-        background: var(--color-iron-200);
+        background: var(--color-border);
     }
 
     .checkbox-label {

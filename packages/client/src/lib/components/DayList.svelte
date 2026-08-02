@@ -33,7 +33,7 @@
 
     function formatDateHeader(dateStr: string): string {
         const date = new Date(dateStr + 'T00:00:00');
-        const opts: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric' };
+        const opts: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
         return date.toLocaleDateString('en-US', opts);
     }
 

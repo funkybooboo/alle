@@ -9,6 +9,7 @@
         tagStore,
         uiStore,
         taskStore,
+        notificationStore,
     } from '$lib/stores';
     import type { Task } from '@alle/shared';
     import { container } from '$lib/container';
@@ -16,7 +17,6 @@
     import SomedayPanel from '$lib/components/SomedayPanel.svelte';
     import BottomBar from '$lib/components/BottomBar.svelte';
     import ModalHost from '$lib/components/ModalHost.svelte';
-    import ToastContainer from '$lib/components/ToastContainer.svelte';
     import NotificationContainer from '$lib/components/NotificationContainer.svelte';
 
     let { children } = $props();
@@ -102,9 +102,9 @@
                 const taskCopy = { ...task! } as Task;
                 const success = await taskStore.remove(taskId);
                 if (success) {
-                    uiStore.showToast('Task deleted', {
-                        label: 'Undo',
-                        fn: () => taskStore.restore(taskCopy),
+                    notificationStore.push('Task deleted', {
+                        kind: 'info',
+                        action: { label: 'Undo', fn: () => taskStore.restore(taskCopy) },
                     });
                 }
             }
@@ -141,7 +141,6 @@
 </div>
 
 <ModalHost />
-<ToastContainer />
 <NotificationContainer />
 
 <style>

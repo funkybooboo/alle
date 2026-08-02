@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { taskStore, uiStore } from '$lib/stores';
+    import { taskStore, uiStore, notificationStore } from '$lib/stores';
     import { TASK_CONSTRAINTS } from '@alle/shared';
     import type { Task } from '@alle/shared';
     import { Icon } from 'svelte-icons-pack';
@@ -64,9 +64,9 @@
         const removedTask: Task = { ...task };
         const success = await taskStore.remove(task.id);
         if (success) {
-            uiStore.showToast('Task deleted', {
-                label: 'Undo',
-                fn: () => taskStore.restore(removedTask),
+            notificationStore.push('Task deleted', {
+                kind: 'info',
+                action: { label: 'Undo', fn: () => taskStore.restore(removedTask) },
             });
         }
     }
@@ -169,7 +169,7 @@
         cursor: pointer;
         padding: 2px;
         line-height: 1;
-        color: var(--color-iron-400);
+        color: var(--color-text-muted);
         transition: color 0.15s;
         flex-shrink: 0;
     }
@@ -218,7 +218,7 @@
         font-family: monospace;
         color: var(--color-text-secondary);
         margin-right: 6px;
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         padding: 1px 4px;
         border-radius: 3px;
     }
@@ -239,7 +239,7 @@
         font-size: 11px;
         padding: 1px 6px;
         border-radius: 10px;
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         color: var(--color-text-secondary);
     }
 

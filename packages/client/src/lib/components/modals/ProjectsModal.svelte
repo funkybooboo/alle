@@ -378,7 +378,7 @@
     }
 
     .icon-btn:hover {
-        background: var(--color-iron-200);
+        background: var(--color-border);
     }
 
     .icon-btn.small {
@@ -446,12 +446,12 @@
     }
 
     .btn-secondary {
-        background: var(--color-iron-200);
+        background: var(--color-border);
         color: var(--color-text-secondary);
     }
 
     .btn-secondary:hover {
-        background: var(--color-iron-300);
+        background: var(--color-text-muted);
     }
 
     .back-btn {

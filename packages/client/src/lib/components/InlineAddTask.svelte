@@ -71,7 +71,7 @@
     }
 
     .drag-spacer {
-        color: var(--color-iron-300);
+        color: var(--color-text-muted);
         font-size: 12px;
         opacity: 0;
         user-select: none;
@@ -82,7 +82,7 @@
 
     .add-checkbox {
         flex-shrink: 0;
-        color: var(--color-iron-300);
+        color: var(--color-text-muted);
         padding: 2px;
         line-height: 1;
     }

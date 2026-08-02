@@ -293,7 +293,7 @@
         font-size: 11px;
         padding: 1px 6px;
         border-radius: 10px;
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         color: var(--color-text-secondary);
     }
 
@@ -319,7 +319,7 @@
     }
 
     .streak-badge.empty {
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         color: var(--color-text-muted);
     }
 
@@ -405,12 +405,12 @@
     }
 
     .btn-secondary {
-        background: var(--color-iron-200);
+        background: var(--color-border);
         color: var(--color-text-secondary);
     }
 
     .btn-secondary:hover {
-        background: var(--color-iron-300);
+        background: var(--color-text-muted);
     }
 
     .icon-btn {
@@ -428,7 +428,7 @@
     }
 
     .icon-btn:hover {
-        background: var(--color-iron-200);
+        background: var(--color-border);
     }
 
     .icon-btn.small {

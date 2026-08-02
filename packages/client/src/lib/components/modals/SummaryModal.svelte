@@ -1,11 +1,11 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
     import { taskStore } from '$lib/stores';
+    import { container } from '$lib/container';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = container.dateProvider.today();
 
     let allTasks = $derived(taskStore.tasks);
     let todayTasks = $derived(allTasks.filter(t => t.date === todayStr));
@@ -108,7 +108,7 @@
 
     .progress-bar {
         height: 6px;
-        background: var(--color-iron-200);
+        background: var(--color-border);
         border-radius: 3px;
         overflow: hidden;
     }
@@ -146,7 +146,7 @@
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 10px;
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         color: var(--color-text-secondary);
     }
 

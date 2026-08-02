@@ -1,6 +1,6 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
-    import { taskStore, uiStore } from '$lib/stores';
+    import { taskStore, uiStore, notificationStore } from '$lib/stores';
     import { TASK_CONSTRAINTS, isValidTimeString, isValidTimeRange } from '@alle/shared';
     import type { Task } from '@alle/shared';
     import { Icon } from 'svelte-icons-pack';
@@ -105,9 +105,9 @@
         const removedTask: Task = { ...task };
         const success = await taskStore.remove(task.id);
         if (success) {
-            uiStore.showToast('Task deleted', {
-                label: 'Undo',
-                fn: () => taskStore.restore(removedTask),
+            notificationStore.push('Task deleted', {
+                kind: 'info',
+                action: { label: 'Undo', fn: () => taskStore.restore(removedTask) },
             });
         }
         uiStore.closeModal();

@@ -120,7 +120,7 @@
     }
 
     .result-checkbox {
-        color: var(--color-iron-400);
+        color: var(--color-text-muted);
         flex-shrink: 0;
     }
 
@@ -144,7 +144,7 @@
         font-size: 11px;
         padding: 1px 6px;
         border-radius: 10px;
-        background: var(--color-iron-100);
+        background: var(--color-surface-hover);
         color: var(--color-text-secondary);
     }
 
