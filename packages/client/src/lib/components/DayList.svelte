@@ -259,9 +259,7 @@
 
 <style>
     .day-list {
-        padding: 16px 20px;
-        max-width: 800px;
-        margin: 0 auto;
+        padding: 0 36px;
         position: relative;
     }
 

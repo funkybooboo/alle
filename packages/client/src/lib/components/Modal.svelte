@@ -93,9 +93,9 @@
         background: var(--color-surface);
         border-radius: 8px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        max-width: 1100px;
-        width: 92vw;
-        max-height: calc(100vh - 80px);
+        max-width: 1400px;
+        width: 96vw;
+        max-height: calc(100vh - 32px);
         display: flex;
         flex-direction: column;
         outline: none;

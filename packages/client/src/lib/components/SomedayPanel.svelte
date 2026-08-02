@@ -17,6 +17,47 @@
 
     let isCollapsed = $derived(preferencesStore.someDayPanelWidth === 0);
 
+    // Drag-to-resize. Panel sits on the right edge of the layout, so dragging
+    // its left handle to the left grows the width (deltaX = startX - clientX).
+    const MIN_PANEL_WIDTH = 200;
+    const MAX_PANEL_WIDTH = 600;
+    const COLLAPSE_THRESHOLD = 120; // release below this -> snap shut
+    let isResizing = $state(false);
+
+    function startResize(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startWidth = preferencesStore.someDayPanelWidth;
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        function onMouseMove(ev: MouseEvent) {
+            const deltaX = startX - ev.clientX;
+            const newWidth = Math.max(0, Math.min(MAX_PANEL_WIDTH, startWidth + deltaX));
+            // Live update only the local state; persist once on release.
+            preferencesStore.someDayPanelWidth = newWidth;
+        }
+
+        function onMouseUp() {
+            isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            const w = preferencesStore.someDayPanelWidth;
+            if (w < COLLAPSE_THRESHOLD) {
+                preferencesStore.setPanelWidth(0);
+            } else {
+                preferencesStore.setPanelWidth(Math.max(MIN_PANEL_WIDTH, w));
+            }
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
     let filteredSomedayTasks = $derived(applyFilters(taskStore.somedayTasks, preferencesStore.activeFilters));
 
     // Tasks with date=null and no someDayGroupId — rendered in an Ungrouped
@@ -135,7 +176,8 @@
         </button>
     </div>
 {:else}
-    <aside class="someday-panel" style="width: {preferencesStore.someDayPanelWidth}px" aria-label="Someday panel">
+    <aside class="someday-panel" class:resizing={isResizing} style="width: {preferencesStore.someDayPanelWidth}px" aria-label="Someday panel">
+        <div class="resize-handle" role="separator" aria-orientation="vertical" aria-label="Resize Someday panel" title="Drag to resize" onmousedown={startResize}></div>
         <div class="panel-content">
             <div class="panel-header">
                 <h2 class="panel-title">Someday</h2>
@@ -281,6 +323,28 @@
         display: flex;
         flex-direction: row;
         transition: width 0.2s ease;
+    }
+
+    .someday-panel.resizing {
+        transition: none;
+    }
+
+    .resize-handle {
+        position: absolute;
+        top: 0;
+        left: -3px;
+        width: 6px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 10;
+        border-radius: 2px;
+        transition: background-color 0.15s;
+    }
+
+    .resize-handle:hover,
+    .resize-handle:active {
+        background: var(--color-accent);
+        opacity: 0.5;
     }
 
     .panel-content {

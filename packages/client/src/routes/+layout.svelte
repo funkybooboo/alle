@@ -181,5 +181,7 @@
         min-width: 0;
         overflow-y: auto;
         transition: flex 0.2s ease;
+        margin: 36px 0;
+        box-sizing: border-box;
     }
 </style>
