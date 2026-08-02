@@ -14,10 +14,6 @@
     let text = $state('');
     let inputEl: HTMLInputElement;
 
-    $effect(() => {
-        if (inputEl) inputEl.focus();
-    });
-
     async function handleSubmit() {
         if (!text.trim()) return;
         const input: Record<string, unknown> = {
@@ -42,14 +38,10 @@
             inputEl?.blur();
         }
     }
-
-    export function focus() {
-        inputEl?.focus();
-    }
 </script>
 
 <div class="add-row">
-    <span class="drag-spacer" aria-hidden="true">&#9801;</span>
+    <span class="drag-spacer" aria-hidden="true"></span>
     <span class="add-checkbox"><Icon src={LuCircle} /></span>
     <input
         bind:this={inputEl}

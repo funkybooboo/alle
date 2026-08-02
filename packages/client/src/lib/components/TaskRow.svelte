@@ -78,8 +78,6 @@
     class:task-new={isNew}
     aria-label="{task.text}{task.completed ? ', completed' : ''}"
 >
-    <span class="drag-handle" title="Drag to reorder">&#9801;</span>
-
     <button
         class="checkbox"
         class:checked={task.completed}
@@ -163,19 +161,6 @@
     @keyframes task-flash {
         from { background: var(--color-accent-light); }
         to { background: transparent; }
-    }
-
-    .drag-handle {
-        color: var(--color-iron-300);
-        cursor: grab;
-        font-size: 12px;
-        opacity: 0;
-        transition: opacity 0.15s;
-        user-select: none;
-    }
-
-    .task-row:hover .drag-handle {
-        opacity: 1;
     }
 
     .checkbox {

@@ -17,7 +17,6 @@ class PreferencesStore {
     theme = $state<ThemeType>('system');
     locale = $state('en');
     someDayPanelWidth = $state<number>(USER_PREFERENCES_DEFAULTS.someDayPanelWidth);
-    someDayPanelCollapsed = $state(false);
     someDayPanelLastOpenWidth = $state<number>(USER_PREFERENCES_DEFAULTS.someDayPanelLastOpenWidth);
     rolloverEnabled = $state(true);
     showEmptyDays = $state(true);
@@ -72,7 +71,6 @@ class PreferencesStore {
             this.theme = prefs.theme;
             this.locale = prefs.locale;
             this.someDayPanelWidth = prefs.someDayPanelWidth;
-            this.someDayPanelCollapsed = prefs.someDayPanelCollapsed;
             this.someDayPanelLastOpenWidth =
                 prefs.someDayPanelLastOpenWidth ??
                 USER_PREFERENCES_DEFAULTS.someDayPanelLastOpenWidth;
@@ -95,7 +93,6 @@ class PreferencesStore {
             theme: this.theme,
             locale: this.locale,
             someDayPanelWidth: this.someDayPanelWidth,
-            someDayPanelCollapsed: this.someDayPanelCollapsed,
             someDayPanelLastOpenWidth: this.someDayPanelLastOpenWidth,
             rolloverEnabled: this.rolloverEnabled,
             showEmptyDays: this.showEmptyDays,
@@ -134,11 +131,6 @@ class PreferencesStore {
                 someDayPanelLastOpenWidth: this.someDayPanelLastOpenWidth,
             })
             .catch(() => {});
-    }
-
-    setPanelCollapsed(collapsed: boolean) {
-        this.someDayPanelCollapsed = collapsed;
-        preferencesService.update({ someDayPanelCollapsed: collapsed }).catch(() => {});
     }
 
     setShowEmptyDays(show: boolean) {

@@ -1,13 +1,12 @@
 <script lang="ts">
-    import { preferencesStore, someDayGroupStore, uiStore, taskStore } from '$lib/stores';
+    import { preferencesStore, someDayGroupStore, taskStore } from '$lib/stores';
     import { applyFilters } from '$lib/filters';
     import TaskRow from './TaskRow.svelte';
     import InlineAddTask from './InlineAddTask.svelte';
     import SectionHeader from './SectionHeader.svelte';
     import { Icon } from 'svelte-icons-pack';
     import { LuPencil, LuTrash2, LuCheck } from 'svelte-icons-pack/lu';
-    import { dndzone } from 'svelte-dnd-action';
-    import type { SomeDayGroup, Task } from '@alle/shared';
+    import type { SomeDayGroup } from '@alle/shared';
 
     let showAddGroupForm = $state(false);
     let newGroupName = $state('');
@@ -26,32 +25,13 @@
 
     let filteredSomedayTasks = $derived(applyFilters(taskStore.somedayTasks, preferencesStore.activeFilters));
 
-    let groupLocalTasks = $state<Record<string, Task[]>>({});
-    let groupTasksKeys = $state<Record<string, string>>({});
+    // Tasks with date=null and no someDayGroupId — rendered in an Ungrouped
+    // section below the named groups so they're never invisible.
+    let ungroupedTasks = $derived(filteredSomedayTasks.filter(t => t.someDayGroupId === null));
 
-    let localGroups = $state<SomeDayGroup[]>([]);
-    let prevGroupsKey = $state('');
+    let groups = $derived(someDayGroupStore.sortedGroups);
+
     let newlyCreatedIds = $state<Set<string>>(new Set());
-
-    $effect(() => {
-        const sorted = someDayGroupStore.sortedGroups;
-        const key = sorted.map(g => `${g.id}_${g.position}_${g.name}`).join('|');
-        if (key !== prevGroupsKey) {
-            prevGroupsKey = key;
-            localGroups = [...sorted];
-        }
-    });
-
-    $effect(() => {
-        for (const group of localGroups) {
-            const tasks = filteredSomedayTasks.filter(t => t.someDayGroupId === group.id);
-            const key = tasks.map(t => `${t.id}_${t.completed}_${t.updatedAt}_${t.text}`).join('|');
-            if (key !== groupTasksKeys[group.id]) {
-                groupTasksKeys[group.id] = key;
-                groupLocalTasks[group.id] = [...tasks];
-            }
-        }
-    });
 
     $effect(() => {
         if (showAddGroupForm && newGroupInput) newGroupInput.focus();
@@ -61,11 +41,15 @@
         if (editingGroupId && editGroupInput) editGroupInput.focus();
     });
 
+    function groupTasks(group: SomeDayGroup) {
+        return filteredSomedayTasks.filter(t => t.someDayGroupId === group.id);
+    }
+
     function submitNewGroup() {
         const name = newGroupName.trim();
         if (!name) return;
         const tag = name.toLowerCase().replace(/\s+/g, '-');
-        someDayGroupStore.create({ name, tag, position: localGroups.length });
+        someDayGroupStore.create({ name, tag, position: groups.length });
         newGroupName = '';
         showAddGroupForm = false;
     }
@@ -117,61 +101,19 @@
     }
 
     async function handleDeleteGroup(id: string) {
-        const group = localGroups.find(g => g.id === id);
+        const group = groups.find(g => g.id === id);
         if (!group) return;
-        const taskCount = (groupLocalTasks[group.id] ?? []).length;
+        const tasks = groupTasks(group);
+        const taskCount = tasks.length;
         const msg = taskCount > 0
             ? `Delete "${group.name}" and its ${taskCount} task${taskCount !== 1 ? 's' : ''}? This cannot be undone.`
             : `Delete "${group.name}"? This cannot be undone.`;
         if (!window.confirm(msg)) return;
 
-        for (const task of [...(groupLocalTasks[group.id] ?? [])]) {
+        for (const task of [...tasks]) {
             await taskStore.remove(task.id);
         }
         await someDayGroupStore.remove(id);
-    }
-
-    function handleGroupConsider(groupId: string, e: CustomEvent) {
-        groupLocalTasks[groupId] = e.detail.items;
-        uiStore.startDrag();
-    }
-
-    function handleGroupFinalize(groupId: string, e: CustomEvent) {
-        const items: Task[] = e.detail.items;
-        groupLocalTasks[groupId] = items;
-        for (let i = 0; i < items.length; i++) {
-            const task = items[i];
-            const updates: Record<string, unknown> = {};
-            if (task.position !== i) {
-                updates.position = i;
-            }
-            if (task.someDayGroupId !== groupId) {
-                updates.someDayGroupId = groupId;
-            }
-            if (task.date !== null) {
-                updates.date = null;
-            }
-            if (Object.keys(updates).length > 0) {
-                taskStore.update(task.id, updates);
-            }
-        }
-        uiStore.endDrag();
-    }
-
-    function handleGroupHeaderConsider(e: CustomEvent) {
-        localGroups = e.detail.items;
-        uiStore.startDrag();
-    }
-
-    function handleGroupHeaderFinalize(e: CustomEvent) {
-        localGroups = e.detail.items;
-        for (let i = 0; i < localGroups.length; i++) {
-            const group = localGroups[i];
-            if (group.position !== i) {
-                someDayGroupStore.update(group.id, { position: i });
-            }
-        }
-        uiStore.endDrag();
     }
 
     function handleTaskCreated(id: string) {
@@ -221,7 +163,6 @@
             preferencesStore.setPanelWidth(0);
         }
     }
-
 </script>
 
 {#if isCollapsed}
@@ -260,14 +201,14 @@
                 </div>
             </div>
 
-            <div class="groups-container" use:dndzone={{ items: localGroups, type: "someday-group", dropTargetStyle: { outline: "none" }, dropTargetClasses: ["dnd-drop-target"] }} onconsider={handleGroupHeaderConsider} onfinalize={handleGroupHeaderFinalize}>
-                {#each localGroups as group (group.id)}
-                    {@const groupTasks = groupLocalTasks[group.id] ?? filteredSomedayTasks.filter(t => t.someDayGroupId === group.id)}
-                    {@const taskCount = groupTasks.length}
-                    {@const completedCount = groupTasks.filter(t => t.completed).length}
+            <div class="groups-container">
+                {#each groups as group (group.id)}
+                    {@const tasks = groupTasks(group)}
+                    {@const taskCount = tasks.length}
+                    {@const completedCount = tasks.filter(t => t.completed).length}
                     {@const sectionId = `someday-${group.id}`}
 
-                    <div class="someday-group" class:dragging={uiStore.isDragging} role="listitem">
+                    <div class="someday-group" role="listitem">
                         {#if editingGroupId === group.id}
                             <div class="group-rename-row">
                                 <input
@@ -302,21 +243,35 @@
                                 </div>
                             </div>
                         {/if}
-                            <div class="group-tasks" role="list" use:dndzone={{ items: groupTasks, type: "task", dropTargetStyle: { outline: "none" }, dropTargetClasses: ["dnd-drop-target"] }} onconsider={(e: CustomEvent) => handleGroupConsider(group.id, e)} onfinalize={(e: CustomEvent) => handleGroupFinalize(group.id, e)}>
-                                {#if groupTasks.length === 0}
-                                    <div class="drop-placeholder" aria-hidden="true"></div>
-                                {/if}
-                                {#each groupTasks as task (task.id)}
-                                    <div class="task-drag-wrapper">
-                                        <TaskRow {task} dateStr="" isNew={newlyCreatedIds.has(task.id)} />
-                                    </div>
-                                {/each}
-                            </div>
-                            <InlineAddTask date="" someDayGroupId={group.id} oncreated={handleTaskCreated} />
+                        <div class="group-tasks" role="list">
+                            {#each tasks as task (task.id)}
+                                <TaskRow {task} dateStr="" isNew={newlyCreatedIds.has(task.id)} />
+                            {/each}
+                        </div>
+                        <InlineAddTask date="" someDayGroupId={group.id} oncreated={handleTaskCreated} />
                     </div>
                 {:else}
                     <p class="empty-state">No groups yet. Create one above.</p>
                 {/each}
+
+                {#if ungroupedTasks.length > 0}
+                    <div class="someday-group">
+                        <div class="group-header-row">
+                            <SectionHeader
+                                sectionId="someday-ungrouped"
+                                title="Ungrouped"
+                                taskCount={ungroupedTasks.length}
+                                completedCount={ungroupedTasks.filter(t => t.completed).length}
+                            />
+                        </div>
+                        <div class="group-tasks" role="list">
+                            {#each ungroupedTasks as task (task.id)}
+                                <TaskRow {task} dateStr="" isNew={newlyCreatedIds.has(task.id)} />
+                            {/each}
+                        </div>
+                        <InlineAddTask date="" oncreated={handleTaskCreated} />
+                    </div>
+                {/if}
             </div>
         </div>
     </aside>
@@ -513,20 +468,6 @@
     .group-tasks {
         display: flex;
         flex-direction: column;
-    }
-
-    .drop-placeholder {
-        min-height: 8px;
-        border-top: 2px solid transparent;
-        transition: border-color 0.15s ease;
-    }
-
-    .dragging .drop-placeholder {
-        border-top-color: var(--color-warning);
-    }
-
-    .task-drag-wrapper {
-        cursor: default;
     }
 
     .empty-state {

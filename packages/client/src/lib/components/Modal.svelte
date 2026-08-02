@@ -91,10 +91,10 @@
 
     .modal {
         background: var(--color-surface);
-        border-radius: 12px;
+        border-radius: 8px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        max-width: 900px;
-        width: 85vw;
+        max-width: 1100px;
+        width: 92vw;
         max-height: calc(100vh - 80px);
         display: flex;
         flex-direction: column;

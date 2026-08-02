@@ -16,8 +16,6 @@ class UIStore {
     focusedTaskId = $state<string | null>(null);
     activeModal = $state<ModalType | null>(null);
     editingTaskId = $state<string | null>(null);
-    todayVisible = $state(true);
-    isDragging = $state(false);
     toastMessage = $state<string | null>(null);
     toastAction = $state<{ label: string; fn: () => void } | null>(null);
     #toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -36,18 +34,6 @@ class UIStore {
 
     startEditing(taskId: string | null) {
         this.editingTaskId = taskId;
-    }
-
-    setTodayVisible(visible: boolean) {
-        this.todayVisible = visible;
-    }
-
-    startDrag() {
-        this.isDragging = true;
-    }
-
-    endDrag() {
-        this.isDragging = false;
     }
 
     showToast(
@@ -74,8 +60,6 @@ class UIStore {
         this.focusedTaskId = null;
         this.activeModal = null;
         this.editingTaskId = null;
-        this.todayVisible = true;
-        this.isDragging = false;
         this.toastMessage = null;
         this.toastAction = null;
     }

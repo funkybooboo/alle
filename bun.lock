@@ -29,7 +29,6 @@
         "@sveltejs/adapter-node": "^5.5.4",
         "@sveltejs/kit": "^2.58.0",
         "svelte": "^5.55.1",
-        "svelte-dnd-action": "^0.9.69",
         "svelte-icons-pack": "^3.1.3",
       },
       "devDependencies": {
@@ -841,8 +840,6 @@
     "supports-preserve-symlinks-flag": ["supports-preserve-symlinks-flag@1.0.0", "", {}, "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w=="],
 
     "svelte": ["svelte@5.55.5", "", { "dependencies": { "@jridgewell/remapping": "^2.3.4", "@jridgewell/sourcemap-codec": "^1.5.0", "@sveltejs/acorn-typescript": "^1.0.5", "@types/estree": "^1.0.5", "@types/trusted-types": "^2.0.7", "acorn": "^8.12.1", "aria-query": "5.3.1", "axobject-query": "^4.1.0", "clsx": "^2.1.1", "devalue": "^5.6.4", "esm-env": "^1.2.1", "esrap": "^2.2.4", "is-reference": "^3.0.3", "locate-character": "^3.0.0", "magic-string": "^0.30.11", "zimmerframe": "^1.1.2" } }, "sha512-2uCs/LZ9us+AktdzYJM8OcxQ8qnPS1kpaO7syGT/MgO+6Qr1Ybl+TqPq+97u7PHqmmMlye5ZkoyXONy5mjjAbw=="],
-
-    "svelte-dnd-action": ["svelte-dnd-action@0.9.69", "", { "peerDependencies": { "svelte": ">=3.23.0 || ^5.0.0-next.0" } }, "sha512-NAmSOH7htJoYraTQvr+q5whlIuVoq88vEuHr4NcFgscDRUxfWPPxgie2OoxepBCQCikrXZV4pqV86aun60wVyw=="],
 
     "svelte-icons-pack": ["svelte-icons-pack@3.1.3", "", { "peerDependencies": { "svelte": "^3.44.0 || ^4.0.0 || ^5.0.0-next.1" } }, "sha512-sJ/ZiFkbim5zfU+T8V/kEendOluEYtJ7rp207Gc2c/NFgaj4CvWScUbuiByZrdf3Xm8n731Fug36IiXuLTkR9A=="],
 

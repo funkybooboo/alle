@@ -6,7 +6,13 @@
 
     let totalTasks = $derived(taskStore.tasks.length);
     let completedCount = $derived(taskStore.tasks.filter(t => t.completed).length);
-    let todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    let todayLabel = $derived(
+        new Date(container.dateProvider.today() + 'T00:00:00').toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+        }),
+    );
 
     function handleHomeClick() {
         preferencesStore.clearAll();

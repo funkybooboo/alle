@@ -24,11 +24,3 @@ export const WithFilters: Story = {
         },
     },
 };
-
-export const ScrolledFromToday: Story = {
-    parameters: {
-        stores: {
-            uiStore: { todayVisible: false },
-        },
-    },
-};
