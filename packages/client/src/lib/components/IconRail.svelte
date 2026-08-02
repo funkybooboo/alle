@@ -43,31 +43,33 @@
     .icon-rail {
         display: flex;
         flex-direction: column;
-        width: 112px;
-        min-width: 112px;
+        align-items: stretch;
+        width: 64px;
+        min-width: 64px;
         background: var(--color-surface);
         border-right: 1px solid var(--color-border);
         padding: 8px 0;
-        gap: 2px;
+        gap: 4px;
         overflow-y: auto;
     }
 
     .icon-btn {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
-        gap: 10px;
+        justify-content: center;
+        gap: 4px;
         width: 100%;
-        min-height: 52px;
         box-sizing: border-box;
-        padding: 14px 10px;
+        min-height: 56px;
+        padding: 8px 4px;
         border: none;
         background: transparent;
         cursor: pointer;
         border-radius: 6px;
         transition: background-color 0.15s;
         color: var(--color-text-secondary);
-        text-align: left;
+        text-align: center;
     }
 
     .icon-btn:hover {
@@ -87,13 +89,10 @@
     }
 
     .label {
-        flex: 1 1 auto;
-        min-width: 0;
-        font-size: 13px;
+        font-size: 10px;
         font-weight: 500;
+        line-height: 1.2;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .icon-btn:focus-visible {
