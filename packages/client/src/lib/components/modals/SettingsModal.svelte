@@ -1,31 +1,57 @@
 <script lang="ts">
     import Modal from '$lib/components/Modal.svelte';
     import { preferencesStore } from '$lib/stores';
-    import type { NotificationPosition } from '@alle/shared';
+    import { isValidTimeZone } from '@alle/shared';
+    import { onMount } from 'svelte';
 
     let { onclose = () => {} }: { onclose?: () => void } = $props();
 
     let themeSelection = $state(preferencesStore.theme);
-    let showEmptyDays = $state(preferencesStore.showEmptyDays);
     let rolloverEnabled = $state(preferencesStore.rolloverEnabled);
     let deleteConfirmation = $state(preferencesStore.deleteConfirmation);
-    let notificationPosition = $state(preferencesStore.notificationPosition);
+    let timeFormat = $state(preferencesStore.timeFormat);
+    let timezoneInput = $state((preferencesStore.timezone ?? '').toString());
+    let tzInvalid = $state(false);
+
+    // Full IANA timezone list from the runtime; a native <datalist> does the
+    // substring search so ~400 options need no shipped data.
+    const tzOptions: string[] = Intl.supportedValuesOf('timeZone');
 
     $effect(() => {
         themeSelection = preferencesStore.theme;
-        showEmptyDays = preferencesStore.showEmptyDays;
         rolloverEnabled = preferencesStore.rolloverEnabled;
         deleteConfirmation = preferencesStore.deleteConfirmation;
-        notificationPosition = preferencesStore.notificationPosition;
+        timeFormat = preferencesStore.timeFormat;
+        timezoneInput = (preferencesStore.timezone ?? '').toString();
+        tzInvalid = false;
     });
+
+    // Live preview of the wall-clock in the chosen zone, refreshed on a timer
+    // so the user sees the offset effect while the modal is open.
+    let now = $state(new Date());
+    onMount(() => {
+        const t = setInterval(() => {
+            now = new Date();
+        }, 1000);
+        return () => clearInterval(t);
+    });
+    let tzPreview = $derived(buildTzPreview());
+    function buildTzPreview(): string {
+        const tz =
+            preferencesStore.timezone !== null && !tzInvalid ? preferencesStore.timezone : null;
+        const time = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: preferencesStore.timeFormat !== '24h',
+            ...(tz ? { timeZone: tz } : {}),
+        });
+        const zoneLabel = (tz ?? Intl.DateTimeFormat().resolvedOptions().timeZone) || 'system';
+        return `Now: ${time} (${zoneLabel})`;
+    }
 
     function handleThemeChange(e: Event) {
         const value = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'system';
         preferencesStore.setTheme(value);
-    }
-
-    function handleShowEmptyDaysChange(e: Event) {
-        preferencesStore.setShowEmptyDays((e.target as HTMLInputElement).checked);
     }
 
     function handleRolloverChange(e: Event) {
@@ -38,9 +64,26 @@
         preferencesStore.setDeleteConfirmation(value);
     }
 
-    function handleNotificationPositionChange(e: Event) {
-        const value = (e.target as HTMLSelectElement).value as NotificationPosition;
-        preferencesStore.setNotificationPosition(value);
+    function handleTimeFormatChange(e: Event) {
+        const value = (e.target as HTMLSelectElement).value as '12h' | '24h';
+        preferencesStore.setTimeFormat(value);
+    }
+
+    function handleTimezoneInput(e: Event) {
+        const raw = (e.target as HTMLInputElement).value.trim();
+        timezoneInput = raw;
+        if (raw === '') {
+            tzInvalid = false;
+            preferencesStore.setTimezone(null);
+            return;
+        }
+        if (isValidTimeZone(raw)) {
+            tzInvalid = false;
+            preferencesStore.setTimezone(raw);
+        } else {
+            // Keep the previous valid zone in place; flag the input as invalid.
+            tzInvalid = true;
+        }
     }
 </script>
 
@@ -56,14 +99,57 @@
                     <option value="dark">Dark</option>
                 </select>
             </label>
+            <label class="field">
+                <span class="label" id="time-format-label">Time format</span>
+                <select class="select" value={timeFormat} onchange={handleTimeFormatChange} aria-labelledby="time-format-label" id="time-format-select">
+                    <option value="12h">12-hour (08:53 PM)</option>
+                    <option value="24h">24-hour (20:53)</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="label" id="tz-label">Timezone</span>
+                <input
+                    class="select tz-input"
+                    list="tz-options"
+                    id="tz-input"
+                    value={timezoneInput}
+                    oninput={handleTimezoneInput}
+                    placeholder="System (device)"
+                    aria-labelledby="tz-label"
+                    aria-invalid={tzInvalid}
+                />
+                <datalist id="tz-options">
+                    {#each tzOptions as tz}
+                        <option value={tz}></option>
+                    {/each}
+                </datalist>
+            </label>
+            <span class="hint" class:invalid={tzInvalid}>
+                {tzInvalid ? 'Unknown timezone' : tzPreview}
+            </span>
+            <details class="tz-help">
+                <summary>Examples & format</summary>
+                <p class="tz-help-text">
+                    Use an IANA timezone identifier: <code>Area/Location</code>
+                    (case-sensitive). E.g. <code>America/Denver</code>,
+                    <code>America/Boise</code>, <code>Europe/London</code>,
+                    <code>Asia/Tokyo</code>, <code>Asia/Kolkata</code>,
+                    <code>Australia/Sydney</code>, <code>UTC</code>.
+                </p>
+                <p class="tz-help-text">
+                    No abbreviations (MST, PST, EST are ambiguous) and no
+                    numeric offsets (use a named zone instead). Leave blank to
+                    follow your device's system timezone.
+                </p>
+                <p class="tz-help-text">
+                    Full list:
+                    <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer">wikipedia.org &rarr;</a>
+                </p>
+            </details>
         </fieldset>
 
         <fieldset class="section">
             <legend class="section-heading">Behavior</legend>
-            <label class="checkbox-field">
-                <input type="checkbox" checked={showEmptyDays} onchange={handleShowEmptyDaysChange} id="show-empty-days" />
-                <span>Show empty days</span>
-            </label>
             <label class="checkbox-field">
                 <input type="checkbox" checked={rolloverEnabled} onchange={handleRolloverChange} id="rollover-enabled" />
                 <span>Auto-rollover incomplete tasks</span>
@@ -73,20 +159,6 @@
                 <select class="select" value={deleteConfirmation} onchange={handleDeleteConfirmationChange} aria-labelledby="delete-confirm-label" id="delete-confirm-select">
                     <option value="instant">Instant delete</option>
                     <option value="confirm">Ask before deleting</option>
-                </select>
-            </label>
-        </fieldset>
-
-        <fieldset class="section">
-            <legend class="section-heading">Notifications</legend>
-            <label class="field">
-                <span class="label" id="notif-position-label">Position</span>
-                <select class="select" value={notificationPosition} onchange={handleNotificationPositionChange} aria-labelledby="notif-position-label" id="notif-position-select">
-                    <option value="bottom-right">Bottom right</option>
-                    <option value="bottom-left">Bottom left</option>
-                    <option value="bottom-center">Bottom center</option>
-                    <option value="top-right">Top right</option>
-                    <option value="top-left">Top left</option>
                 </select>
             </label>
         </fieldset>
@@ -163,6 +235,60 @@
     .hint {
         font-size: 13px;
         color: var(--color-text-muted);
+    }
+
+    .hint.invalid {
+        color: var(--color-danger);
+    }
+
+    .tz-input {
+        width: 180px;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .tz-input[aria-invalid="true"] {
+        border-color: var(--color-danger);
+    }
+
+    .tz-help {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+    }
+
+    .tz-help summary {
+        cursor: pointer;
+        user-select: none;
+        color: var(--color-text-secondary);
+        padding: 2px 0;
+    }
+
+    .tz-help summary:hover {
+        color: var(--color-text);
+    }
+
+    .tz-help-text {
+        margin: 6px 0 8px;
+        line-height: 1.5;
+    }
+
+    .tz-help code {
+        background: var(--color-surface-dim);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-family: monospace;
+        font-size: 11px;
+    }
+
+    .tz-help a {
+        color: var(--color-accent);
+        text-decoration: none;
+    }
+
+    .tz-help a:hover {
+        text-decoration: underline;
     }
 
     kbd {

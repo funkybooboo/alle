@@ -195,6 +195,15 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
+    /* Hide scrollbars everywhere but keep scrolling functional. */
+    * {
+        scrollbar-width: none; /* Firefox */
+    }
+
+    *::-webkit-scrollbar {
+        display: none; /* Chromium/Safari */
+    }
+
     :focus-visible {
         outline: 2px solid var(--color-accent);
         outline-offset: 2px;

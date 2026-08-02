@@ -1,12 +1,17 @@
 import type {
     ActiveFilters,
     DeleteConfirmationType,
-    NotificationPosition,
     TagKind,
     ThemeType,
+    TimeFormatType,
     UserPreferences,
 } from '@alle/shared';
-import { DEFAULT_TAG_KIND_MAP, DEFAULT_TAG_KINDS, USER_PREFERENCES_DEFAULTS } from '@alle/shared';
+import {
+    DEFAULT_TAG_KIND_MAP,
+    DEFAULT_TAG_KINDS,
+    isValidTimeZone,
+    USER_PREFERENCES_DEFAULTS,
+} from '@alle/shared';
 import { container } from '$lib/container';
 import { PreferencesService } from '$lib/services/preferencesService';
 
@@ -27,7 +32,8 @@ class PreferencesStore {
     });
     tagKinds = $state<TagKind[]>([...DEFAULT_TAG_KINDS]);
     tagKindMap = $state<Record<string, string>>({ ...DEFAULT_TAG_KIND_MAP });
-    notificationPosition = $state<NotificationPosition>('bottom-right');
+    timeFormat = $state<TimeFormatType>('12h');
+    timezone = $state<string | null>(null);
     updatedAt = $state(new Date().toISOString());
 
     toggleTag(tag: string) {
@@ -47,21 +53,13 @@ class PreferencesStore {
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
-    setShowCompleted(show: boolean) {
-        this.activeFilters = { ...this.activeFilters, showCompleted: show };
-        preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
-    }
-
     clearAll() {
         this.activeFilters = { tags: [], showCompleted: true };
         preferencesService.update({ activeFilters: this.activeFilters }).catch(() => {});
     }
 
     get activeFilterCount() {
-        let count = 0;
-        if (this.activeFilters.tags?.length > 0) count += this.activeFilters.tags.length;
-        if (!this.activeFilters.showCompleted) count++;
-        return count;
+        return this.activeFilters.tags?.length ?? 0;
     }
 
     async load() {
@@ -80,7 +78,10 @@ class PreferencesStore {
             this.activeFilters = prefs.activeFilters;
             this.tagKinds = prefs.tagKinds ?? [...DEFAULT_TAG_KINDS];
             this.tagKindMap = prefs.tagKindMap ?? { ...DEFAULT_TAG_KIND_MAP };
-            this.notificationPosition = prefs.notificationPosition ?? 'bottom-right';
+            this.updatedAt = prefs.updatedAt;
+            this.timeFormat = prefs.timeFormat ?? '12h';
+            this.timezone = prefs.timezone ?? null;
+            container.setDateProviderTimeZone(this.timezone);
             this.updatedAt = prefs.updatedAt;
         } catch {
             // Use defaults
@@ -100,6 +101,8 @@ class PreferencesStore {
             activeFilters: this.activeFilters,
             tagKinds: this.tagKinds,
             tagKindMap: this.tagKindMap,
+            timeFormat: this.timeFormat,
+            timezone: this.timezone,
             updatedAt: this.updatedAt,
         };
 
@@ -133,11 +136,6 @@ class PreferencesStore {
             .catch(() => {});
     }
 
-    setShowEmptyDays(show: boolean) {
-        this.showEmptyDays = show;
-        preferencesService.update({ showEmptyDays: show }).catch(() => {});
-    }
-
     setDeleteConfirmation(value: DeleteConfirmationType) {
         this.deleteConfirmation = value;
         preferencesService.update({ deleteConfirmation: value }).catch(() => {});
@@ -149,9 +147,22 @@ class PreferencesStore {
         preferencesService.update({ tagKinds, tagKindMap }).catch(() => {});
     }
 
-    setNotificationPosition(position: NotificationPosition) {
-        this.notificationPosition = position;
-        preferencesService.update({ notificationPosition: position }).catch(() => {});
+    setTimeFormat(format: TimeFormatType) {
+        this.timeFormat = format;
+        preferencesService.update({ timeFormat: format }).catch(() => {});
+    }
+
+    /**
+     * Set the timezone (IANA zone) or null for device-local. Validates via
+     * isValidTimeZone; invalid values are ignored and the previous zone stays.
+     * Pushes the live zone to the date provider so today()/clock update.
+     */
+    setTimezone(timezone: string | null) {
+        if (timezone !== null && !isValidTimeZone(timezone)) return;
+        const normalized = timezone === '' ? null : timezone;
+        container.setDateProviderTimeZone(normalized);
+        this.timezone = normalized;
+        preferencesService.update({ timezone: normalized }).catch(() => {});
     }
 }
 

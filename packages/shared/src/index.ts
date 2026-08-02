@@ -90,13 +90,14 @@ export {
 export type {
     ActiveFilters,
     DeleteConfirmationType,
-    NotificationPosition,
     TagKind,
     TagKindBehavior,
     ThemeType,
+    TimeFormatType,
     UpdateUserPreferencesInput,
     UserPreferences,
 } from './types/userPreferences';
+export { isValidTimeZone } from './types/userPreferences';
 export type {
     ConnectionAckPayload,
     ConnectionStatus,
@@ -123,7 +124,6 @@ export {
     getTagsByKind,
     groupTasksByDate,
     hasDeadlineTag,
-    isOverdue,
     parseTags,
     resolveTagKind,
     slugify,

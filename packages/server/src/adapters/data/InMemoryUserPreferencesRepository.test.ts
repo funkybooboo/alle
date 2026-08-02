@@ -20,7 +20,6 @@ describe('InMemoryUserPreferencesRepository', () => {
             expect(prefs.showEmptyDays).toBe(true);
             expect(prefs.activeFilters.tags).toEqual([]);
             expect(prefs.activeFilters.showCompleted).toBe(true);
-            expect(prefs.collapsedSections).toEqual([]);
             expect(prefs.tagKinds.length).toBeGreaterThan(0);
             expect(prefs.tagKindMap).toBeDefined();
         });
@@ -84,13 +83,6 @@ describe('InMemoryUserPreferencesRepository', () => {
             expect(after.updatedAt).toBeDefined();
             expect(typeof after.updatedAt).toBe('string');
         });
-
-        test('persists collapsedSections', async () => {
-            const repo = makeRepo();
-            await repo.update({ collapsedSections: ['day-2026-01-01', 'someday-abc'] });
-            const prefs = await repo.get();
-            expect(prefs.collapsedSections).toEqual(['day-2026-01-01', 'someday-abc']);
-        });
     });
 
     describe('reset', () => {
@@ -101,23 +93,6 @@ describe('InMemoryUserPreferencesRepository', () => {
             const prefs = await repo.get();
             expect(prefs.theme).toBe('system');
             expect(prefs.locale).toBe('en');
-        });
-    });
-
-    describe('collapsedSections', () => {
-        test('persists collapsed sections', async () => {
-            const repo = makeRepo();
-            await repo.update({ collapsedSections: ['day-2026-01-01', 'someday-group-abc'] });
-            const prefs = await repo.get();
-            expect(prefs.collapsedSections).toEqual(['day-2026-01-01', 'someday-group-abc']);
-        });
-
-        test('replaces collapsed sections on update', async () => {
-            const repo = makeRepo();
-            await repo.update({ collapsedSections: ['day-2026-01-01'] });
-            await repo.update({ collapsedSections: ['day-2026-01-02'] });
-            const prefs = await repo.get();
-            expect(prefs.collapsedSections).toEqual(['day-2026-01-02']);
         });
     });
 

@@ -1,32 +1,24 @@
 <script lang="ts">
     import { notificationStore } from '$lib/stores/notificationStore.svelte';
-    import { preferencesStore } from '$lib/stores/preferencesStore.svelte';
-    import { Icon } from 'svelte-icons-pack';
-    import { LuWifi, LuWifiOff, LuCloudOff, LuCheck, LuRefreshCw } from 'svelte-icons-pack/lu';
 
-    const iconMap: Record<string, typeof LuCheck> = {
-        connected: LuWifi,
-        disconnected: LuWifiOff,
-        reconnecting: LuRefreshCw,
-        synced: LuCheck,
-        error: LuCloudOff,
+    // Inline SVG icons for the notification kinds. Removes the
+    // svelte-icons-pack dependency from this component (part of the
+    // icon-pack removal; kept local because the icon set is tiny).
+    const icons: Record<string, string> = {
+        connected: '<path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M12 20h.01"/>',
+        disconnected: '<path d="M5 13a10 10 0 0 1 4-2.6"/><path d="M8.5 16.5a5 5 0 0 1 3-1.6"/><path d="M2 8.8a15 15 0 0 1 5-2.4"/><path d="M19 5l-14 14"/><path d="M22 8.8a15 15 0 0 0-4.4-2.4"/>',
+        reconnecting: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v4h-4"/>',
+        synced: '<path d="M20 6 9 17l-5-5"/>',
+        error: '<path d="M17.5 19H9a7 7 0 6.7-9.9"/><path d="M3 21l3.5-3.5"/><path d="M7 13l3 3"/><path d="M14 3l7 7"/>',
     };
 
-    function getIcon(type: string) {
-        return iconMap[type] ?? LuCheck;
+    function iconSvg(type: string): string {
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[type] ?? icons.synced}</svg>`;
     }
-
-    const positionClass = $derived(
-        preferencesStore.notificationPosition === 'bottom-left' ? 'bottom-left' :
-        preferencesStore.notificationPosition === 'bottom-center' ? 'bottom-center' :
-        preferencesStore.notificationPosition === 'top-right' ? 'top-right' :
-        preferencesStore.notificationPosition === 'top-left' ? 'top-left' :
-        'bottom-right',
-    );
 </script>
 
 {#if notificationStore.notifications.length > 0}
-    <div class="notification-container {positionClass}" role="status" aria-live="polite">
+    <div class="notification-container" role="status" aria-live="polite">
         {#each notificationStore.notifications as notification (notification.id)}
             <div
                 class="notification"
@@ -36,9 +28,7 @@
                 class:notification--info={notification.kind === 'info'}
                 class:notification--leaving={notification.leaving}
             >
-                <span class="notification-icon">
-                    <Icon src={getIcon(notification.iconType)} />
-                </span>
+                <span class="notification-icon">{@html iconSvg(notification.iconType)}</span>
                 <span class="notification-message">{notification.message}</span>
                 {#if notification.action}
                     <button class="notification-action" onclick={notification.action.fn}>
@@ -53,38 +43,14 @@
 <style>
     .notification-container {
         position: fixed;
+        bottom: 48px;
+        right: 16px;
         z-index: 300;
         display: flex;
         flex-direction: column-reverse;
         gap: 8px;
         max-width: 320px;
         pointer-events: none;
-    }
-
-    .bottom-right {
-        bottom: 48px;
-        right: 16px;
-    }
-
-    .bottom-left {
-        bottom: 48px;
-        left: 16px;
-    }
-
-    .bottom-center {
-        bottom: 48px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .top-right {
-        top: 16px;
-        right: 16px;
-    }
-
-    .top-left {
-        top: 16px;
-        left: 16px;
     }
 
     .notification {
@@ -109,19 +75,19 @@
     }
 
     .notification--success {
-        border-left: 3px solid #22c55e;
+        border-left: 3px solid var(--color-success);
     }
 
     .notification--warning {
-        border-left: 3px solid #f59e0b;
+        border-left: 3px solid var(--color-warning);
     }
 
     .notification--error {
-        border-left: 3px solid #ef4444;
+        border-left: 3px solid var(--color-danger);
     }
 
     .notification--info {
-        border-left: 3px solid #3b82f6;
+        border-left: 3px solid var(--color-accent);
     }
 
     .notification-icon {
@@ -129,28 +95,28 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        color: var(--color-text-secondary);
     }
 
     .notification-icon :global(svg) {
         width: 16px;
         height: 16px;
-        color: var(--color-text-secondary);
     }
 
-    .notification--success .notification-icon :global(svg) {
-        color: #22c55e;
+    .notification--success .notification-icon {
+        color: var(--color-success);
     }
 
-    .notification--error .notification-icon :global(svg) {
-        color: #ef4444;
+    .notification--error .notification-icon {
+        color: var(--color-danger);
     }
 
-    .notification--warning .notification-icon :global(svg) {
-        color: #f59e0b;
+    .notification--warning .notification-icon {
+        color: var(--color-warning);
     }
 
-    .notification--info .notification-icon :global(svg) {
-        color: #3b82f6;
+    .notification--info .notification-icon {
+        color: var(--color-accent);
     }
 
     .notification-message {

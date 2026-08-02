@@ -1,11 +1,16 @@
 export type ThemeType = 'light' | 'dark' | 'system';
 export type DeleteConfirmationType = 'instant' | 'confirm';
-export type NotificationPosition =
-    | 'bottom-right'
-    | 'bottom-left'
-    | 'bottom-center'
-    | 'top-right'
-    | 'top-left';
+export type TimeFormatType = '12h' | '24h';
+
+/** Validates that a string is a known IANA timezone via Intl. */
+export function isValidTimeZone(timeZone: string): boolean {
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone });
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 export type TagKindBehavior = 'single' | 'multiple';
 
@@ -33,11 +38,12 @@ export interface UserPreferences {
     rolloverEnabled: boolean;
     showEmptyDays: boolean;
     deleteConfirmation: DeleteConfirmationType;
-    collapsedSections: string[];
     activeFilters: ActiveFilters;
     tagKinds: TagKind[];
     tagKindMap: Record<string, string>;
-    notificationPosition: NotificationPosition;
+    timeFormat: TimeFormatType;
+    /** IANA timezone (e.g. 'America/Denver') or null to follow the device zone. */
+    timezone: string | null;
     updatedAt: string;
 }
 

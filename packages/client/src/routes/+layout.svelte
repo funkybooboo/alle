@@ -14,6 +14,7 @@
     import type { Task } from '@alle/shared';
     import { container } from '$lib/container';
     import IconRail from '$lib/components/IconRail.svelte';
+    import DateMinimap from '$lib/components/DateMinimap.svelte';
     import SomedayPanel from '$lib/components/SomedayPanel.svelte';
     import BottomBar from '$lib/components/BottomBar.svelte';
     import ModalHost from '$lib/components/ModalHost.svelte';
@@ -117,8 +118,8 @@
             }
         } else if (e.ctrlKey && e.key === '\\') {
             e.preventDefault();
-            if (preferencesStore.someDayPanelWidth < 100) {
-                preferencesStore.setPanelWidth(Math.max(200, preferencesStore.someDayPanelLastOpenWidth));
+            if (preferencesStore.someDayPanelWidth === 0) {
+                preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth || 280);
             } else {
                 preferencesStore.setPanelWidth(0);
             }
@@ -132,6 +133,7 @@
     <a href="#main-content" class="skip-link">Skip to content</a>
     <div class="main-area">
         <IconRail />
+        <DateMinimap />
         <main id="main-content" class="day-list-area">
             {@render children()}
         </main>

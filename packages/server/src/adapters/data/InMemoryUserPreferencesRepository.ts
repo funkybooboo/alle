@@ -23,11 +23,11 @@ function defaultPreferences(timestamp: string): UserPreferences {
         rolloverEnabled: true,
         showEmptyDays: true,
         deleteConfirmation: 'instant',
-        collapsedSections: [],
         activeFilters: { ...DEFAULT_ACTIVE_FILTERS },
         tagKinds: [...DEFAULT_TAG_KINDS],
         tagKindMap: { ...DEFAULT_TAG_KIND_MAP },
-        notificationPosition: 'bottom-right',
+        timeFormat: '12h',
+        timezone: null,
         updatedAt: timestamp,
     };
 }

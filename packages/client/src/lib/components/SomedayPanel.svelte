@@ -15,13 +15,7 @@
     let editGroupName = $state('');
     let editGroupInput: HTMLInputElement | undefined = $state();
 
-    let isResizing = $state(false);
-
-    const MIN_PANEL_WIDTH = 200;
-    const MAX_PANEL_WIDTH = 600;
-    const COLLAPSED_THRESHOLD = 100;
-
-    let isCollapsed = $derived(preferencesStore.someDayPanelWidth < COLLAPSED_THRESHOLD);
+    let isCollapsed = $derived(preferencesStore.someDayPanelWidth === 0);
 
     let filteredSomedayTasks = $derived(applyFilters(taskStore.somedayTasks, preferencesStore.activeFilters));
 
@@ -121,44 +115,11 @@
         setTimeout(() => newlyCreatedIds.delete(id), 600);
     }
 
-    function startResize(e: MouseEvent) {
-        e.preventDefault();
-        const startX = e.clientX;
-        const startWidth = preferencesStore.someDayPanelWidth;
-        isResizing = true;
+    const DEFAULT_PANEL_WIDTH = 280;
 
-        function onMouseMove(e: MouseEvent) {
-            const deltaX = startX - e.clientX;
-            const newWidth = Math.max(0, Math.min(MAX_PANEL_WIDTH, startWidth + deltaX));
-            preferencesStore.setPanelWidth(newWidth);
-        }
-
-        function onMouseUp() {
-            isResizing = false;
-            if (preferencesStore.someDayPanelWidth >= COLLAPSED_THRESHOLD) {
-                preferencesStore.setPanelWidth(preferencesStore.someDayPanelWidth);
-            } else if (preferencesStore.someDayPanelWidth > 0) {
-                preferencesStore.setPanelWidth(0);
-            }
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-        }
-
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    }
-
-    function expandPanel() {
-        preferencesStore.setPanelWidth(Math.max(MIN_PANEL_WIDTH, preferencesStore.someDayPanelLastOpenWidth));
-    }
-
-    function handleDoubleClick() {
+    function togglePanel() {
         if (isCollapsed) {
-            expandPanel();
+            preferencesStore.setPanelWidth(preferencesStore.someDayPanelLastOpenWidth || DEFAULT_PANEL_WIDTH);
         } else {
             preferencesStore.setPanelWidth(0);
         }
@@ -167,7 +128,7 @@
 
 {#if isCollapsed}
     <div class="collapsed-strip" role="separator" aria-label="Expand Someday panel">
-        <button class="expand-btn" onclick={expandPanel} aria-label="Open Someday panel" title="Open Someday panel">
+        <button class="expand-btn" onclick={togglePanel} aria-label="Open Someday panel" title="Open Someday panel">
             <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="8,2 2,9 8,16" />
             </svg>
