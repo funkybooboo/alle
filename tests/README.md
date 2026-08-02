@@ -1,91 +1,84 @@
-# Testing Guide
+# Tests
 
-This directory contains the tests for the Alle application.
+Alle has three layers of automated tests:
 
--   [`api`](./api) — API tests written with [Bruno](https://www.usebruno.com/).
--   [`e2e`](./e2e) — End-to-end tests written with [Playwright](https://playwright.dev/).
+## 1. Unit tests (`bun run test:unit`)
 
-To learn more about our testing strategy, see the [**Testing**](../docs/05-testing.md) documentation.
+Fast, isolated tests of pure logic and adapters — no network, no browser.
+Run with Bun's built-in test runner. 167 tests across the three packages:
 
-## Running Tests
+- `packages/shared` — date provider, HTTP client, errors, task types
+- `packages/server` — in-memory repositories, services, middleware, utils
+- `packages/client` — DI container, filters, notification store
 
-### All Tests
+## 2. API integration tests (`bun run test:e2e:api`)
 
-```bash
-bun run test        # Run all unit tests
+Black-box HTTP tests against the live Bun server (port 4000), driven by
+Playwright's `APIRequestContext`. They exercise the real HTTP stack — routing,
+validation (Zod), guards (rate limit), middleware (security headers), error
+mapping, and content negotiation — end to end.
+
+Location: `tests/api-tests/` · Config: `playwright.config.ts` (project `api`).
+
+Covers, per resource:
+
+- **tasks** — create/list/get/update/delete, validation (text length, time
+  format), filtering by date/tag/someday/completion, soft-delete + trash +
+  restore + purge, parent/child completion roll-up, plain-text content
+  negotiation.
+- **projects** — CRUD, auto-generated tag, activate/deactivate, validation.
+- **recurring-tasks** — CRUD, generate-instances (daily/interval), validation
+  (frequency enum, ISO date, interval/dayOfWeek bounds), 404 paths.
+- **someday-groups** — CRUD, validation (name/tag/position bounds).
+- **tags** — list (sorted, de-duped), info (counts), rename, merge (incl.
+  no-duplicate target), validation, content negotiation.
+- **user preferences** — GET defaults, PATCH single-field/nested, validation
+  (theme/width enums/bounds), content negotiation.
+- **meta** — root, health, 404+CORS, OPTIONS preflight, security headers,
+  OpenAPI JSON + YAML.
+
+Each test cleans up the entities it creates via `afterEach` so the shared
+in-memory server stays tidy.
+
+## 3. End-to-end browser tests (`bun run test:e2e:ui`)
+
+Playwright browser tests against the live SvelteKit client (port 3000) + server
+(port 4000), using the system Chromium at `/usr/bin/chromium` (no
+`playwright install` needed). Tests wait for SvelteKit hydration before
+interacting (see `tests/e2e/util.ts` `hydrated()`).
+
+Location: `tests/e2e/` · Config: `playwright.config.ts` (project `e2e`).
+
+Covers:
+
+- **app shell** — title/landmark, icon-rail (all 9 items), today section,
+  bottom bar (clock + task count), modal open/close + keyboard shortcuts
+  (`/`, `?`, `n`), modal switching.
+- **task CRUD** — create via inline input, complete via checkbox, inline edit,
+  delete + Undo notification + restore, detail-modal tag editing.
+- **modals** — Settings theme change (document `data-theme` + server
+  persistence), timezone/time-format controls, Search (filter + hint/empty),
+  Trash (list deleted, restore).
+
+## Running everything
+
+```sh
+bun run test:unit          # unit only (fast)
+bun run test:e2e:api       # API integration only
+bun run test:e2e:ui        # browser E2E only
+bun run test:e2e           # both API + browser ( sequential)
+bun run test:all           # unit + e2e in parallel
 ```
 
-### Unit Tests
+The Playwright config auto-starts the server and client dev servers and reuses
+already-running ones locally (`reuseExistingServer`), so tests are fast to
+re-run. In CI it starts fresh instances.
 
-```bash
-bun run test:unit             # All unit tests
-bun run test:unit:shared      # Shared package only
-bun run test:unit:server      # Server package only
-bun run test:unit:client      # Client package only
-bun test --watch              # Watch mode
-```
+## Notes
 
-### E2E Tests
-
-```bash
-bun run test:e2e              # Start server + run tests
-bun run test:e2e:no-server    # Run tests (server already running)
-```
-
-### API Tests
-
-```bash
-bun run test:api              # Run Bruno API tests
-```
-
-### Storybook
-
-```bash
-bun run storybook             # Start Storybook dev server
-bun run build-storybook       # Build static Storybook
-```
-
-## Pre-commit Hooks
-
-Husky runs validation before each commit:
-
--   Linting (Biome)
--   Formatting (Biome)
--   Type checking (TypeScript)
-
-To bypass (not recommended):
-
-```bash
-git commit --no-verify
-```
-
-## CI/CD Pipeline
-
-GitHub Actions runs on every PR:
-
-1. Quality checks (lint, format, type-check)
-2. Unit tests
-3. E2E tests
-4. API tests
-5. Build verification
-6. Storybook build
-7. Security audit
-
-All checks must pass before merging.
-
-## Writing Tests
-
-See `docs/05-testing.md` for comprehensive testing standards.
-
-### Quick Example
-
-```typescript
-import { describe, expect, test } from 'bun:test';
-
-describe('Feature', () => {
-    test('should do something', () => {
-        const result = doSomething();
-        expect(result).toBe(expected);
-    });
-});
-```
+- API/E2E tests target the **server directly** (`http://localhost:4000`) for
+  seeding/cleanup, even in the browser project, so they are independent of the
+  client's CORS/proxy behavior.
+- The `tests/api/` Bruno collection (`.bru` files) is a separate, manual API
+  exerciser (run via `bun run test:api`); the Playwright `tests/api-tests/`
+  suite is the automated, asserted version of the same surface.

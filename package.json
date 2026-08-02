@@ -33,6 +33,8 @@
         "test:coverage:server": "bun --cwd packages/server test --coverage",
         "test:coverage:client": "bun --cwd packages/client test --coverage",
         "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --project=e2e",
+        "test:e2e:api": "playwright test --project=api",
         "test:e2e:no-server": "PLAYWRIGHT_NO_SERVER=1 playwright test",
         "test:api": "cd tests/api && bunx @usebruno/cli run . --env local",
         "test:all": "concurrently -n api,e2e -c magenta,cyan \"bun run test:api\" \"bun run test:e2e:no-server\"",

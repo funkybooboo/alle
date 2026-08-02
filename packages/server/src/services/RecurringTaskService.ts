@@ -23,6 +23,11 @@ export class RecurringTaskService {
                     notes: rt.notes,
                     tags: rt.tags,
                     rolloverEnabled: rt.rolloverEnabled,
+                    // Link the instance back to its template and record the
+                    // occurrence date so TaskRow can show the recurring icon
+                    // and completion stats can group by template.
+                    recurringTaskId: rt.id,
+                    instanceDate: date,
                 };
                 return this.taskRepo.create(taskInput);
             }),

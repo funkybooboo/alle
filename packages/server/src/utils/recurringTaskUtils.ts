@@ -20,10 +20,15 @@ export function generateOccurrences(
     startDate: string,
     endDate: string,
 ): string[] {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const templateStart = new Date(rt.startDate);
-    const templateEnd = rt.endDate ? new Date(rt.endDate) : null;
+    // Parse YYYY-MM-DD as a local-midnight Date so local getters (getFullYear/
+    // getMonth/getDate) return the same calendar day in every timezone. Using
+    // `new Date('YYYY-MM-DD')` instead parses as UTC midnight, which shifts the
+    // day back by one in negative-offset zones (the occurrence dates came back
+    // a day early through the HTTP API when the server ran in UTC-6).
+    const start = parseLocal(startDate);
+    const end = parseLocal(endDate);
+    const templateStart = parseLocal(rt.startDate);
+    const templateEnd = rt.endDate ? parseLocal(rt.endDate) : null;
 
     const results: string[] = [];
 
@@ -88,6 +93,18 @@ function nextOccurrence(rt: RecurringTask, current: Date, interval: number): Dat
     }
 
     return next;
+}
+
+/**
+ * Parse a `YYYY-MM-DD` string as a Date at local midnight (not UTC midnight),
+ * so local getters return the same calendar day regardless of zone.
+ */
+function parseLocal(iso: string): Date {
+    const parts = iso.split('-').map(Number);
+    const y = parts[0] ?? 1970;
+    const m = parts[1] ?? 1;
+    const d = parts[2] ?? 1;
+    return new Date(y, m - 1, d);
 }
 
 /**

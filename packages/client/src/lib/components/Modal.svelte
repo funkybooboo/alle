@@ -57,7 +57,12 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="modal-backdrop" onclick={handleBackdropClick} role="presentation" aria-hidden="true">
+<!-- The backdrop is a visual dimming layer + click-to-close target. It must
+     NOT carry aria-hidden: that would hide the dialog subtree from screen
+     readers (and from Playwright's accessibility-based locators). The
+     dialog's aria-modal="true" is what tells assistive tech the background
+     is inert; the backdrop staying visible to AT is correct. -->
+<div class="modal-backdrop" onclick={handleBackdropClick} role="presentation">
     <div
         class="modal"
         bind:this={modalEl}

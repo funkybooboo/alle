@@ -36,7 +36,7 @@ export class BunHttpServer implements HttpServer {
             corsOrigin: config.corsOrigin || '*',
             corsHeaders: config.corsHeaders || {
                 'Access-Control-Allow-Origin': config.corsOrigin || '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
             },
         };

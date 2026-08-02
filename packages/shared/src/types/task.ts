@@ -28,8 +28,15 @@ export interface Task {
 
 /**
  * Input for creating a new task.
- * Server-managed fields (id, completed, createdAt, updatedAt, recurringTaskId,
- * instanceDate, originalScheduledDate, daysLate) are excluded.
+ *
+ * `recurringTaskId` and `instanceDate` are server-managed but can be set by
+ * server-internal callers (e.g. RecurringTaskService) to link a task to its
+ * recurring template. They are NOT exposed on the public Zod
+ * `CreateTaskSchema`, so `POST /api/tasks` clients can't inject them; the
+ * route parses through Zod first, which strips unknown keys.
+ *
+ * The remaining server-managed fields (id, completed, createdAt, updatedAt,
+ * originalScheduledDate, daysLate) are always set by the repository.
  */
 export type CreateTaskInput = {
     text: string;
@@ -44,6 +51,10 @@ export type CreateTaskInput = {
     startTime?: string | null;
     endTime?: string | null;
     reminder?: { time: string; channels: ('push' | 'email')[] } | null;
+    /** Links this task to its recurring template (server-internal only). */
+    recurringTaskId?: string | null;
+    /** The date this recurrence was scheduled for (server-internal only). */
+    instanceDate?: string | null;
 };
 
 /**
