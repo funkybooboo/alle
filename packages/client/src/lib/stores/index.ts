@@ -1,4 +1,5 @@
 export { connectionStore } from './connectionStore.svelte';
+export { dateViewStore } from './dateViewStore.svelte';
 export { notificationStore } from './notificationStore.svelte';
 export { preferencesStore } from './preferencesStore.svelte';
 export { projectStore } from './projectStore.svelte';

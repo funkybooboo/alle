@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { onMount, onDestroy, tick } from 'svelte';
-    import { taskStore, preferencesStore } from '$lib/stores';
+    import { onMount, onDestroy, tick, untrack } from 'svelte';
+    import { taskStore, preferencesStore, dateViewStore } from '$lib/stores';
     import { groupTasksByDate, SOMEDAY_KEY } from '@alle/shared';
     import { applyFilters } from '$lib/filters';
     import { container } from '$lib/container';
@@ -8,9 +8,9 @@
 
     // How many days to add each time the window extends.
     const CHUNK_DAYS = 30;
-    // Hard bounds so a runaway can't render forever. ±20 years is, in
-    // practice, infinite for a task list, but keeps memory sane.
-    const MAX_RANGE_YEARS = 20;
+    // Max days kept in the DOM at once. Extension trims the far end so the
+    // window slides -- genuinely unbounded scrolling with bounded memory.
+    const MAX_RENDER_DAYS = 400;
     // Trigger extension slightly before the edge is reached.
     const ROOT_MARGIN_PX = 400;
 
@@ -32,12 +32,18 @@
     }
 
     function formatDateHeader(dateStr: string): string {
-        const date = new Date(dateStr + 'T00:00:00');
-        const opts: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-        return date.toLocaleDateString('en-US', opts);
+        // Delegate to the provider so the weekday/date are anchored to the
+        // calendar date itself (UTC), immune to the host or user's timezone.
+        return container.dateProvider.formatDate(dateStr, 'full');
     }
 
-    const todayStr = $derived(container.dateProvider.today());
+    // Reactive to timezone changes: reading preferencesStore.timezone makes this
+    // re-run when the user picks a new zone, re-resolving "today" via the
+    // provider's (just-updated) timeZone.
+    const todayStr = $derived.by(() => {
+        preferencesStore.timezone;
+        return container.dateProvider.today();
+    });
 
     let filteredTasks = $derived(applyFilters(taskStore.tasks, preferencesStore.activeFilters));
     let tasksByDate = $derived(groupTasksByDate(filteredTasks));
@@ -47,20 +53,11 @@
     let visibleEndDate = $state(dateOffset(todayStr, CHUNK_DAYS));
 
     let displayDateKeys = $derived.by(() => {
-        if (preferencesStore.showEmptyDays) {
-            return dateRange(visibleStartDate, visibleEndDate);
-        }
-        // Only days that have tasks — but always include today so there's
-        // always something to land on.
-        const inRange = dateKeys.filter(k => k >= visibleStartDate && k <= visibleEndDate);
-        if (inRange.length === 0) return [todayStr];
-        const result = [...inRange];
-        if (!result.includes(todayStr)) {
-            const idx = result.findIndex(k => k > todayStr);
-            if (idx === -1) result.push(todayStr);
-            else result.splice(idx, 0, todayStr);
-        }
-        return result;
+        // Empty days always render -- nothing is hidden. Every day in the
+        // visible window is shown whether it has tasks or not, so the list
+        // is always a clean contiguous calendar rail. today and any pending
+        // navigation target are inside this range by construction.
+        return dateRange(visibleStartDate, visibleEndDate);
     });
 
     // --- infinite scroll state ---
@@ -73,29 +70,51 @@
     let isExtendingUp = false;
     let isExtendingDown = false;
 
-    let minBound = $derived(dateOffset(todayStr, -MAX_RANGE_YEARS * 365));
-    let maxBound = $derived(dateOffset(todayStr, MAX_RANGE_YEARS * 365));
+    // Publish the loaded window to the shared store so DateMinimap can draw
+    // its viewport indicator. ``displayDateKeys`` is the rendered range.
+    $effect(() => {
+        const keys = displayDateKeys;
+        if (keys.length > 0) {
+            dateViewStore.setVisible(keys[0], keys[keys.length - 1]);
+        }
+    });
+
+    // Pick a rendered day element near the viewport center to use as a scroll
+    // anchor across re-renders (prepending/trimming shifts content).
+    function pickAnchorEl(): HTMLElement | null {
+        const el = scrollContainer;
+        if (!el) return null;
+        const center = el.scrollTop + el.clientHeight / 2;
+        const days = el.querySelectorAll('[id^="day-"]');
+        let best: HTMLElement | null = null;
+        let bestDist = Infinity;
+        for (const d of days) {
+            const top = (d as HTMLElement).offsetTop;
+            const bottom = top + (d as HTMLElement).offsetHeight;
+            const dist = top <= center && bottom >= center ? 0
+                : Math.min(Math.abs(top - center), Math.abs(bottom - center));
+            if (dist < bestDist) { bestDist = dist; best = d as HTMLElement; }
+        }
+        return best;
+    }
 
     function extendUp() {
         if (isExtendingUp) return;
-        const newStart = dateOffset(visibleStartDate, -CHUNK_DAYS);
-        if (newStart <= minBound) {
-            topObserver?.unobserve(sentinelTopEl);
-            visibleStartDate = minBound;
-            return;
-        }
-        // When empty days are hidden, only extend if there are actually
-        // older tasks to reveal; otherwise nothing would render anyway.
-        if (!preferencesStore.showEmptyDays && !dateKeys.some(k => k < visibleStartDate)) return;
 
         isExtendingUp = true;
-        const prevHeight = scrollContainer?.scrollHeight ?? 0;
+        const newStart = dateOffset(visibleStartDate, -CHUNK_DAYS);
+        const anchor = pickAnchorEl();
+        const oldTop = anchor ? anchor.getBoundingClientRect().top : 0;
         visibleStartDate = newStart;
-        // Preserve scroll position: content was prepended above the current
-        // viewport, so add the newly-gained height to scrollTop.
+        // Slide: trim the bottom so the rendered span stays bounded.
+        const desiredEnd = dateOffset(newStart, MAX_RENDER_DAYS);
+        if (visibleEndDate > desiredEnd) visibleEndDate = desiredEnd;
+        // Preserve scroll: prepend above + trim below both shift content;
+        // re-anchor the pre-render element to its old screen position.
         tick().then(() => {
-            if (scrollContainer) {
-                scrollContainer.scrollTop += scrollContainer.scrollHeight - prevHeight;
+            if (scrollContainer && anchor) {
+                const newTop = anchor.getBoundingClientRect().top;
+                scrollContainer.scrollTop += newTop - oldTop;
             }
             isExtendingUp = false;
         });
@@ -103,23 +122,30 @@
 
     function extendDown() {
         if (isExtendingDown) return;
-        const newEnd = dateOffset(visibleEndDate, CHUNK_DAYS);
-        if (newEnd >= maxBound) {
-            bottomObserver?.unobserve(sentinelBottomEl);
-            visibleEndDate = maxBound;
-            return;
-        }
-        if (!preferencesStore.showEmptyDays && !dateKeys.some(k => k > visibleEndDate)) return;
 
         isExtendingDown = true;
+        const newEnd = dateOffset(visibleEndDate, CHUNK_DAYS);
+        // Slide: trim the top so the rendered span stays bounded.
+        const desiredStart = dateOffset(newEnd, -MAX_RENDER_DAYS);
+        const anchor = pickAnchorEl();
+        const oldTop = anchor ? anchor.getBoundingClientRect().top : 0;
+        if (desiredStart > visibleStartDate) visibleStartDate = desiredStart;
         visibleEndDate = newEnd;
         tick().then(() => {
+            if (scrollContainer && anchor) {
+                const newTop = anchor.getBoundingClientRect().top;
+                scrollContainer.scrollTop += newTop - oldTop;
+            }
             isExtendingDown = false;
         });
     }
 
     function scrollToToday(smooth = true) {
-        const el = document.getElementById(`day-${todayStr}`);
+        scrollToDate(todayStr, smooth);
+    }
+
+    function scrollToDate(dateStr: string, smooth = true) {
+        const el = document.getElementById(`day-${dateStr}`);
         if (!el) return;
         const scrollEl = scrollContainer ?? (document.querySelector('.day-list-area') as HTMLElement | null);
         if (scrollEl) {
@@ -133,10 +159,68 @@
         }
     }
 
+    // Find which loaded day is nearest the vertical center of the viewport
+    // and publish it so DateMinimap can highlight a single selected month.
+    // Uses setTimeout instead of requestAnimationFrame -- in some headless
+    // environments rAF callbacks don't fire for off-screen content, and
+    // setTimeout(defer) is equally effective for throttling scroll handlers.
+    let focusTimer: ReturnType<typeof setTimeout> | null = null;
+    function updateFocusedDate() {
+        if (focusTimer) clearTimeout(focusTimer);
+        focusTimer = setTimeout(() => {
+            focusTimer = null;
+            const scrollEl = scrollContainer;
+            if (!scrollEl) return;
+            const center = scrollEl.scrollTop + scrollEl.clientHeight / 2;
+            const days = scrollEl.querySelectorAll('section[id^="day-"]');
+            let best: string | null = null;
+            let bestDist = Infinity;
+            for (const d of days) {
+                const top = (d as HTMLElement).offsetTop;
+                const bottom = top + (d as HTMLElement).offsetHeight;
+                const dist = top <= center && bottom >= center
+                    ? 0
+                    : Math.min(Math.abs(top - center), Math.abs(bottom - center));
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = (d as HTMLElement).id.slice(4);
+                }
+            }
+            dateViewStore.setFocusedDate(best);
+        }, 16);
+    }
+
+    // Watch for navigation requests from the minimap, today button, etc.
+    // Key on ``requestId`` (monotonic, always changes) rather than the target
+    // string so repeated requests to the same date still re-fire. Window reads
+    // happen under untrack so writing visibleStart/End here doesn't re-fire.
+    $effect(() => {
+        const id = dateViewStore.requestId;
+        if (id === 0) return;
+        const target = dateViewStore.pendingScrollTarget;
+        if (!target) return;
+        untrack(() => {
+            const outOfWindow = target < visibleStartDate || target > visibleEndDate;
+            if (outOfWindow) {
+                // Slide the whole window to the target (bounded span) instead
+                // of stretching one end, so a far jump never renders thousands
+                // of days at once. Jump instantly since the DOM was replaced.
+                const half = Math.floor(MAX_RENDER_DAYS / 2);
+                visibleStartDate = dateOffset(target, -half);
+                visibleEndDate = dateOffset(target, half);
+                tick().then(() => scrollToDate(target, false));
+            } else {
+                scrollToDate(target, true);
+            }
+        });
+    });
+
     onMount(() => {
         scrollContainer = containerEl?.closest('.day-list-area') as HTMLElement | null ?? containerEl?.parentElement ?? null;
 
         scrollToToday(false);
+        updateFocusedDate();
+        scrollContainer?.addEventListener('scroll', updateFocusedDate, { passive: true });
 
         if (scrollContainer) {
             topObserver = new IntersectionObserver(
@@ -155,6 +239,8 @@
     onDestroy(() => {
         topObserver?.disconnect();
         bottomObserver?.disconnect();
+        scrollContainer?.removeEventListener('scroll', updateFocusedDate);
+        if (focusTimer) clearTimeout(focusTimer);
     });
 </script>
 
@@ -176,6 +262,7 @@
         padding: 16px 20px;
         max-width: 800px;
         margin: 0 auto;
+        position: relative;
     }
 
     .infinite-scroll-sentinel {

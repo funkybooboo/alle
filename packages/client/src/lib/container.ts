@@ -55,6 +55,14 @@ export class Container {
         return this._dateProvider;
     }
 
+    /**
+     * Set the date provider's timezone (IANA zone, or null for device local).
+     * Called once user preferences load / when the user changes their zone.
+     */
+    setDateProviderTimeZone(timeZone: string | null): void {
+        this.dateProvider.setTimeZone(timeZone);
+    }
+
     setClientId(clientId: string | null): void {
         const http = this.httpClient as FetchHttpClient;
         if (clientId) {

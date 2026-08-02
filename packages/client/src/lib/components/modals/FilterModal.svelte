@@ -7,7 +7,6 @@
 
     let tags = $derived(tagStore?.tags ?? []);
     let activeTags = $derived(preferencesStore?.activeFilters.tags ?? []);
-    let showCompleted = $derived(preferencesStore?.activeFilters.showCompleted ?? true);
 
     let tagInput = $state('');
     let showSuggestions = $state(false);
@@ -103,19 +102,6 @@
                     {/each}
                 </div>
             {/if}
-        </fieldset>
-
-        <fieldset class="section" aria-labelledby="filter-status-heading">
-            <legend class="section-heading" id="filter-status-heading">Status</legend>
-            <label class="checkbox-label">
-                <input
-                    type="checkbox"
-                    checked={showCompleted}
-                    onchange={(e) => preferencesStore.setShowCompleted(e.currentTarget.checked)}
-                    id="filter-show-completed"
-                />
-                <span>Show completed tasks</span>
-            </label>
         </fieldset>
 
         <button class="clear-btn" onclick={() => preferencesStore.clearAll()}>

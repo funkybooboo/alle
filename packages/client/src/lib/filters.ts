@@ -1,15 +1,14 @@
 import type { ActiveFilters, Task } from '@alle/shared';
 
+/**
+ * Apply tag filters to a task list. Completed tasks are NEVER hidden — they
+ * stay visible (just struck-through) so the day's full state is always on
+ * screen. Incomplete past-day tasks roll over to the next day via
+ * auto-rollover, so there's no overdue state to hide either.
+ */
 export function applyFilters(tasks: Task[], filters: ActiveFilters): Task[] {
-    let result = tasks;
-
-    if (filters.tags.length > 0) {
-        result = result.filter(t => filters.tags.some(tag => t.tags.includes(tag)));
+    if (filters.tags.length === 0) {
+        return tasks;
     }
-
-    if (!filters.showCompleted) {
-        result = result.filter(t => !t.completed);
-    }
-
-    return result;
+    return tasks.filter(t => filters.tags.some(tag => t.tags.includes(tag)));
 }

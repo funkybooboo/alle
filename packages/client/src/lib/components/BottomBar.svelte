@@ -1,41 +1,50 @@
 <script lang="ts">
-    import { taskStore, preferencesStore } from '$lib/stores';
+    import { onMount } from 'svelte';
+    import { taskStore, preferencesStore, dateViewStore } from '$lib/stores';
     import { container } from '$lib/container';
     import { Icon } from 'svelte-icons-pack';
     import { LuX, LuSquareCheck } from 'svelte-icons-pack/lu';
 
     let totalTasks = $derived(taskStore.tasks.length);
     let completedCount = $derived(taskStore.tasks.filter(t => t.completed).length);
-    let todayLabel = $derived(
-        new Date(container.dateProvider.today() + 'T00:00:00').toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-        }),
+
+    // Live clock + date label. Ticks once per second so the minute boundary and
+    // local-midnight rollover update promptly. Both honor the user's timezone and
+    // time-format preferences via the date provider, so they follow the chosen
+    // zone even though the browser's Date cannot change its system timezone.
+    // Reading preferencesStore.timezone/timeFormat here also makes these labels
+    // reactive to settings changes without needing a reload.
+    let now = $state(new Date());
+    let clockLabel = $derived(
+        container.dateProvider.formatTime(now, preferencesStore.timeFormat),
     );
+    let dateLabel = $derived(
+        container.dateProvider.formatDateTime(now, preferencesStore.timeFormat).split(' \u00b7 ')[0],
+    );
+    let todayKey = $derived.by(() => {
+        // Reactivity anchor: reading preferencesStore.timezone re-runs today()
+        // (which reads the provider's live timeZone) when the zone changes.
+        preferencesStore.timezone;
+        return container.dateProvider.today();
+    });
+
+    onMount(() => {
+        const timer = setInterval(() => {
+            now = new Date();
+        }, 1000);
+        return () => clearInterval(timer);
+    });
 
     function handleHomeClick() {
         preferencesStore.clearAll();
-        scrollToToday();
+        goToday();
     }
 
-    function scrollToToday() {
-        const todayEl = document.getElementById(`day-${container.dateProvider.today()}`);
-        if (!todayEl) return;
-        const scrollEl = document.querySelector('.day-list-area') as HTMLElement | null;
-        if (scrollEl) {
-            const elRect = todayEl.getBoundingClientRect();
-            const containerRect = scrollEl.getBoundingClientRect();
-            const elCenter = elRect.top - containerRect.top + elRect.height / 2;
-            const scrollTarget = Math.max(0, scrollEl.scrollTop + elCenter - containerRect.height / 2);
-            scrollEl.scrollTo({
-                top: scrollTarget,
-                behavior: 'smooth',
-            });
-        } else {
-            todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+    // Route through the shared date-view store so DayList slides its window
+    // to today (even if today is outside the currently-loaded range) and the
+    // DateMinimap's auto-follow resets the selected month to today.
+    function goToday() {
+        dateViewStore.requestScroll(todayKey);
     }
 </script>
 
@@ -52,22 +61,19 @@
                 <button class="chip-remove" onclick={() => preferencesStore.toggleTag(tag)} aria-label="Remove filter #{tag}"><Icon src={LuX} /></button>
             </span>
         {/each}
-        {#if !preferencesStore.activeFilters.showCompleted}
-            <span class="chip">
-                Completed
-                <button class="chip-remove" onclick={() => preferencesStore.setShowCompleted(true)} aria-label="Remove completed filter"><Icon src={LuX} /></button>
-            </span>
-        {/if}
-        {#if preferencesStore.activeFilterCount > 1}
+        {#if preferencesStore.activeFilterCount > 0}
             <button class="clear-all-btn" onclick={preferencesStore.clearAll}>clear all</button>
         {/if}
     </div>
 
     <div class="status">
-        <button class="date-btn" onclick={scrollToToday} aria-label="Scroll to today">
-            {todayLabel}
+        <button class="date-btn" onclick={goToday} aria-label="Scroll to today">
+            {dateLabel} &middot; {clockLabel}
         </button>
-        <span class="task-stats">{totalTasks} task{totalTasks !== 1 ? 's' : ''} &bull; {completedCount} done</span>
+        <span class="task-stats">
+            {totalTasks} task{totalTasks !== 1 ? 's' : ''}
+            {completedCount} done
+        </span>
     </div>
 </footer>
 
@@ -192,6 +198,4 @@
         font-size: 12px;
         color: var(--color-text-secondary);
     }
-
-    
 </style>

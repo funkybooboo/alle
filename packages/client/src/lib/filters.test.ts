@@ -83,13 +83,13 @@ describe('applyFilters', () => {
         expect(result).toHaveLength(0);
     });
 
-    test('hides completed tasks when showCompleted is false', () => {
+    test('never hides completed tasks (showCompleted is ignored)', () => {
         const completedTask = { ...baseTask, completed: true };
         const tasks = [baseTask, completedTask];
         const filters: ActiveFilters = { ...noFilters, showCompleted: false };
         const result = applyFilters(tasks, filters);
-        expect(result).toHaveLength(1);
-        expect(result[0].completed).toBe(false);
+        // Completed tasks always stay visible -- nothing is hidden in the UI.
+        expect(result).toHaveLength(2);
     });
 
     test('applies multiple tag filters together (OR logic)', () => {

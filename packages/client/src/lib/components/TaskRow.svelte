@@ -118,10 +118,6 @@
         {#each task.tags as tag}
             <span class="tag-chip">#{tag}</span>
         {/each}
-
-        {#if task.daysLate > 0}
-            <span class="overdue-badge">{task.daysLate}d late</span>
-        {/if}
     </div>
 
     <div class="task-actions">
@@ -241,15 +237,6 @@
         border-radius: 10px;
         background: var(--color-surface-hover);
         color: var(--color-text-secondary);
-    }
-
-    .overdue-badge {
-        font-size: 11px;
-        padding: 1px 6px;
-        border-radius: 10px;
-        background: var(--color-danger-light);
-        color: var(--color-danger);
-        font-weight: 500;
     }
 
     .task-actions {

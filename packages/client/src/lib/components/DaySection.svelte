@@ -4,18 +4,20 @@
     import SectionHeader from './SectionHeader.svelte';
     import type { Task } from '@alle/shared';
     import { container } from '$lib/container';
+    import { preferencesStore } from '$lib/stores';
 
     let { id, dateStr, label, tasks }: { id: string; dateStr: string; label: string; tasks: Task[] } = $props();
 
-    const todayStr = container.dateProvider.today();
+    const todayStr = $derived.by(() => {
+        preferencesStore.timezone;
+        return container.dateProvider.today();
+    });
     let isToday = $derived(dateStr === todayStr);
-    let isPast = $derived(dateStr < todayStr);
-    let isOverdue = $derived(isPast && tasks.some(t => !t.completed));
-    let overdueCount = $derived(isOverdue ? tasks.filter(t => !t.completed).length : 0);
     let taskCount = $derived(tasks.length);
     let completedCount = $derived(tasks.filter(t => t.completed).length);
 
     let sectionId = $derived(`day-${dateStr}`);
+    let dateParts = $derived(container.dateProvider.formatDateParts(dateStr));
 
     let newlyCreatedIds = $state<Set<string>>(new Set());
 
@@ -29,11 +31,10 @@
     <SectionHeader
         {sectionId}
         title={label}
+        {dateParts}
         {taskCount}
         {completedCount}
-        {overdueCount}
         {isToday}
-        {isOverdue}
     />
     <div class="task-list" role="list">
         {#each tasks as task (task.id)}

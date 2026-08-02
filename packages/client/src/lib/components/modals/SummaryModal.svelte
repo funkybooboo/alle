@@ -12,7 +12,6 @@
     let completedToday = $derived(todayTasks.filter(t => t.completed).length);
     let totalToday = $derived(todayTasks.length);
     let completionPct = $derived(totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0);
-    let overdue = $derived(allTasks.filter(t => !t.completed && t.date && t.date < todayStr && t.rolloverEnabled));
     let upcomingDeadlines = $derived(allTasks.filter(t => !t.completed && t.tags.includes('deadline') && t.date).slice(0, 5));
 </script>
 
@@ -34,22 +33,6 @@
                 <div class="progress-fill" style="width: {completionPct}%"></div>
             </div>
         </section>
-
-        {#if overdue.length > 0}
-            <section class="section" aria-labelledby="summary-overdue-heading">
-                <h3 id="summary-overdue-heading">Overdue</h3>
-                <ul class="list">
-                    {#each overdue.slice(0, 10) as task}
-                        <li class="list-item overdue">
-                            <span class="task-text">{task.text}</span>
-                            {#if task.daysLate > 0}
-                                <span class="badge badge-danger">{task.daysLate}d</span>
-                            {/if}
-                        </li>
-                    {/each}
-                </ul>
-            </section>
-        {/if}
 
         {#if upcomingDeadlines.length > 0}
 <section class="section" aria-labelledby="summary-deadlines-heading">
@@ -132,10 +115,6 @@
         justify-content: space-between;
         padding: 6px 0;
         border-bottom: 1px solid var(--color-border);
-    }
-
-    .list-item.overdue .task-text {
-        color: var(--color-danger);
     }
 
     .task-text {
