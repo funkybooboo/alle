@@ -43,8 +43,8 @@
     .icon-rail {
         display: flex;
         flex-direction: column;
-        width: 48px;
-        min-width: 48px;
+        width: 112px;
+        min-width: 112px;
         background: var(--color-surface);
         border-right: 1px solid var(--color-border);
         padding: 8px 0;
@@ -54,17 +54,20 @@
 
     .icon-btn {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        justify-content: center;
-        padding: 8px 4px;
+        gap: 10px;
+        width: 100%;
+        min-height: 52px;
+        box-sizing: border-box;
+        padding: 14px 10px;
         border: none;
         background: transparent;
         cursor: pointer;
         border-radius: 6px;
-        margin: 0 4px;
         transition: background-color 0.15s;
         color: var(--color-text-secondary);
+        text-align: left;
     }
 
     .icon-btn:hover {
@@ -78,17 +81,19 @@
     }
 
     .icon :global(svg) {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
     }
 
     .label {
-        font-size: 9px;
-        margin-top: 2px;
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 48px;
     }
 
     .icon-btn:focus-visible {
